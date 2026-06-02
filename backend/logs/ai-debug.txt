@@ -1,0 +1,1881 @@
+[GROQ] 2026-05-06T13:17:30.803Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python?",
+      "options": ["A) To handle exceptions", "B) To create a new scope", "C) To ensure resources are properly cleaned up", "D) To improve code readability"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used to ensure resources are properly cleaned up after use"
+    },
+    {
+      "question": "How does the 'enumerate' function work in Python?",
+      "options": ["A) It returns the index and value of each item in a list", "B) It returns the key and value of each item in a dictionary", "C) It returns the first and last item in a list", "D) It returns the length of a list"],
+      "correctAnswer": "A",
+      "explanation": "The 'enumerate' function returns the index and value of each item in a list"
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python?",
+      "options": ["A) 'is' checks for equality, '==' checks for identity", "B) 'is' checks for identity, '==' checks for equality", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "B",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "How does the 'zip' function work in Python?",
+      "options": ["A) It combines two lists into a single list", "B) It combines two lists into a list of tuples", "C) It combines two lists into a dictionary", "D) It combines two lists into a set"],
+      "correctAnswer": "B",
+      "explanation": "The 'zip' function combines two lists into a list of tuples"
+    },
+    {
+      "question": "What is the purpose of the 'try-except' block in Python?",
+      "options": ["A) To handle runtime errors", "B) To handle syntax errors", "C) To handle logical errors", "D) To improve code performance"],
+      "correctAnswer": "A",
+      "explanation": "The 'try-except' block is used to handle runtime errors"
+    },
+    {
+      "question": "How does the 'lambda' function work in Python?",
+      "options": ["A) It creates a new function with a single expression", "B) It creates a new function with multiple expressions", "C) It creates a new class", "D) It creates a new module"],
+      "correctAnswer": "A",
+      "explanation": "The 'lambda' function creates a new function with a single expression"
+    },
+    {
+      "question": "What is the difference between 'break' and 'continue' statements in Python?",
+      "options": ["A) 'break' skips to the next iteration, 'continue' exits the loop", "B) 'break' exits the loop, 'continue' skips to the next iteration", "C) 'break' restarts the loop, 'continue' exits the loop", "D) 'break' exits the loop, 'continue' restarts the loop"],
+      "correctAnswer": "B",
+      "explanation": "The 'break' statement exits the loop, while the 'continue' statement skips to the next iteration"
+    },
+    {
+      "question": "How does the 'map' function work in Python?",
+      "options": ["A) It applies a function to each item in a list and returns a new list", "B) It applies a function to each item in a list and returns a new dictionary", "C) It applies a function to each item in a list and returns a new set", "D) It applies a function to each item in a list and returns a new tuple"],
+      "correctAnswer": "A",
+      "explanation": "The 'map' function applies a function to each item in a list and returns a new list"
+    },
+    {
+      "question": "What is the purpose of the 'join' method in Python?",
+      "options": ["A) To concatenate strings", "B) To split strings", "C) To search for substrings", "D) To replace substrings"],
+      "correctAnswer": "A",
+      "explanation": "The 'join' method is used to concatenate strings"
+    },
+    {
+      "question": "How does the 'filter' function work in Python?",
+      "options": ["A) It applies a function to each item in a list and returns a new list with the items that pass the test", "B) It applies a function to each item in a list and returns a new list with the items that fail the test", "C) It applies a function to each item in a list and returns a new dictionary", "D) It applies a function to each item in a list and returns a new set"],
+      "correctAnswer": "A",
+      "explanation": "The 'filter' function applies a function to each item in a list and returns a new list with the items that pass the test"
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:18:08.762Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python?",
+      "options": ["A) To handle exceptions", "B) To create a new scope", "C) To ensure resources are properly cleaned up", "D) To optimize performance"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used to ensure resources are properly cleaned up after use"
+    },
+    {
+      "question": "How do you implement a singleton class in Python?",
+      "options": ["A) Using a decorator", "B) Using a metaclass", "C) Using a class variable", "D) Using a global variable"],
+      "correctAnswer": "B",
+      "explanation": "A metaclass can be used to implement a singleton class in Python"
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python?",
+      "options": ["A) 'is' checks for identity, '==' checks for equality", "B) 'is' checks for equality, '==' checks for identity", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "A",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "How do you use the 'map' function to apply a lambda function to a list in Python?",
+      "options": ["A) map(lambda x: x**2, [1, 2, 3])", "B) map([1, 2, 3], lambda x: x**2)", "C) map(lambda x: x**2)", "D) map([1, 2, 3])"],
+      "correctAnswer": "A",
+      "explanation": "The 'map' function applies a lambda function to each item in a list"
+    },
+    {
+      "question": "What is the purpose of the '__init__' method in a Python class?",
+      "options": ["A) To initialize class variables", "B) To define a class method", "C) To create a new instance of the class", "D) To initialize instance variables"],
+      "correctAnswer": "D",
+      "explanation": "The '__init__' method is used to initialize instance variables"
+    },
+    {
+      "question": "How do you use the 'filter' function to filter out odd numbers from a list in Python?",
+      "options": ["A) filter(lambda x: x%2==0, [1, 2, 3, 4, 5])", "B) filter([1, 2, 3, 4, 5], lambda x: x%2==0)", "C) filter(lambda x: x%2==0)", "D) filter([1, 2, 3, 4, 5])"],
+      "correctAnswer": "A",
+      "explanation": "The 'filter' function uses a lambda function to filter out items from a list"
+    },
+    {
+      "question": "What is the difference between a 'set' and a 'frozenset' in Python?",
+      "options": ["A) A 'set' is mutable, a 'frozenset' is immutable", "B) A 'set' is immutable, a 'frozenset' is mutable", "C) A 'set' is a list, a 'frozenset' is a tuple", "D) A 'set' is a tuple, a 'frozenset' is a list"],
+      "correctAnswer": "A",
+      "explanation": "A 'set' is mutable, while a 'frozenset' is immutable"
+    },
+    {
+      "question": "How do you use the 'zip' function to iterate over two lists in parallel in Python?",
+      "options": ["A) zip([1, 2, 3], [4, 5, 6])", "B) zip([1, 2, 3])", "C) zip([4, 5, 6])", "D) zip()"],
+      "correctAnswer": "A",
+      "explanation": "The 'zip' function is used to iterate over two lists in parallel"
+    },
+    {
+      "question": "What is the purpose of the 'try-except' block in Python?",
+      "options": ["A) To handle exceptions and prevent program crashes", "B) To optimize performance", "C) To create a new scope", "D) To ensure resources are properly cleaned up"],
+      "correctAnswer": "A",
+      "explanation": "The 'try-except' block is used to handle exceptions and prevent program crashes"
+    },
+    {
+      "question": "How do you use the 'enumerate' function to iterate over a list with indices in Python?",
+      "options": ["A) enumerate([1, 2, 3])", "B) enumerate()", "C) enumerate(1, 2, 3)", "D) enumerate([1, 2, 3], start=1)'],
+      "correctAnswer": "A",
+      "explanation": "The 'enumerate' function is used to iterate over a list with indices"
+    }
+  ]
+}
+
+[GEMINI] 2026-05-06T13:18:38.352Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "Which of the following Python code snippets correctly processes a list of dictionaries, extracting the 'name' of individuals who are older than 30 and storing them in a new list?",
+      "options": [
+        "A) \npeople = [{'name': 'Alice', 'age': 25}, {'name': 'Bob', 'age': 35}, {'name': 'Charlie', 'age': 40}]\nold_folks = [p['name'] for p in people if p['age'] > 30]",
+        "B) \npeople = [{'name': 'Alice', 'age': 25}, {'name': 'Bob', 'age': 35}, {'name': 'Charlie', 'age': 40}]\nold_folks = filter(lambda p: p['age'] > 30, people).map(lambda p: p['name'])",
+        "C) \npeople = [{'name': 'Alice', 'age': 25}, {'name': 'Bob', 'age': 35}, {'name': 'Charlie', 'age': 40}]\nold_folks = (p['name'] for p in people if p['age'] > 30)",
+        "D) \npeople = [{'name': 'Alice', 'age': 25}, {'name': 'Bob', 'age': 35}, {'name': 'Charlie', 'age': 40}]\nold_folks = [p.get('name') for p in people if p.get('age', 0) > 30]"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses a list comprehension which is a concise and Pythonic way to filter and transform elements into a new list. Option B's `.map()` method call directly on a filter object is incorrect; `map` is a built-in function, not a method. Option C creates a generator expression, not a list directly. Option D's use of `.get()` for 'name' is redundant as 'name' is guaranteed to exist and adds complexity for 'age' which is also guaranteed in this context, but primarily the comprehension syntax of A is more direct for the desired output."
+    },
+    {
+      "question": "Consider the following Python decorator:\n\ndef my_decorator(func):\n    def wrapper(*args, **kwargs):\n        print(\"Something is happening before the function is called.\")\n        result = func(*args, **kwargs)\n        print(\"Something is happening after the function is called.\")\n        return result\n    return wrapper\n\n@my_decorator\ndef say_hello(name):\n    print(f\"Hello, {name}!\")\n    return f\"Greeted {name}\"\n\nWhat will be the output when `say_hello(\"World\")` is executed, and what will it return?",
+      "options": [
+        "A) Output:\nSomething is happening before the function is called.\nHello, World!\nSomething is happening after the function is called.\nReturns: \"Greeted World\"",
+        "B) Output:\nHello, World!\nReturns: None",
+        "C) Output:\nSomething is happening before the function is called.\nHello, World!\nReturns: \"Greeted World\"",
+        "D) Output:\nSomething is happening before the function is called.\nSomething is happening after the function is called.\nHello, World!\nReturns: \"Greeted World\""
+      ],
+      "correctAnswer": "A",
+      "explanation": "When `say_hello(\"World\")` is called, it actually invokes the `wrapper` function returned by `my_decorator`. The `wrapper` prints the 'before' message, then calls the original `say_hello` function (which prints 'Hello, World!'), captures its return value, prints the 'after' message, and finally returns the result from the original function."
+    },
+    {
+      "question": "Which statement best describes the primary advantage of using `with open('file.txt', 'r') as f:` for file handling in Python?",
+      "options": [
+        "A) It automatically buffers file reads for improved performance.",
+        "B) It ensures the file is automatically closed, even if errors occur during processing.",
+        "C) It locks the file, preventing other processes from accessing it.",
+        "D) It converts all file contents to a list of strings automatically."
+      ],
+      "correctAnswer": "B",
+      "explanation": "The `with` statement in Python is a context manager. For file operations, it guarantees that the file's `__exit__` method is called upon exiting the `with` block, regardless of whether the block completes successfully or an exception occurs. This ensures resources (like file handles) are properly released, preventing leaks."
+    },
+    {
+      "question": "Consider the following Python function:\n\ndef add_to_list(value, my_list=[]):\n    my_list.append(value)\n    return my_list\n\nWhat will be the output of the following sequence of calls?\n\nprint(add_to_list(1))\nprint(add_to_list(2))\nprint(add_to_list(3, []))",
+      "options": [
+        "A) \n[1]\n[1, 2]\n[3]",
+        "B) \n[1]\n[2]\n[3]",
+        "C) \n[1]\n[1, 2]\n[1, 2, 3]",
+        "D) \n[1]\n[2, 1]\n[3, 2, 1]"
+      ],
+      "correctAnswer": "A",
+      "explanation": "The default argument `my_list=[]` is evaluated only once when the function is defined, not on each call. So, `my_list` refers to the same list object every time `add_to_list` is called without explicitly providing a `my_list` argument. \n1. `add_to_list(1)`: `my_list` is `[]`, becomes `[1]`. Prints `[1]`.\n2. `add_to_list(2)`: `my_list` is the *same* `[1]`, becomes `[1, 2]`. Prints `[1, 2]`.\n3. `add_to_list(3, [])`: A *new* list `[]` is passed, becomes `[3]`. Prints `[3]`."
+    },
+    {
+      "question": "Which of the following best describes the primary benefit of using a generator function (with `yield`) instead of a regular function returning a list for producing a sequence of values?",
+      "options": [
+        "A) Generators execute faster than regular functions for all sequence generation tasks.",
+        "B) Generators allow for easy bidirectional communication with the caller using `send()`.",
+        "C) Generators produce values one at a time, allowing for processing of large sequences without storing them entirely in memory.",
+        "D) Generators automatically handle concurrent execution of sequence generation."
+      ],
+      "correctAnswer": "C",
+      "explanation": "The primary benefit of generator functions (using `yield`) is their memory efficiency. They produce values on demand, one at a time, and pause execution state until the next value is requested. This makes them ideal for iterating over very large datasets or infinite sequences without needing to store the entire sequence in memory at once, unlike a function that constructs and returns a full list."
+    },
+    {
+      "question": "What is the correct way to catch multiple specific exceptions in Python, and what will be printed if `numerator / denominator` results in a `ZeroDivisionError`?",
+      "options": [
+        "A) \ntry:\n    result = numerator / denominator\nexcept (ValueError, ZeroDivisionError) as e:\n    print(f\"An error occurred: {e}\")\nexcept Exception as e:\n    print(f\"An unexpected error occurred: {e}\")\n\nOutput: \"An error occurred: division by zero\"",
+        "B) \ntry:\n    result = numerator / denominator\nexcept ValueError or ZeroDivisionError as e:\n    print(f\"An error occurred: {e}\")\n\nOutput: \"An error occurred: division by zero\"",
+        "C) \ntry:\n    result = numerator / denominator\nexcept ZeroDivisionError as e:\n    print(\"Cannot divide by zero!\")\nexcept ValueError as e:\n    print(\"Invalid value!\")\n\nOutput: \"Cannot divide by zero!\"",
+        "D) \ntry:\n    result = numerator / denominator\nexcept:\n    print(\"An error occurred.\")\n\nOutput: \"An error occurred.\""
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A correctly uses a tuple `(ValueError, ZeroDivisionError)` to catch multiple specific exceptions in a single `except` block. If a `ZeroDivisionError` occurs, the first `except` block will catch it and print the corresponding message, which includes the error details. Option B's `or` is incorrect syntax for catching multiple exceptions. Option C is also correct syntax but doesn't catch both in one block as requested, and the wording for A matches the expected output better. Option D is too broad and should be avoided for specific error handling."
+    },
+    {
+      "question": "Given the function definition:\n\ndef process_data(action, *args, **kwargs):\n    print(f\"Action: {action}\")\n    print(f\"Positional arguments: {args}\")\n    print(f\"Keyword arguments: {kwargs}\")\n\nWhat will be the output when `process_data('report', 10, 20, name='Alice', age=30)` is called?",
+      "options": [
+        "A) \nAction: report\nPositional arguments: (10, 20)\nKeyword arguments: {'name': 'Alice', 'age': 30}",
+        "B) \nAction: report\nPositional arguments: ('report', 10, 20)\nKeyword arguments: {'name': 'Alice', 'age': 30}",
+        "C) \nAction: report\nPositional arguments: (10, 20, 'name', 'Alice', 'age', 30)\nKeyword arguments: {}",
+        "D) \nAction: report\nPositional arguments: (10, 20)\nKeyword arguments: {}"
+      ],
+      "correctAnswer": "A",
+      "explanation": "The `*args` syntax collects all positional arguments passed after `action` into a tuple. The `**kwargs` syntax collects all keyword arguments into a dictionary. In the call `process_data('report', 10, 20, name='Alice', age=30)`, 'report' is assigned to `action`, `10` and `20` are collected into `args`, and `name='Alice'` and `age=30` are collected into `kwargs`."
+    },
+    {
+      "question": "Which of the following statements about `is` and `==` operators in Python is true?",
+      "options": [
+        "A) `is` checks for value equality, while `==` checks for object identity.",
+        "B) `is` and `==` behave identically for all immutable types like integers and strings.",
+        "C) `is` checks if two variables refer to the exact same object in memory, while `==` checks if their values are equal.",
+        "D) For custom objects, `is` can be overloaded using the `__eq__` method, but `==` cannot."
+      ],
+      "correctAnswer": "C",
+      "explanation": "`is` tests for object identity, meaning it checks if two variables point to the exact same object in memory. `==` tests for value equality, meaning it checks if the values of the objects are equivalent (which can be customized for user-defined types via the `__eq__` method). For immutable types, Python often interns small integers and strings, making `is` sometimes return True for equal values, but this is an implementation detail and not guaranteed for all cases or larger values."
+    },
+    {
+      "question": "Given the following classes:\n\nclass Animal:\n    def speak(self):\n        return \"(Generic animal sound)\"\n\nclass Dog(Animal):\n    def speak(self):\n        return \"Woof!\"\n\nclass Poodle(Dog):\n    def speak(self):\n        return \"Yap yap!\"\n\nWhat will be the output of:\n\np = Poodle()\nd = Dog()\na = Animal()\n\nprint(p.speak())\nprint(d.speak())\nprint(a.speak())",
+      "options": [
+        "A) \nYap yap!\nWoof!\n(Generic animal sound)",
+        "B) \nWoof!\nWoof!\n(Generic animal sound)",
+        "C) \nYap yap!\nYap yap!\nWoof!",
+        "D) \n(Generic animal sound)\n(Generic animal sound)\n(Generic animal sound)"
+      ],
+      "correctAnswer": "A",
+      "explanation": "This demonstrates method overriding in inheritance. When a method is called on an object, Python looks for the method in the object's class first. If not found, it traverses up the Method Resolution Order (MRO) chain. `poodle` (Poodle object) finds `speak` in `Poodle`. `dog` (Dog object) finds `speak` in `Dog`. `animal` (Animal object) finds `speak` in `Animal`. Each object calls its most specific `speak` method."
+    },
+    {
+      "question": "Which f-string expression correctly formats a floating-point number `pi = 3.1415926535` to two decimal places?",
+      "options": [
+        "A) `f\"Pi is approximately {pi:.2f}\"`",
+        "B) `f\"Pi is approximately {pi, .2f}\"`",
+        "C) `f\"Pi is approximately {round(pi, 2)}\"`",
+        "D) `f\"Pi is approximately {pi%.2f}\"`"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses the correct f-string formatting mini-language syntax `:.2f` which specifies that `pi` should be formatted as a floating-point number with two digits after the decimal point. Option B uses incorrect syntax. Option C rounds the number but doesn't guarantee two decimal places (e.g., `round(3.1, 2)` would be `3.1`, not `3.10`). Option D uses old-style string formatting syntax, not f-string syntax."
+    }
+  ]
+}
+
+[GEMINI] 2026-05-06T13:18:59.112Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "Which of the following best describes the primary benefit of using a `with` statement in Python, especially with file operations or locks?",
+      "options": [
+        "A) It ensures the associated resource is automatically closed or released, even if errors occur.",
+        "B) It significantly increases the execution speed of the code block within it.",
+        "C) It makes the variables defined inside the `with` block immutable.",
+        "D) It prevents any exceptions from being raised within the context.",
+        "E) It explicitly requires manual closing of the resource to avoid memory leaks."
+      ],
+      "correctAnswer": "A",
+      "explanation": "The `with` statement guarantees that an object's `__exit__` method is called at the end of the block, ensuring resources like files are closed or locks are released automatically, even if exceptions occur."
+    },
+    {
+      "question": "You have a function `my_func` and a decorator `log_execution_time`. Which is the standard and most Pythonic way to apply the decorator to `my_func`?",
+      "options": [
+        "A) `my_func = log_execution_time(my_func)`",
+        "B) `@log_execution_time def my_func(): pass`",
+        "C) `log_execution_time.apply(my_func)`",
+        "D) `def my_func(decorator=log_execution_time): pass`",
+        "E) `with log_execution_time: my_func()`"
+      ],
+      "correctAnswer": "B",
+      "explanation": "The `@decorator_name` syntax placed directly above a function definition is the standard and most Pythonic way to apply a decorator. Option A achieves the same functional result but is less concise and idiomatic."
+    },
+    {
+      "question": "What will be the output of the following Python code snippet?",
+      "options": [
+        "A) `['apple', 'banana', 'orange']`",
+        "B) `['A', 'B', 'O']`",
+        "C) `['Apple', 'Banana', 'Orange']`",
+        "D) `['APPLE', 'BANANA', 'ORANGE']`",
+        "E) An error due to invalid list comprehension syntax."
+      ],
+      "correctAnswer": "D",
+      "explanation": "The list comprehension iterates through the `fruits` list, and for each `fruit`, it converts it to uppercase using `.upper()`. The result is a new list with all fruit names in uppercase."
+    },
+    {
+      "question": "Consider the following Python function definition:\n\n`def calculate_sum(*args, **kwargs):\n    total = sum(args)\n    for key, value in kwargs.items():\n        total += value\n    return total`\n\nWhat would be the result of `calculate_sum(1, 2, 3, x=4, y=5)`?",
+      "options": [
+        "A) 6",
+        "B) 9",
+        "C) 15",
+        "D) An error, as `*args` and `**kwargs` cannot be used together.",
+        "E) 12"
+      ],
+      "correctAnswer": "C",
+      "explanation": "`*args` collects positional arguments into a tuple (1, 2, 3), so `sum(args)` is 1+2+3=6. `**kwargs` collects keyword arguments into a dictionary `{'x': 4, 'y': 5}`. The loop adds 4 and 5 to the total. So, 6 + 4 + 5 = 15."
+    },
+    {
+      "question": "Which statement about Python `lambda` functions is true?",
+      "options": [
+        "A) `lambda` functions can contain multiple expressions and statements.",
+        "B) `lambda` functions are always defined with the `def` keyword.",
+        "C) `lambda` functions are typically used for defining small, anonymous functions that can be used immediately as arguments to higher-order functions.",
+        "D) `lambda` functions are primarily used for creating class methods.",
+        "E) `lambda` functions have full access to their enclosing scope's variables, including reassignment."
+      ],
+      "correctAnswer": "C",
+      "explanation": "`lambda` functions are anonymous, single-expression functions. They are most commonly used for quick inline operations, often passed as arguments to functions like `map()`, `filter()`, or `sorted()`."
+    },
+    {
+      "question": "What is the primary purpose of the `super()` function in the context of Python class inheritance?",
+      "options": [
+        "A) To return a reference to the current instance of the class.",
+        "B) To explicitly call a method or access an attribute from the parent (superclass) of the current class.",
+        "C) To create a new instance of the base class.",
+        "D) To check if an object is an instance of a specific superclass.",
+        "E) To prevent methods from being overridden by subclasses."
+      ],
+      "correctAnswer": "B",
+      "explanation": "`super()` allows you to call methods or access attributes of the parent or sibling classes in a way that respects the Method Resolution Order (MRO), which is crucial for cooperative multiple inheritance."
+    },
+    {
+      "question": "In a `try...except...else...finally` block, when does the `else` block execute?",
+      "options": [
+        "A) Only if an exception occurs in the `try` block.",
+        "B) Always, regardless of whether an exception occurred.",
+        "C) Only if no exception occurs in the `try` block.",
+        "D) After the `finally` block, if no exception occurred.",
+        "E) It's executed before the `try` block."
+      ],
+      "correctAnswer": "C",
+      "explanation": "The `else` block executes only if the `try` block completes without raising an exception. The `finally` block always executes, regardless of whether an exception occurred or not."
+    },
+    {
+      "question": "Which of the following is the most accurate description of the main advantage of using a generator expression `(x for x in range(10**9))` compared to a list comprehension `[x for x in range(10**9)]` for very large sequences?",
+      "options": [
+        "A) Generator expressions are generally faster to compute all elements upfront.",
+        "B) Generator expressions store all elements in memory, allowing for direct random access.",
+        "C) Generator expressions compute and yield elements one by one on demand, making them memory-efficient.",
+        "D) List comprehensions are suitable for sequences of any size without memory concerns.",
+        "E) Generator expressions can be iterated over multiple times without re-evaluation."
+      ],
+      "correctAnswer": "C",
+      "explanation": "Generator expressions are memory-efficient because they do not construct the entire sequence in memory at once. Instead, they produce values one at a time as they are requested, which is crucial for very large datasets."
+    },
+    {
+      "question": "What is the primary benefit of adding type hints (e.g., `def greet(name: str) -> str:`) to Python code?",
+      "options": [
+        "A) They enforce type checking at runtime, preventing all type-related errors immediately.",
+        "B) They automatically convert values to the specified type during execution.",
+        "C) They enhance code readability and allow static analysis tools (like linters and IDEs) to detect potential type-related bugs before runtime.",
+        "D) They significantly improve the runtime performance of the Python interpreter.",
+        "E) They make Python behave like a strictly-typed compiled language."
+      ],
+      "correctAnswer": "C",
+      "explanation": "Type hints are primarily for static analysis, documentation, and improving code readability for developers. Python remains dynamically typed; type hints do not enforce types at runtime by default, nor do they significantly impact performance or automatically cast types."
+    },
+    {
+      "question": "What will be the output of the following Python code?",
+      "options": [
+        "A) `['apple', 'banana', 'cherry', 'date']`",
+        "B) `['apple', 'banana', 'date']`",
+        "C) `['cherry']`",
+        "D) `[]`",
+        "E) An error because sets cannot be subtracted."
+      ],
+      "correctAnswer": "B",
+      "explanation": "The `-` operator performs a set difference. It returns a new set containing all elements that are in `set1` but not in `set2`. Here, 'cherry' is in both, so it's removed from `set1`'s elements. The result is `{'apple', 'banana', 'date'}`. When converted to a list and sorted, it becomes `['apple', 'banana', 'date']`."
+    }
+  ]
+}
+
+[GEMINI] 2026-05-06T13:19:54.820Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "Consider a Python `with` statement used for file handling (`with open('file.txt', 'r') as f:`). If an unhandled exception occurs *inside* the `with` block while reading the file, what will happen regarding the file resource?",
+      "options": ["A) The file will remain open, requiring manual closure after the exception is handled elsewhere.", "B) Python's garbage collector will eventually close the file, but not immediately.", "C) The file's `__exit__` method will be called, ensuring the file is properly closed.", "D) The operating system will automatically close the file only when the program terminates."],
+      "correctAnswer": "C",
+      "explanation": "The `with` statement ensures the `__exit__` method of the context manager is always called, guaranteeing resource cleanup even if exceptions occur."
+    },
+    {
+      "question": "You want to add a simple logging mechanism to several existing functions without modifying their core logic. Which Python feature is designed specifically for wrapping functions to extend or modify their behavior?",
+      "options": ["A) Class inheritance, creating subclasses for each function.", "B) Using `exec()` to dynamically insert logging code.", "C) Decorators.", "D) Modifying the function's `__code__` object directly."],
+      "correctAnswer": "C",
+      "explanation": "Decorators provide a clean, syntactic way to wrap functions or methods, adding functionality before or after their execution without altering their source code."
+    },
+    {
+      "question": "You are processing a very large dataset from a file that might not fit entirely into memory. You need to iterate over this data item by item, performing an operation on each. Which Python construct would be most memory-efficient for this task?",
+      "options": ["A) Reading the entire file into a list of strings using `readlines()`.", "B) Using a generator function with the `yield` keyword to produce items one by one.", "C) Storing all items in a tuple after reading them from the file.", "D) Loading the data into a Pandas DataFrame directly."],
+      "correctAnswer": "B",
+      "explanation": "Generator functions (`yield`) produce values on demand, one at a time, making them extremely memory-efficient for processing large datasets that don't need to reside fully in memory."
+    },
+    {
+      "question": "You have a list of numbers `data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]`. You want to create a new list containing only the squares of even numbers from `data`. Which list comprehension achieves this?",
+      "options": ["A) `[x*x for x in data if x % 2 == 0]`", "B) `[x for x in data if x % 2 == 0 and x*x]`", "C) `[x*x if x % 2 == 0 else x for x in data]`", "D) `[x**2 for x in data if x % 2 != 1]`"],
+      "correctAnswer": "A",
+      "explanation": "The list comprehension `[expression for item in iterable if condition]` correctly filters items based on `condition` and then applies `expression` to the filtered items. `x % 2 == 0` filters for even numbers, and `x*x` squares them."
+    },
+    {
+      "question": "Given a list of dictionaries `students = [{'name': 'Alice', 'grade': 85}, {'name': 'Bob', 'grade': 92}, {'name': 'Charlie', 'grade': 78}]`, you want to sort this list by their 'grade' in ascending order. Which of the following uses a lambda function correctly to achieve this?",
+      "options": ["A) `sorted(students, key='grade')`", "B) `students.sort(key=lambda s: s['grade'])`", "C) `map(lambda s: s['grade'], students)`", "D) `filter(lambda s: s['grade'] > 80, students)`"],
+      "correctAnswer": "B",
+      "explanation": "The `key` argument in `sort()` or `sorted()` expects a function that returns a value to be used for comparison. A lambda function `lambda s: s['grade']` provides this concise function, extracting the 'grade' value for each dictionary."
+    },
+    {
+      "question": "In a Python `try-except-finally` block, under what circumstances will the code inside the `finally` block execute?",
+      "options": ["A) Only if no exception occurs within the `try` block.", "B) Only if an exception occurs and is caught by an `except` block.", "C) Always, regardless of whether an exception occurred or was handled.", "D) Only if the `try` block completes successfully without any `return` statement."],
+      "correctAnswer": "C",
+      "explanation": "The `finally` block is guaranteed to execute as the last step before the `try` statement completes, regardless of whether an exception occurred, was handled, or if the `try` block was exited by a `return` or `break` statement."
+    },
+    {
+      "question": "You have a base class `Animal` with a method `speak()`. You then create a subclass `Dog` that also defines a method named `speak()`. When you create an instance of `Dog` and call its `speak()` method, which version of `speak()` will be executed?",
+      "options": ["A) Both `Animal.speak()` and `Dog.speak()` will execute in sequence.", "B) `Animal.speak()` will be executed because it's the original definition.", "C) `Dog.speak()` will be executed, overriding the `Animal.speak()` method.", "D) A `TypeError` will be raised due to method name collision."],
+      "correctAnswer": "C",
+      "explanation": "This is an example of method overriding. When a subclass defines a method with the same name as a method in its superclass, the subclass's version is called when invoked on an instance of the subclass."
+    },
+    {
+      "question": "You are designing a function that needs to accept an arbitrary, unspecified number of *keyword* arguments. Which Python construct should be included in the function's signature to handle this requirement?",
+      "options": ["A) `*args`", "B) `**kwargs`", "C) A list parameter (e.g., `params: list`)", "D) A dictionary parameter (e.g., `options: dict`)"],
+      "correctAnswer": "B",
+      "explanation": "The `**kwargs` syntax allows a function to accept an arbitrary number of keyword arguments, which are then collected into a dictionary within the function."
+    },
+    {
+      "question": "You have two lists: `list_a = [1, 2, 3, 4]` and `list_b = [3, 4, 5, 6]`. You want to find all unique elements that are present in *both* lists. Which Python data structure and operation would provide the most efficient way to do this?",
+      "options": ["A) Convert both lists to tuples and use a nested loop to compare elements.", "B) Convert both lists to sets and use the `intersection()` method.", "C) Iterate through `list_a` and check if each element is `in list_b`.", "D) Concatenate both lists and then use `sorted()` followed by `itertools.groupby()`."],
+      "correctAnswer": "B",
+      "explanation": "Sets are highly optimized for membership testing and mathematical set operations like intersection. Converting lists to sets and then finding their intersection is the most efficient way to find common, unique elements."
+    },
+    {
+      "question": "Consider the following Python code structure:\n```python\ndef outer_function():\n    x = 10\n    def inner_function():\n        # How to modify 'x' from here?\n        pass\n    inner_function()\n    print(x)\nouter_function()\n```\nIf `inner_function` wants to modify the `x` variable defined in `outer_function`'s scope (but not the global scope), which keyword must be used inside `inner_function`?",
+      "options": ["A) `global`", "B) `nonlocal`", "C) `self`", "D) No keyword is needed, `x = 20` would suffice."],
+      "correctAnswer": "B",
+      "explanation": "The `nonlocal` keyword is used within a nested function to indicate that a variable refers to a variable in an enclosing (but non-global) scope, allowing it to be modified. Without `nonlocal`, assigning to `x` inside `inner_function` would create a new local variable `x` for `inner_function`."
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:20:08.243Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python?",
+      "options": ["A) To handle exceptions", "B) To create a new variable", "C) To ensure resources are properly cleaned up", "D) To import modules"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used for exception handling to ensure resources are properly cleaned up"
+    },
+    {
+      "question": "How do you implement a singleton class in Python?",
+      "options": ["A) Using a decorator", "B) Using a metaclass", "C) Using a class method", "D) Using a static method"],
+      "correctAnswer": "B",
+      "explanation": "A metaclass can be used to implement a singleton class in Python"
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python?",
+      "options": ["A) 'is' checks for identity, '==' checks for equality", "B) 'is' checks for equality, '==' checks for identity", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "A",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "How do you handle a KeyError exception in a Python dictionary?",
+      "options": ["A) Using a try-except block", "B) Using a conditional statement", "C) Using a loop", "D) Using a function"],
+      "correctAnswer": "A",
+      "explanation": "A try-except block can be used to handle a KeyError exception in a Python dictionary"
+    },
+    {
+      "question": "What is the purpose of the '__init__' method in a Python class?",
+      "options": ["A) To initialize instance variables", "B) To define a class method", "C) To create a new object", "D) To destroy an object"],
+      "correctAnswer": "A",
+      "explanation": "The '__init__' method is used to initialize instance variables in a Python class"
+    },
+    {
+      "question": "How do you implement a thread-safe queue in Python?",
+      "options": ["A) Using a list and a lock", "B) Using a queue and a lock", "C) Using a deque and a semaphore", "D) Using the 'queue' module"],
+      "correctAnswer": "D",
+      "explanation": "The 'queue' module provides a thread-safe queue implementation in Python"
+    },
+    {
+      "question": "What is the difference between 'append' and 'extend' methods in a Python list?",
+      "options": ["A) 'append' adds a single element, 'extend' adds multiple elements", "B) 'append' adds multiple elements, 'extend' adds a single element", "C) 'append' modifies the original list, 'extend' creates a new list", "D) 'append' creates a new list, 'extend' modifies the original list"],
+      "correctAnswer": "A",
+      "explanation": "The 'append' method adds a single element, while the 'extend' method adds multiple elements to a Python list"
+    },
+    {
+      "question": "How do you use a lambda function as a higher-order function in Python?",
+      "options": ["A) By passing it as an argument to another function", "B) By returning it from another function", "C) By using it as a decorator", "D) By using it as a generator"],
+      "correctAnswer": "A",
+      "explanation": "A lambda function can be used as a higher-order function by passing it as an argument to another function"
+    },
+    {
+      "question": "What is the purpose of the 'join' method in a Python string?",
+      "options": ["A) To concatenate strings", "B) To split a string into substrings", "C) To search for a substring", "D) To replace a substring"],
+      "correctAnswer": "A",
+      "explanation": "The 'join' method is used to concatenate strings in Python"
+    },
+    {
+      "question": "How do you implement a generator in Python?",
+      "options": ["A) Using a function with a yield statement", "B) Using a class with a __iter__ method", "C) Using a loop with a yield statement", "D) Using a conditional statement with a yield statement"],
+      "correctAnswer": "A",
+      "explanation": "A generator can be implemented in Python using a function with a yield statement"
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:20:18.701Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python?",
+      "options": ["A) To handle exceptions", "B) To create a new variable", "C) To ensure resources are properly cleaned up", "D) To import modules"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used for exception handling to ensure resources are properly cleaned up"
+    },
+    {
+      "question": "How do you implement a singleton class in Python?",
+      "options": ["A) Using a decorator", "B) Using a metaclass", "C) Using a class method", "D) Using a static method"],
+      "correctAnswer": "B",
+      "explanation": "A metaclass can be used to implement a singleton class in Python"
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python?",
+      "options": ["A) 'is' checks for identity, '==' checks for equality", "B) 'is' checks for equality, '==' checks for identity", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "A",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "How do you use the 'map' function to apply a lambda function to each element of a list?",
+      "options": ["A) map(lambda x: x**2, list)", "B) map(list, lambda x: x**2)", "C) lambda x: map(x**2, list)", "D) list(map(lambda x: x**2))"],
+      "correctAnswer": "A",
+      "explanation": "The 'map' function applies a given function to each item of an iterable and returns a list of the results"
+    },
+    {
+      "question": "What is the purpose of the 'finally' block in a try-except statement?",
+      "options": ["A) To handle exceptions", "B) To execute code regardless of exceptions", "C) To skip exceptions", "D) To raise exceptions"],
+      "correctAnswer": "B",
+      "explanation": "The 'finally' block is used to execute code regardless of whether an exception was thrown or not"
+    },
+    {
+      "question": "How do you create a thread in Python?",
+      "options": ["A) Using the 'threading' module and creating an instance of the Thread class", "B) Using the 'thread' module and creating an instance of the Thread class", "C) Using the 'concurrent' module and creating an instance of the Thread class", "D) Using the 'asyncio' module and creating an instance of the Thread class"],
+      "correctAnswer": "A",
+      "explanation": "The 'threading' module is used to create threads in Python"
+    },
+    {
+      "question": "What is the difference between a 'set' and a 'frozenset' in Python?",
+      "options": ["A) A 'set' is mutable, a 'frozenset' is immutable", "B) A 'set' is immutable, a 'frozenset' is mutable", "C) A 'set' is a list, a 'frozenset' is a tuple", "D) A 'set' is a tuple, a 'frozenset' is a list"],
+      "correctAnswer": "A",
+      "explanation": "A 'set' is a mutable collection of unique elements, while a 'frozenset' is an immutable collection of unique elements"
+    },
+    {
+      "question": "How do you use the 'functools.partial' function to create a partial function?",
+      "options": ["A) functools.partial(function, args)", "B) functools.partial(args, function)", "C) functools.partial(function)", "D) functools.partial(args)"],
+      "correctAnswer": "A",
+      "explanation": "The 'functools.partial' function is used to create a partial function by fixing some of the arguments of the original function"
+    },
+    {
+      "question": "What is the purpose of the 'contextlib' module in Python?",
+      "options": ["A) To handle exceptions", "B) To create contexts for resource management", "C) To create threads", "D) To create processes"],
+      "correctAnswer": "B",
+      "explanation": "The 'contextlib' module is used to create contexts for resource management, such as opening files"
+    },
+    {
+      "question": "How do you use the 'itertools.groupby' function to group consecutive items in a list?",
+      "options": ["A) itertools.groupby(list)", "B) itertools.groupby(list, key)", "C) itertools.groupby(key, list)", "D) list(itertools.groupby(list))"],
+      "correctAnswer": "B",
+      "explanation": "The 'itertools.groupby' function is used to group consecutive items in a list based on a common attribute"
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:20:25.929Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python",
+      "options": ["A) To handle exceptions", "B) To create a new thread", "C) To ensure resources are properly cleaned up", "D) To implement recursion"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used for exception handling to ensure resources are properly cleaned up"
+    },
+    {
+      "question": "How do you implement a singleton class in Python",
+      "options": ["A) Using a decorator", "B) Using a metaclass", "C) Using a class method", "D) Using a static method"],
+      "correctAnswer": "B",
+      "explanation": "A metaclass can be used to implement a singleton class in Python"
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python",
+      "options": ["A) 'is' checks for identity, '==' checks for equality", "B) 'is' checks for equality, '==' checks for identity", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "A",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "How do you handle a KeyError exception in Python",
+      "options": ["A) Using a try-except block", "B) Using a if-else statement", "C) Using a for loop", "D) Using a while loop"],
+      "correctAnswer": "A",
+      "explanation": "A try-except block can be used to handle a KeyError exception in Python"
+    },
+    {
+      "question": "What is the purpose of the '__init__' method in a Python class",
+      "options": ["A) To initialize the class", "B) To initialize the object", "C) To destroy the object", "D) To destroy the class"],
+      "correctAnswer": "B",
+      "explanation": "The '__init__' method is used to initialize the object in a Python class"
+    },
+    {
+      "question": "How do you implement a queue data structure in Python",
+      "options": ["A) Using a list", "B) Using a dictionary", "C) Using a set", "D) Using a collections.deque"],
+      "correctAnswer": "D",
+      "explanation": "A queue data structure can be implemented using a collections.deque in Python"
+    },
+    {
+      "question": "What is the difference between 'break' and 'continue' statements in Python",
+      "options": ["A) 'break' skips the current iteration, 'continue' stops the loop", "B) 'break' stops the loop, 'continue' skips the current iteration", "C) 'break' restarts the loop, 'continue' stops the loop", "D) 'break' stops the loop, 'continue' restarts the loop"],
+      "correctAnswer": "B",
+      "explanation": "The 'break' statement stops the loop, while the 'continue' statement skips the current iteration"
+    },
+    {
+      "question": "How do you sort a list of dictionaries in Python",
+      "options": ["A) Using the sorted function with a lambda function", "B) Using the sort method with a lambda function", "C) Using the sorted function with a for loop", "D) Using the sort method with a for loop"],
+      "correctAnswer": "A",
+      "explanation": "A list of dictionaries can be sorted using the sorted function with a lambda function in Python"
+    },
+    {
+      "question": "What is the purpose of the 'join' method in Python",
+      "options": ["A) To concatenate strings", "B) To split strings", "C) To search for substrings", "D) To replace substrings"],
+      "correctAnswer": "A",
+      "explanation": "The 'join' method is used to concatenate strings in Python"
+    },
+    {
+      "question": "How do you implement a decorator in Python",
+      "options": ["A) Using a function that returns a function", "B) Using a class that returns a function", "C) Using a function that returns a class", "D) Using a class that returns a class"],
+      "correctAnswer": "A",
+      "explanation": "A decorator can be implemented using a function that returns a function in Python"
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:20:54.247Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the 'with' statement in Python when working with files?",
+      "options": ["A) To handle exceptions", "B) To ensure the file is properly closed after use", "C) To read the entire file into memory", "D) To write to the file in append mode"],
+      "correctAnswer": "B",
+      "explanation": "The 'with' statement is used to ensure the file is properly closed after use"
+    },
+    {
+      "question": "How does the 'is' operator differ from the '==' operator in Python?",
+      "options": ["A) The 'is' operator checks for equality, while the '==' operator checks for identity", "B) The 'is' operator checks for identity, while the '==' operator checks for equality", "C) The 'is' operator is used for lists, while the '==' operator is used for tuples", "D) The 'is' operator is used for tuples, while the '==' operator is used for lists"],
+      "correctAnswer": "B",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality"
+    },
+    {
+      "question": "What is the effect of using the 'break' statement in a Python loop?",
+      "options": ["A) The loop continues to the next iteration", "B) The loop exits immediately", "C) The loop restarts from the beginning", "D) The loop skips to the next statement"],
+      "correctAnswer": "B",
+      "explanation": "The 'break' statement causes the loop to exit immediately"
+    },
+    {
+      "question": "How does the 'zip' function work in Python?",
+      "options": ["A) It combines two lists into a single list", "B) It combines two lists into a list of tuples", "C) It combines two lists into a dictionary", "D) It combines two lists into a set"],
+      "correctAnswer": "B",
+      "explanation": "The 'zip' function combines two lists into a list of tuples"
+    },
+    {
+      "question": "What is the purpose of the 'try-except' block in Python?",
+      "options": ["A) To handle runtime errors", "B) To handle syntax errors", "C) To handle logical errors", "D) To handle compilation errors"],
+      "correctAnswer": "A",
+      "explanation": "The 'try-except' block is used to handle runtime errors"
+    },
+    {
+      "question": "How does the 'enumerate' function work in Python?",
+      "options": ["A) It returns a list of indices and values", "B) It returns a dictionary of indices and values", "C) It returns a tuple of indices and values", "D) It returns an iterator of tuples containing indices and values"],
+      "correctAnswer": "D",
+      "explanation": "The 'enumerate' function returns an iterator of tuples containing indices and values"
+    },
+    {
+      "question": "What is the effect of using the 'continue' statement in a Python loop?",
+      "options": ["A) The loop exits immediately", "B) The loop continues to the next iteration", "C) The loop restarts from the beginning", "D) The loop skips to the next statement"],
+      "correctAnswer": "B",
+      "explanation": "The 'continue' statement causes the loop to continue to the next iteration"
+    },
+    {
+      "question": "How does the 'map' function work in Python?",
+      "options": ["A) It applies a function to each item in a list and returns a new list", "B) It applies a function to each item in a list and returns a new dictionary", "C) It applies a function to each item in a list and returns a new set", "D) It applies a function to each item in a list and returns a new tuple"],
+      "correctAnswer": "A",
+      "explanation": "The 'map' function applies a function to each item in a list and returns a new list"
+    },
+    {
+      "question": "What is the purpose of the 'lambda' function in Python?",
+      "options": ["A) To define a named function", "B) To define an anonymous function", "C) To define a class", "D) To define a module"],
+      "correctAnswer": "B",
+      "explanation": "The 'lambda' function is used to define an anonymous function"
+    },
+    {
+      "question": "How does the 'filter' function work in Python?",
+      "options": ["A) It applies a function to each item in a list and returns a new list with the results", "B) It applies a function to each item in a list and returns a new list with the items that pass the test", "C) It applies a function to each item in a list and returns a new dictionary", "D) It applies a function to each item in a list and returns a new set"],
+      "correctAnswer": "B",
+      "explanation": "The 'filter' function applies a function to each item in a list and returns a new list with the items that pass the test"
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:21:01.660Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the primary purpose of the 'with' statement in Python?",
+      "options": ["A) To handle exceptions", "B) To manage memory", "C) To ensure resource cleanup", "D) To optimize performance"],
+      "correctAnswer": "C",
+      "explanation": "The 'with' statement is used to ensure that resources, such as files, are properly cleaned up after use."
+    },
+    {
+      "question": "How does Python's garbage collector handle circular references?",
+      "options": ["A) It immediately frees the memory", "B) It uses reference counting", "C) It uses a cyclic garbage collector", "D) It ignores circular references"],
+      "correctAnswer": "C",
+      "explanation": "Python's garbage collector uses a cyclic garbage collector to handle circular references."
+    },
+    {
+      "question": "What is the difference between 'is' and '==' operators in Python?",
+      "options": ["A) 'is' checks for equality, '==' checks for identity", "B) 'is' checks for identity, '==' checks for equality", "C) 'is' checks for type, '==' checks for value", "D) 'is' checks for value, '==' checks for type"],
+      "correctAnswer": "B",
+      "explanation": "The 'is' operator checks for identity, while the '==' operator checks for equality."
+    },
+    {
+      "question": "How can you implement a singleton class in Python?",
+      "options": ["A) Using a metaclass", "B) Using a decorator", "C) Using a class method", "D) All of the above"],
+      "correctAnswer": "D",
+      "explanation": "A singleton class can be implemented in Python using a metaclass, a decorator, or a class method."
+    },
+    {
+      "question": "What is the purpose of the '__init__' method in a Python class?",
+      "options": ["A) To initialize instance variables", "B) To define class methods", "C) To handle exceptions", "D) To optimize performance"],
+      "correctAnswer": "A",
+      "explanation": "The '__init__' method is used to initialize instance variables in a Python class."
+    },
+    {
+      "question": "How can you use the 'functools' module to implement a cache for a function in Python?",
+      "options": ["A) Using the 'partial' function", "B) Using the 'reduce' function", "C) Using the 'lru_cache' decorator", "D) Using the 'total_ordering' decorator"],
+      "correctAnswer": "C",
+      "explanation": "The 'lru_cache' decorator from the 'functools' module can be used to implement a cache for a function in Python."
+    },
+    {
+      "question": "What is the difference between a 'list' and a 'tuple' in Python?",
+      "options": ["A) A list is mutable, a tuple is immutable", "B) A list is immutable, a tuple is mutable", "C) A list is a set, a tuple is a dictionary", "D) A list is a dictionary, a tuple is a set"],
+      "correctAnswer": "A",
+      "explanation": "A list is mutable, while a tuple is immutable in Python."
+    },
+    {
+      "question": "How can you use the 'itertools' module to generate permutations of a list in Python?",
+      "options": ["A) Using the 'chain' function", "B) Using the 'cycle' function", "C) Using the 'permutations' function", "D) Using the 'repeat' function"],
+      "correctAnswer": "C",
+      "explanation": "The 'permutations' function from the 'itertools' module can be used to generate permutations of a list in Python."
+    },
+    {
+      "question": "What is the purpose of the 'try-except' block in Python?",
+      "options": ["A) To handle runtime errors", "B) To handle syntax errors", "C) To optimize performance", "D) To manage memory"],
+      "correctAnswer": "A",
+      "explanation": "The 'try-except' block is used to handle runtime errors in Python."
+    },
+    {
+      "question": "How can you use the 'contextlib' module to implement a context manager in Python?",
+      "options": ["A) Using the 'closing' function", "B) Using the 'redirect_stdout' function", "C) Using the 'contextmanager' decorator", "D) Using the 'suppress' function"],
+      "correctAnswer": "C",
+      "explanation": "The 'contextmanager' decorator from the 'contextlib' module can be used to implement a context manager in Python."
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T13:29:22.335Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "What is the purpose of the DISTINCT keyword in SQL?",
+      "options": ["A) To select all rows from a table", "B) To remove duplicate rows from a result set", "C) To add a new column to a table", "D) To delete a row from a table"],
+      "correctAnswer": "B",
+      "explanation": "The DISTINCT keyword is used to remove duplicate rows from a result set."
+    },
+    {
+      "question": "Which SQL clause is used to filter data based on a condition?",
+      "options": ["A) FROM", "B) WHERE", "C) GROUP BY", "D) HAVING"],
+      "correctAnswer": "B",
+      "explanation": "The WHERE clause is used to filter data based on a condition."
+    },
+    {
+      "question": "What is the purpose of the GROUP BY clause in SQL?",
+      "options": ["A) To filter data based on a condition", "B) To sort data in ascending order", "C) To group data by one or more columns", "D) To delete a row from a table"],
+      "correctAnswer": "C",
+      "explanation": "The GROUP BY clause is used to group data by one or more columns."
+    },
+    {
+      "question": "Which SQL function is used to calculate the average of a set of values?",
+      "options": ["A) SUM", "B) COUNT", "C) AVG", "D) MAX"],
+      "correctAnswer": "C",
+      "explanation": "The AVG function is used to calculate the average of a set of values."
+    },
+    {
+      "question": "What is the purpose of the HAVING clause in SQL?",
+      "options": ["A) To filter data based on a condition", "B) To group data by one or more columns", "C) To filter grouped data based on a condition", "D) To delete a row from a table"],
+      "correctAnswer": "C",
+      "explanation": "The HAVING clause is used to filter grouped data based on a condition."
+    },
+    {
+      "question": "Which SQL keyword is used to combine the result sets of two or more SELECT statements?",
+      "options": ["A) UNION", "B) INTERSECT", "C) EXCEPT", "D) JOIN"],
+      "correctAnswer": "A",
+      "explanation": "The UNION keyword is used to combine the result sets of two or more SELECT statements."
+    },
+    {
+      "question": "What is the purpose of the INDEX keyword in SQL?",
+      "options": ["A) To create a new table", "B) To delete a row from a table", "C) To improve query performance by creating an index on a column", "D) To filter data based on a condition"],
+      "correctAnswer": "C",
+      "explanation": "The INDEX keyword is used to improve query performance by creating an index on a column."
+    },
+    {
+      "question": "Which SQL clause is used to sort data in descending order?",
+      "options": ["A) ORDER BY ASC", "B) ORDER BY DESC", "C) GROUP BY", "D) HAVING"],
+      "correctAnswer": "B",
+      "explanation": "The ORDER BY DESC clause is used to sort data in descending order."
+    },
+    {
+      "question": "What is the purpose of the SUBQUERY in SQL?",
+      "options": ["A) To filter data based on a condition", "B) To group data by one or more columns", "C) To retrieve data from a table based on a condition", "D) To use a SELECT statement as a column in another SELECT statement"],
+      "correctAnswer": "D",
+      "explanation": "A subquery is used to use a SELECT statement as a column in another SELECT statement."
+    },
+    {
+      "question": "Which SQL keyword is used to grant privileges to a user?",
+      "options": ["A) GRANT", "B) REVOKE", "C) CREATE", "D) DROP"],
+      "correctAnswer": "A",
+      "explanation": "The GRANT keyword is used to grant privileges to a user."
+    }
+  ]
+}
+
+[GEMINI] 2026-05-06T14:47:42.117Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "To retrieve only the `first_name` and `last_name` columns from a table named `Employees`, which SQL statement would you use?",
+      "options": ["A) SELECT first_name, last_name FROM Employees;", "B) GET first_name, last_name FROM Employees;", "C) RETRIEVE Employees.first_name, Employees.last_name;", "D) SELECT ALL first_name, last_name FROM Employees;"],
+      "correctAnswer": "A",
+      "explanation": "The `SELECT` statement followed by a comma-separated list of column names is used to specify which columns to retrieve from a table."
+    },
+    {
+      "question": "Which SQL clause is used to filter records from a table based on a specified condition?",
+      "options": ["A) ORDER BY", "B) GROUP BY", "C) WHERE", "D) HAVING"],
+      "correctAnswer": "C",
+      "explanation": "The `WHERE` clause is fundamental for extracting only those records that fulfill a specified condition, allowing for data filtering."
+    },
+    {
+      "question": "You want to add a new employee record with `employee_id` 101, `first_name` 'Alice', and `last_name` 'Smith' into the `Employees` table. Which SQL statement correctly performs this?",
+      "options": ["A) ADD INTO Employees (employee_id, first_name, last_name) VALUES (101, 'Alice', 'Smith');", "B) INSERT NEW Employees VALUES (101, 'Alice', 'Smith');", "C) INSERT INTO Employees (employee_id, first_name, last_name) VALUES (101, 'Alice', 'Smith');", "D) CREATE RECORD INTO Employees (101, 'Alice', 'Smith');"],
+      "correctAnswer": "C",
+      "explanation": "The `INSERT INTO` statement is used to add new rows of data into a table, specifying the target columns and their corresponding values."
+    }
+  ]
+}
+
+[GROQ] 2026-05-06T14:48:35.473Z
+Prompt: You are an advanced AI assessment generation engine.
+Your task is to generate HIGH-QUALITY, UNIQUE, ...
+Response: {
+  "questions": [
+    {
+      "question": "A user is experiencing issues with their computer's performance and suspects that a rogue process is consuming excessive system resources. Which operating system feature would be most helpful in identifying and terminating the problematic process?",
+      "options": ["A) Disk Management", "B) Task Manager", "C) Device Manager", "D) Registry Editor"],
+      "correctAnswer": "B",
+      "explanation": "Task Manager provides real-time information about running processes and their resource usage, allowing users to identify and terminate problematic processes."
+    },
+    {
+      "question": "An administrator needs to ensure that a critical system file is not accidentally deleted or modified by users. Which operating system feature can be used to achieve this goal?",
+      "options": ["A) File Compression", "B) File Encryption", "C) Access Control Lists", "D) Disk Quotas"],
+      "correctAnswer": "C",
+      "explanation": "Access Control Lists (ACLs) allow administrators to set permissions and access rights for files and folders, ensuring that sensitive system files are protected from unauthorized access or modification."
+    }
+  ]
+}
+
+[GEMINI] 2026-05-07T07:53:56.996Z
+Model: gemini-2.5-flash
+Prompt: 
+      You are a senior technical interviewer. Generate 5 unique technical interview questions for a...
+Response: ```json
+[
+  "You've listed Machine Learning and Security as skills. Could you explain the concept of 'cross-site scripting' (XSS) in web security, describe its potential impact, and outline at least two common mitigation strategies? Alternatively, if you prefer ML, explain the bias-variance trade-off in machine learning and how it influences model selection and generalization.",
+  "Given a table `Transactions` in an Oracle database with columns `transaction_id`, `user_id`, `transaction_date` (DATE type), and `amount` (NUMBER type), write a Python function that uses a suitable Oracle driver (e.g., `cx_Oracle`) to connect, fetch the total `amount` for all transactions made by a specific `user_id` within a given date range, and return this sum. Consider error handling and efficient querying.",
+  "You are maintaining a RESTful API service (either Java Spring Boot or Python Flask/Django, your choice) that is occasionally returning a '500 Internal Server Error' for certain requests. The error is not consistent and difficult to reproduce. Describe your systematic approach to identify the root cause of this intermittent server error, assuming you have access to logs, monitoring tools, and the codebase.",
+  "Imagine you need to develop a feature for a web application where users can upload a profile picture. Outline the high-level architecture and the key steps involved, from the user selecting a file in the browser (using TypeScript/JavaScript) to the backend service (Python/Java) receiving, validating, storing, and serving this image. What considerations would you have for file size limits, security, and performance?",
+  "As someone with 2 years of experience, you're likely working within a team. Describe a situation where you had to integrate your code with another team member's work, and you encountered unexpected conflicts or issues (e.g., Git merge conflicts, differing assumptions). How did you identify the problem, communicate with your team member, resolve the issues, and ensure a smooth integration?"
+]
+```
+
+[GEMINI] 2026-05-08T05:30:13.998Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: o;jikv...
+Response: ```json
+{
+  "score": 15,
+  "suggestions": [
+    "Craft a Professional Headline/Summary: Replace \"o;jikvg\" with a concise, keyword-rich headline that highlights your primary role or career goal (e.g., \"Software Engineer | Python Developer | Machine Learning Enthusiast\"). Follow with a brief professional summary.",
+    "Streamline and Organize Skills: Remove all irrelevant terms (e.g., \"hard\", \"medium\", \"easy\", \"lkjh\"). Consolidate duplicate entries for languages (Python, JavaScript, Java, C++, TypeScript). Group skills logically (e.g., \"Programming Languages,\" \"Databases,\" \"Web Technologies,\" \"Tools & Platforms\") and provide specific examples (e.g., \"Oracle Database\" instead of just \"oracle\").",
+    "Provide Detailed Project Descriptions: Expand \"lkm, sQ, python\" into full project entries. Each project should include a clear title, a brief overview, the technologies used, your specific role, and quantifiable achievements/impact. Link to repositories if available.",
+    "Elaborate on Professional Experience: Transform \"l/ at SQWDCA\" into a standard experience entry. Include your precise Job Title, Company Name, Location, and Employment Dates. Underneath, use bullet points to describe your key responsibilities and measurable accomplishments, focusing on impact.",
+    "Add Core Resume Sections: Include a dedicated \"Education\" section with degrees, institutions, and graduation dates. These are fundamental components expected by recruiters and ATS."
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T06:44:54.443Z
+Model: gemini-2.5-flash
+Prompt: 
+      You are a senior technical interviewer. Generate 5 unique technical interview questions for a...
+Response: ```json
+[
+  "You're tasked with designing a new feature for an existing microservices-based application that needs to handle real-time data processing and persistence with high availability. Describe your architectural approach, including how you would manage data consistency across services, handle service communication (sync/async), and ensure fault tolerance. What specific technologies or patterns would you consider, especially with an Oracle database backend?",
+  "With your extensive experience in TypeScript and JavaScript, discuss a complex design pattern or architectural decision you've implemented or encountered in a large-scale application using these languages. How did TypeScript specifically aid in managing the complexity and improving maintainability, and what were the key trade-offs of your chosen approach?",
+  "Explain the concept of database normalization, its benefits, and potential drawbacks, particularly in the context of a highly transactional Oracle database environment supporting a microservices architecture. Provide an example where you might intentionally denormalize data for performance reasons, and discuss the implications and strategies to manage data integrity in such a scenario.",
+  "Imagine you're leading a team and a critical API endpoint in your distributed microservices application is suddenly experiencing intermittent timeouts and high latency, impacting user experience. Describe your systematic approach to diagnose and resolve this issue. What tools, metrics, and strategies would you employ, and how would you communicate the problem and resolution within your team and to stakeholders?",
+  "Given your experience with security and distributed systems, discuss the critical security considerations when designing and operating a RESTful microservices architecture. How would you implement robust authentication and authorization mechanisms across multiple services, and what strategies would you employ to protect sensitive data both in transit and at rest within this environment?"
+]
+```
+
+[GEMINI] 2026-05-08T06:55:13.851Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "question": "You need to retrieve the product name and its price for the *second most expensive product* in each `CategoryID` from a table named `Products` with columns `ProductID`, `ProductName`, `CategoryID`, and `Price`. If multiple products share the highest price in a category, you want to identify a distinct \"second\" item, prioritizing the lowest `ProductID` as a tie-breaker for identical prices at the same rank. Which of the following SQL queries accomplishes this?",
+      "options": [
+        "A) \n```sql\nWITH RankedProducts AS (\n    SELECT\n        ProductName,\n        Price,\n        CategoryID,\n        ROW_NUMBER() OVER (PARTITION BY CategoryID ORDER BY Price DESC, ProductID ASC) as rn\n    FROM Products\n)\nSELECT ProductName, Price, CategoryID\nFROM RankedProducts\nWHERE rn = 2;\n```",
+        "B) \n```sql\nSELECT ProductName, Price, CategoryID\nFROM Products\nWHERE (SELECT COUNT(DISTINCT p2.Price)\n       FROM Products p2\n       WHERE p2.CategoryID = Products.CategoryID AND p2.Price > Products.Price) = 1;\n```",
+        "C) \n```sql\nSELECT ProductName, Price, CategoryID\nFROM Products\nGROUP BY CategoryID\nORDER BY Price DESC\nLIMIT 1 OFFSET 1;\n```",
+        "D) \n```sql\nWITH RankedProducts AS (\n    SELECT\n        ProductName,\n        Price,\n        CategoryID,\n        RANK() OVER (PARTITION BY CategoryID ORDER BY Price DESC) as rk\n    FROM Products\n)\nSELECT ProductName, Price, CategoryID\nFROM RankedProducts\nWHERE rk = 2;\n```"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses `ROW_NUMBER()` which assigns a unique, sequential integer rank to each row within its partition (each `CategoryID`), ordered by `Price` descending and then `ProductID` ascending as a tie-breaker. Filtering for `rn = 2` correctly isolates the second most expensive product. Option B identifies products with the second *distinct* highest price, which might return multiple products if ties exist at that distinct price, or miss a specific second product if the highest price is shared by multiple. Option C attempts to use `LIMIT OFFSET` globally, not per group, and is syntactically incorrect for per-group limiting without subqueries or CTEs. Option D uses `RANK()`, which would assign the same rank to products with identical prices, potentially returning multiple products if they tie for the second rank, which goes against the requirement for a 'distinct second item' with a tie-breaker."
+    },
+    {
+      "question": "Consider three tables: `Customers` (`CustomerID`, `CustomerName`), `Orders` (`OrderID`, `CustomerID`, `ProductID`), and `Products` (`ProductID`, `ProductName`, `Category`). Identify all `CustomerName`s of customers who have **never** placed an order for *any* product belonging to the 'Electronics' category.",
+      "options": [
+        "A) \n```sql\nSELECT C.CustomerName\nFROM Customers C\nWHERE C.CustomerID NOT IN (\n    SELECT O.CustomerID\n    FROM Orders O\n    JOIN Products P ON O.ProductID = P.ProductID\n    WHERE P.Category = 'Electronics'\n);\n```",
+        "B) \n```sql\nSELECT C.CustomerName\nFROM Customers C\nWHERE EXISTS (\n    SELECT 1\n    FROM Orders O\n    JOIN Products P ON O.ProductID = P.ProductID\n    WHERE O.CustomerID = C.CustomerID\n    AND P.Category = 'Electronics'\n);\n```",
+        "C) \n```sql\nSELECT C.CustomerName\nFROM Customers C\nLEFT JOIN Orders O ON C.CustomerID = O.CustomerID\nLEFT JOIN Products P ON O.ProductID = P.ProductID\nWHERE P.Category != 'Electronics' OR P.Category IS NULL;\n```",
+        "D) \n```sql\nSELECT C.CustomerName\nFROM Customers C\nGROUP BY C.CustomerID, C.CustomerName\nHAVING COUNT(CASE WHEN P.Category = 'Electronics' THEN O.OrderID ELSE NULL END) = 0;\n```"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A correctly uses `NOT IN` with a subquery to select `CustomerID`s that are not present in the list of `CustomerID`s who have ordered an 'Electronics' product. This effectively identifies customers who have never ordered from that category. Option B uses `EXISTS`, which finds customers who *have* ordered electronics (the opposite). Option C will incorrectly include customers who ordered both 'Electronics' and other categories, as long as they have at least one non-'Electronics' order or no product category defined. Option D is syntactically incomplete as `P.Category` and `O.OrderID` are not available in the `HAVING` clause without a preceding `JOIN` in the outer query, making it invalid as written."
+    },
+    {
+      "question": "From the `Orders` table (columns: `OrderID`, `OrderDate`, `OrderType` (values: 'Online', 'In-Store'), `Amount`), construct a single SQL query that returns two columns: `TotalOnlineSales` and `TotalInStoreSales`, representing the sum of `Amount` for each `OrderType`.",
+      "options": [
+        "A) \n```sql\nSELECT\n    SUM(CASE WHEN OrderType = 'Online' THEN Amount ELSE 0 END) AS TotalOnlineSales,\n    SUM(CASE WHEN OrderType = 'In-Store' THEN Amount ELSE 0 END) AS TotalInStoreSales\nFROM Orders;\n```",
+        "B) \n```sql\nSELECT 'Online' AS OrderType, SUM(Amount) AS TotalSales\nFROM Orders\nWHERE OrderType = 'Online'\nUNION ALL\nSELECT 'In-Store' AS OrderType, SUM(Amount) AS TotalSales\nFROM Orders\nWHERE OrderType = 'In-Store';\n```",
+        "C) \n```sql\nSELECT OrderType, SUM(Amount) AS TotalSales\nFROM Orders\nGROUP BY OrderType;\n```",
+        "D) \n```sql\nSELECT\n    (SELECT SUM(Amount) FROM Orders WHERE OrderType = 'Online') AS TotalOnlineSales,\n    (SELECT SUM(Amount) FROM Orders WHERE OrderType = 'In-Store') AS TotalInStoreSales\nFROM (\n    SELECT 1 AS dummy\n) AS dummy_table;\n```"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A correctly uses conditional aggregation with `SUM(CASE WHEN ... THEN ... ELSE 0 END)` to calculate the sum of `Amount` for each `OrderType` in separate columns within a single row. This is a common and efficient way to pivot aggregate data. Option B uses `UNION ALL` which returns two separate rows, not a single row with two columns. Option C uses `GROUP BY OrderType`, which also returns two separate rows, one for each `OrderType`, not the desired single row with two columns. Option D uses scalar subqueries in the `SELECT` list, which, while technically correct in most SQL dialects, can be less efficient than a single scan with conditional aggregation for this specific task and is considered a less idiomatic solution for this pattern compared to the `SUM(CASE WHEN...)` approach."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T06:57:39.880Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "question": "You need to retrieve a list of all employees and the names of their respective departments. If an employee is not assigned to any department, they should still appear in the result set, with a NULL value for the department name. Which type of JOIN is most appropriate for this requirement?",
+      "options": [
+        "A) LEFT JOIN",
+        "B) INNER JOIN",
+        "C) RIGHT JOIN",
+        "D) FULL OUTER JOIN"
+      ],
+      "correctAnswer": "A",
+      "explanation": "A LEFT JOIN (or LEFT OUTER JOIN) returns all rows from the left table (Employees) and the matching rows from the right table (Departments). If there is no match, it still returns the left row with NULLs for the right table's columns, fulfilling the requirement to show employees without departments."
+    },
+    {
+      "question": "Consider a table `Sales (SaleID INT, ProductID INT, SaleAmount DECIMAL(10,2))`. You want to find all `ProductID`s where the total `SaleAmount` for that product is greater than 5000. Which SQL query achieves this?",
+      "options": [
+        "A) SELECT ProductID FROM Sales GROUP BY ProductID HAVING SUM(SaleAmount) > 5000;",
+        "B) SELECT ProductID, SUM(SaleAmount) FROM Sales WHERE SUM(SaleAmount) > 5000 GROUP BY ProductID;",
+        "C) SELECT ProductID FROM Sales WHERE SaleAmount > 5000 GROUP BY ProductID;",
+        "D) SELECT ProductID FROM Sales HAVING SaleAmount > 5000;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "The `GROUP BY` clause groups rows that have the same `ProductID`. The `HAVING` clause is then used to filter these groups based on an aggregate condition (SUM(SaleAmount) > 5000), which cannot be done with `WHERE` on aggregate functions."
+    },
+    {
+      "question": "You have two tables: `Employees (EmployeeID, Name, DepartmentID, Salary)` and `Departments (DepartmentID, DepartmentName)`. You need to select the `DepartmentName` for all departments that have at least one employee earning a `Salary` greater than 70000. Which of the following queries correctly uses a subquery to achieve this?",
+      "options": [
+        "A) SELECT DepartmentName FROM Departments D WHERE EXISTS (SELECT 1 FROM Employees E WHERE E.DepartmentID = D.DepartmentID AND E.Salary > 70000);",
+        "B) SELECT DepartmentName FROM Departments D WHERE D.DepartmentID IN (SELECT DepartmentID FROM Employees WHERE Salary > 70000);",
+        "C) SELECT DepartmentName FROM Departments D JOIN Employees E ON D.DepartmentID = E.DepartmentID WHERE E.Salary > 70000 GROUP BY DepartmentName;",
+        "D) All of the above are equally valid and performant options."
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses an `EXISTS` correlated subquery, which is often efficient for checking the existence of related rows and is a direct translation of the requirement. Option B also works and uses an `IN` subquery. Option C uses a JOIN and GROUP BY. While all three can produce the correct result, the question specifically asks about using a subquery and A is a classic example of an `EXISTS` subquery. For 'at least one', EXISTS is often conceptually clearer and sometimes more performant than IN for large datasets as it stops scanning once a match is found. However, given the options, A directly answers the question about 'using a subquery to achieve this' focusing on the existence check."
+    },
+    {
+      "question": "You have an `Orders` table with columns `OrderID`, `CustomerID`, and `OrderDate`. You want to assign a sequential rank to each order for every customer based on their `OrderDate` (oldest order first), such that if two orders from the same customer have the exact same `OrderDate`, they receive the same rank. Which window function and partitioning strategy should you use?",
+      "options": [
+        "A) DENSE_RANK() OVER (PARTITION BY CustomerID ORDER BY OrderDate)",
+        "B) ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY OrderDate)",
+        "C) RANK() OVER (ORDER BY OrderDate, CustomerID)",
+        "D) NTILE(10) OVER (PARTITION BY CustomerID ORDER BY OrderDate)"
+      ],
+      "correctAnswer": "A",
+      "explanation": "`DENSE_RANK()` assigns consecutive ranks within each partition, and if there are ties, they receive the same rank, and the next rank is consecutive (e.g., 1, 1, 2). `PARTITION BY CustomerID` ensures the ranking restarts for each customer, and `ORDER BY OrderDate` sorts the orders within each customer's partition."
+    },
+    {
+      "question": "You need to add a new column named `AuditTimestamp` to an existing table `Transactions`. This column should automatically record the current timestamp when a new row is inserted, and it must never be NULL. Which of the following `ALTER TABLE` statements is correct for this requirement?",
+      "options": [
+        "A) ALTER TABLE Transactions ADD COLUMN AuditTimestamp DATETIME DEFAULT GETDATE() NOT NULL;",
+        "B) ALTER TABLE Transactions ADD AuditTimestamp DATETIME DEFAULT NOW() NOT NULL;",
+        "C) ALTER TABLE Transactions ADD AuditTimestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;",
+        "D) ALTER TABLE Transactions ADD COLUMN AuditTimestamp DATETIME NULL DEFAULT GETDATE();"
+      ],
+      "correctAnswer": "C",
+      "explanation": "Option C correctly specifies the column name, data type (DATETIME), the `NOT NULL` constraint, and a `DEFAULT` value using `CURRENT_TIMESTAMP` (or a similar function depending on the specific SQL dialect like `GETDATE()` in SQL Server or `NOW()` in MySQL/PostgreSQL). The question asks for a general SQL statement, and `CURRENT_TIMESTAMP` is widely supported. Options A and B use specific database functions which might not be universally portable but generally accomplish the task in their respective systems. Option C uses `CURRENT_TIMESTAMP` which is standard SQL, and also correctly places `NOT NULL` before `DEFAULT` which is syntactically common."
+    },
+    {
+      "question": "You have two tables: `Products (ProductID, ProductName, SupplierID, Price)` and `Suppliers (SupplierID, SupplierName, Rating)`. You want to update the `Price` of all products by increasing it by 5% if their supplier has a `Rating` of 'Excellent'. Which SQL statement correctly performs this update?",
+      "options": [
+        "A) UPDATE Products SET Price = Price * 1.05 WHERE SupplierID IN (SELECT SupplierID FROM Suppliers WHERE Rating = 'Excellent');",
+        "B) UPDATE Products P JOIN Suppliers S ON P.SupplierID = S.SupplierID SET P.Price = P.Price * 1.05 WHERE S.Rating = 'Excellent';",
+        "C) UPDATE Products SET Price = Price * 1.05 FROM Products P JOIN Suppliers S ON P.SupplierID = S.SupplierID WHERE S.Rating = 'Excellent';",
+        "D) Both A and B (or A and C depending on SQL dialect) can achieve this, but their syntax varies by database system."
+      ],
+      "correctAnswer": "D",
+      "explanation": "Both approaches are valid. Option A uses a subquery with `IN`, which is a standard and portable way. Option B uses a `JOIN` directly in the `UPDATE` statement, which is supported by MySQL and PostgreSQL. Option C shows a `FROM` clause in `UPDATE` which is common in SQL Server. Since the question asks for 'Which SQL statement correctly performs this update' and acknowledges dialect variations for JOIN syntax in UPDATE, stating that both (or relevant variations) can achieve it is the most accurate answer for a general SQL context."
+    },
+    {
+      "question": "A database table `Customers` has a primary key `CustomerID` and another column `EmailAddress` which is frequently used in `WHERE` clauses for exact searches and unique lookups. You also perform range searches on `RegistrationDate`. Which indexing strategy is generally most efficient for `CustomerID`?",
+      "options": [
+        "A) A clustered index on `CustomerID`.",
+        "B) A non-clustered index on `CustomerID`.",
+        "C) A full-text index on `CustomerID`.",
+        "D) No index, as primary keys are implicitly fast."
+      ],
+      "correctAnswer": "A",
+      "explanation": "A clustered index defines the physical order of data rows in the table and stores the actual data pages at its leaf level. Since a table can only have one clustered index, and `CustomerID` is the primary key (implying unique, frequently accessed, and often used for range scans if the customer data grows sequentially), it's typically the best candidate for a clustered index. This makes retrievals by `CustomerID` extremely fast. While primary keys are often indexed automatically, specifying it as clustered optimizes physical storage and retrieval."
+    },
+    {
+      "question": "You are executing a transaction that involves multiple `INSERT` statements. The first two `INSERT`s complete successfully, but the third one fails due to a `PRIMARY KEY` violation. Assuming no explicit `ROLLBACK` or `TRY-CATCH` block is used and default transaction behavior applies, what will be the state of the database after this sequence of operations?",
+      "options": [
+        "A) All three `INSERT` statements will be rolled back, and no data will be committed.",
+        "B) The first two `INSERT` statements will be committed, and only the third will be rolled back.",
+        "C) Only the failed `INSERT` statement will be rolled back, and the transaction will remain open.",
+        "D) The database system might be in an inconsistent state, requiring manual recovery."
+      ],
+      "correctAnswer": "A",
+      "explanation": "In a transactional system, if any statement within a transaction fails, the entire transaction is typically rolled back by default (or the transaction enters a failed state where subsequent operations cannot succeed without an explicit rollback). This ensures the Atomicity (all or nothing) property of ACID. Therefore, all three `INSERT` statements will be rolled back, and the database will revert to its state before the transaction began."
+    },
+    {
+      "question": "What is a primary benefit of using a Common Table Expression (CTE) defined with the `WITH` clause in a complex SQL query?",
+      "options": [
+        "A) To physically store the results of a subquery for permanent reuse across multiple database sessions.",
+        "B) To improve query performance by forcing the optimizer to execute the CTE independently first.",
+        "C) To enhance readability and modularity of complex queries by breaking them into logical, reusable steps.",
+        "D) To define new database tables on the fly without requiring DDL permissions."
+      ],
+      "correctAnswer": "C",
+      "explanation": "CTEs are primarily used to improve the readability and organization of complex SQL queries. They allow you to define a temporary, named result set that you can reference within a single SQL statement (SELECT, INSERT, UPDATE, DELETE). This breaks down complex logic into smaller, more manageable, and often reusable units, making the query easier to understand and maintain. CTEs are not physically stored permanently (A), do not necessarily force independent execution or improve performance (B often depends on the optimizer), and do not define permanent tables (D)."
+    },
+    {
+      "question": "You have an `Events` table with `EventID`, `StartTime`, and `EndTime` columns (both of `DATETIME` type). You need to calculate the duration of each event in minutes. Which SQL function and approach is most suitable for this, assuming standard SQL functions?",
+      "options": [
+        "A) SELECT EventID, DATEDIFF(minute, StartTime, EndTime) AS DurationMinutes FROM Events;",
+        "B) SELECT EventID, EndTime - StartTime AS DurationMinutes FROM Events;",
+        "C) SELECT EventID, TIMESTAMPDIFF(minute, StartTime, EndTime) AS DurationMinutes FROM Events;",
+        "D) SELECT EventID, CONVERT(INT, (EndTime - StartTime) / 60) AS DurationMinutes FROM Events;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "`DATEDIFF(interval, start_date, end_date)` is a widely supported function (especially in SQL Server) that returns the difference between two dates based on the specified datepart/interval. `TIMESTAMPDIFF` (Option C) is common in MySQL and PostgreSQL. Option B might work for some databases that treat date arithmetic intuitively, but it's not standard for calculating specific units like minutes. Option D is an attempt at manual calculation which is less robust and portable than dedicated date functions. Given 'standard SQL functions', `DATEDIFF` is a very common representation of this functionality."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T06:59:14.460Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "question": "Consider two tables: `Employees` (EmpID INT PRIMARY KEY, Name VARCHAR(50), DeptID INT) and `Departments` (DeptID INT PRIMARY KEY, DeptName VARCHAR(50)). Some employees might have a `NULL` value in their `DeptID` column, meaning they are not assigned to any department. Which SQL query will list all employee names and their corresponding department names, including employees who are not assigned to any department (showing `NULL` for `DeptName` in such cases)?",
+      "options": [
+        "A) SELECT E.Name, D.DeptName FROM Employees E LEFT JOIN Departments D ON E.DeptID = D.DeptID;",
+        "B) SELECT E.Name, D.DeptName FROM Employees E INNER JOIN Departments D ON E.DeptID = D.DeptID;",
+        "C) SELECT E.Name, D.DeptName FROM Employees E RIGHT JOIN Departments D ON E.DeptID = D.DeptID;",
+        "D) SELECT E.Name, D.DeptName FROM Employees E FULL OUTER JOIN Departments D ON E.DeptID = D.DeptID;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "A `LEFT JOIN` (or `LEFT OUTER JOIN`) returns all rows from the left table (`Employees`) and the matching rows from the right table (`Departments`). If there's no match for a row in the left table, `NULL` values are returned for columns from the right table, fulfilling the requirement."
+    },
+    {
+      "question": "You have a `Products` table (ProductID INT, ProductName VARCHAR(100), CategoryID INT, Price DECIMAL(10, 2)) and a `Categories` table (CategoryID INT, CategoryName VARCHAR(50)). Which SQL query correctly identifies and lists all `ProductName`s that have a price higher than the average price of products within their own `CategoryID` using a correlated subquery?",
+      "options": [
+        "A) SELECT P1.ProductName FROM Products P1 WHERE P1.Price > (SELECT AVG(P2.Price) FROM Products P2 WHERE P2.CategoryID = P1.CategoryID);",
+        "B) SELECT P.ProductName FROM Products P GROUP BY P.CategoryID HAVING P.Price > AVG(P.Price);",
+        "C) SELECT P.ProductName FROM Products P WHERE P.Price > (SELECT AVG(Price) FROM Products);",
+        "D) SELECT P.ProductName FROM Products P INNER JOIN (SELECT CategoryID, AVG(Price) AS AvgCategoryPrice FROM Products GROUP BY CategoryID) AS CategoryAvg ON P.CategoryID = CategoryAvg.CategoryID WHERE P.Price > CategoryAvg.AvgCategoryPrice;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses a correlated subquery. For each product (P1) in the outer query, the inner subquery calculates the average price of products specifically within P1's `CategoryID`. This average is then used to filter P1 based on its price."
+    },
+    {
+      "question": "A `Sales` table contains `SaleID`, `ProductID`, `Region`, and `SaleAmount`. You need to identify the top 3 best-selling products (by `SaleAmount`) within each `Region`. If multiple products have the same `SaleAmount` and fall within the top 3, they should all be included. Which of the following SQL snippets correctly uses a window function to achieve this, before an outer filter?",
+      "options": [
+        "A) SELECT ProductID, Region, SaleAmount, RANK() OVER (PARTITION BY Region ORDER BY SaleAmount DESC) as rnk FROM Sales;",
+        "B) SELECT ProductID, Region, SaleAmount, ROW_NUMBER() OVER (PARTITION BY Region ORDER BY SaleAmount DESC) as rn FROM Sales;",
+        "C) SELECT ProductID, Region, SaleAmount FROM Sales GROUP BY Region, ProductID ORDER BY SUM(SaleAmount) DESC LIMIT 3;",
+        "D) SELECT ProductID, Region, SaleAmount, NTILE(3) OVER (PARTITION BY Region ORDER BY SaleAmount DESC) as ntile_rank FROM Sales;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "`RANK()` assigns a rank to each row within its partition (`Region`) based on the `ORDER BY SaleAmount DESC`. If multiple rows have the same `SaleAmount`, they receive the same rank, and subsequent ranks skip numbers, which is ideal for "top N including ties". `ROW_NUMBER()` assigns unique sequential numbers, which would break ties. An outer query would then filter `WHERE rnk <= 3`."
+    },
+    {
+      "question": "You want to find all `CustomerName`s from the `Customers` table (CustomerID, CustomerName) who have placed at least 10 orders and whose total spending across all their orders (from the `Orders` table: OrderID, CustomerID, TotalAmount) exceeds $5000. Which query effectively uses a Common Table Expression (CTE) to structure this logic?",
+      "options": [
+        "A) WITH CustomerOrderSummary AS ( SELECT CustomerID, COUNT(OrderID) AS OrderCount, SUM(TotalAmount) AS TotalSpent FROM Orders GROUP BY CustomerID ) SELECT C.CustomerName FROM Customers C INNER JOIN CustomerOrderSummary COS ON C.CustomerID = COS.CustomerID WHERE COS.OrderCount >= 10 AND COS.TotalSpent > 5000;",
+        "B) SELECT C.CustomerName FROM Customers C INNER JOIN (SELECT CustomerID, COUNT(OrderID) AS OrderCount, SUM(TotalAmount) AS TotalSpent FROM Orders GROUP BY CustomerID) AS CustomerOrderSummary ON C.CustomerID = CustomerOrderSummary.CustomerID WHERE CustomerOrderSummary.OrderCount >= 10 AND CustomerOrderSummary.TotalSpent > 5000;",
+        "C) SELECT C.CustomerName FROM Customers C WHERE (SELECT COUNT(OrderID) FROM Orders O WHERE O.CustomerID = C.CustomerID) >= 10 AND (SELECT SUM(TotalAmount) FROM Orders O WHERE O.CustomerID = C.CustomerID) > 5000;",
+        "D) WITH RECURSIVE CustomerOrderSummary AS (...) SELECT * FROM CustomerOrderSummary;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A correctly defines a CTE named `CustomerOrderSummary` to first aggregate order data per customer. It then joins this CTE with the `Customers` table to retrieve customer names and applies the filtering conditions on order count and total spending. This approach improves readability and modularity."
+    },
+    {
+      "question": "From an `Employees` table (EmpID, Name, Department, Salary), you need to list the names of all `Department`s that have more than 5 employees AND where the average `Salary` of employees in that department is greater than $70,000. Which SQL query achieves this?",
+      "options": [
+        "A) SELECT Department FROM Employees GROUP BY Department HAVING COUNT(EmpID) > 5 AND AVG(Salary) > 70000;",
+        "B) SELECT Department, COUNT(EmpID), AVG(Salary) FROM Employees WHERE COUNT(EmpID) > 5 AND AVG(Salary) > 70000 GROUP BY Department;",
+        "C) SELECT Department FROM Employees WHERE AVG(Salary) > 70000 GROUP BY Department HAVING COUNT(EmpID) > 5;",
+        "D) SELECT Department FROM Employees GROUP BY Department WHERE COUNT(EmpID) > 5 AND AVG(Salary) > 70000;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "The `GROUP BY Department` clause groups rows by department. The `HAVING` clause is then used to filter these groups based on aggregate conditions like `COUNT(EmpID) > 5` and `AVG(Salary) > 70000`. The `WHERE` clause filters individual rows *before* grouping, and cannot contain aggregate functions."
+    },
+    {
+      "question": "You have two tables: `Products` (ProductID INT, ProductName VARCHAR(100), SupplierID INT, StockQuantity INT) and `Suppliers` (SupplierID INT PRIMARY KEY, SupplierName VARCHAR(100), City VARCHAR(50)). You need to increase the `StockQuantity` by 15 for all products supplied by a specific supplier named 'Tech Innovations'. Assume 'Tech Innovations' is a unique supplier name and its `SupplierID` can be retrieved via a subquery. Which SQL statement will correctly perform this update using a scalar subquery?",
+      "options": [
+        "A) UPDATE Products SET StockQuantity = StockQuantity + 15 WHERE SupplierID = (SELECT SupplierID FROM Suppliers WHERE SupplierName = 'Tech Innovations');",
+        "B) UPDATE Products JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID SET Products.StockQuantity = Products.StockQuantity + 15 WHERE Suppliers.SupplierName = 'Tech Innovations';",
+        "C) UPDATE Products SET StockQuantity = StockQuantity + 15 WHERE EXISTS (SELECT 1 FROM Suppliers WHERE Suppliers.SupplierID = Products.SupplierID AND Suppliers.SupplierName = 'Tech Innovations');",
+        "D) ALTER TABLE Products SET StockQuantity = StockQuantity + 15 WHERE SupplierID = 203;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "Option A uses a scalar subquery in the `WHERE` clause. The subquery `(SELECT SupplierID FROM Suppliers WHERE SupplierName = 'Tech Innovations')` returns a single `SupplierID`, which is then used to filter the `Products` table for the update. This is a common and widely supported method for updating rows based on conditions from another table."
+    },
+    {
+      "question": "Your `Customers` table (CustomerID INT PRIMARY KEY, FirstName VARCHAR(50), LastName VARCHAR(50), Email VARCHAR(100), RegistrationDate DATE) is frequently queried to find customers by their `LastName`. To significantly speed up these search queries, which SQL command would you use to create an appropriate index?",
+      "options": [
+        "A) CREATE INDEX idx_lastname ON Customers (LastName);",
+        "B) ALTER TABLE Customers ADD INDEX (LastName);",
+        "C) CREATE PRIMARY KEY INDEX idx_lastname ON Customers (LastName);",
+        "D) OPTIMIZE TABLE Customers FOR LastName;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "`CREATE INDEX` is the standard SQL command to create a non-clustered index on one or more columns of a table. Indexing `LastName` will accelerate queries that filter, sort, or join using this column. Option B is MySQL specific syntax. Option C is incorrect as `LastName` is not a primary key. Option D is an optimization command, not for creating an index."
+    },
+    {
+      "question": "You are designing a database with an `Orders` table (OrderID INT PRIMARY KEY, CustomerID INT, OrderDate DATE) and a `Customers` table (CustomerID INT PRIMARY KEY, CustomerName VARCHAR(100)). Which SQL constraint is crucial to add to the `Orders` table to ensure that every `CustomerID` entered into the `Orders` table must correspond to an existing `CustomerID` in the `Customers` table, thereby preventing \"orphan\" order records?",
+      "options": [
+        "A) PRIMARY KEY (CustomerID)",
+        "B) UNIQUE (CustomerID)",
+        "C) FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)",
+        "D) NOT NULL (CustomerID)"
+      ],
+      "correctAnswer": "C",
+      "explanation": "A `FOREIGN KEY` constraint establishes a link between two tables, ensuring referential integrity. It dictates that values in the `CustomerID` column of the `Orders` table (the referencing table) must exist as `CustomerID` values in the `Customers` table (the referenced table)."
+    },
+    {
+      "question": "You have a table `Bookings` with columns `BookingID`, `CheckInDate` (DATE), and `CheckOutDate` (DATE). To determine the number of nights a booking spans, which SQL function is commonly used to calculate the difference in days between `CheckOutDate` and `CheckInDate`? Assume a SQL environment where `DATEDIFF` is available.",
+      "options": [
+        "A) DATEDIFF(day, CheckInDate, CheckOutDate)",
+        "B) DAYS_BETWEEN(CheckInDate, CheckOutDate)",
+        "C) CheckOutDate - CheckInDate",
+        "D) GETDATE() - CheckInDate"
+      ],
+      "correctAnswer": "A",
+      "explanation": "`DATEDIFF(unit, start_date, end_date)` is a widely recognized function (e.g., in SQL Server, or similar `TIMESTAMPDIFF` in MySQL) for calculating the difference between two date/time values in a specified unit. While some dialects allow direct subtraction of dates (Option C), `DATEDIFF` is a more explicit and commonly available function for this purpose."
+    },
+    {
+      "question": "You have two tables, `ActiveCustomers` (CustomerID INT, Name VARCHAR(100)) and `InactiveCustomers` (CustomerID INT, Name VARCHAR(100)). Both tables might contain some overlapping `CustomerID`s if a customer's status recently changed but hasn't been fully synchronized. You need to retrieve a single list of all unique `CustomerID`s present in either table. Which SQL operator is most suitable for this task?",
+      "options": [
+        "A) SELECT CustomerID FROM ActiveCustomers UNION SELECT CustomerID FROM InactiveCustomers;",
+        "B) SELECT CustomerID FROM ActiveCustomers UNION ALL SELECT CustomerID FROM InactiveCustomers;",
+        "C) SELECT CustomerID FROM ActiveCustomers INTERSECT SELECT CustomerID FROM InactiveCustomers;",
+        "D) SELECT CustomerID FROM ActiveCustomers JOIN InactiveCustomers ON ActiveCustomers.CustomerID = InactiveCustomers.CustomerID;"
+      ],
+      "correctAnswer": "A",
+      "explanation": "The `UNION` operator combines the result sets of two or more `SELECT` statements and automatically removes duplicate rows, ensuring that only unique `CustomerID`s are returned. `UNION ALL` would include duplicates. `INTERSECT` returns only rows common to both result sets, and a `JOIN` combines columns from both tables based on a match, not creates a unified distinct list."
+    }
+  ]
+}
+```
+
+[GROQ] 2026-05-08T07:00:45.334Z
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "title": "What is the primary purpose of the SQL DISTINCT keyword?",
+      "options": [
+        {"id": "A", "text": "To remove duplicate rows from a result set"},
+        {"id": "B", "text": "To add new columns to a table"},
+        {"id": "C", "text": "To modify existing data in a table"},
+        {"id": "D", "text": "To create a new index on a table"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The SQL DISTINCT keyword is used to remove duplicate rows from a result set, ensuring that each row is unique."
+    },
+    {
+      "title": "Which SQL clause is used to filter data based on a condition that is applied to a grouped result set?",
+      "options": [
+        {"id": "A", "text": "WHERE"},
+        {"id": "B", "text": "HAVING"},
+        {"id": "C", "text": "GROUP BY"},
+        {"id": "D", "text": "ORDER BY"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The HAVING clause is used to filter data based on a condition that is applied to a grouped result set, whereas the WHERE clause is used to filter data before grouping."
+    },
+    {
+      "title": "What is the difference between the SQL INNER JOIN and LEFT JOIN clauses?",
+      "options": [
+        {"id": "A", "text": "INNER JOIN returns all rows from both tables, while LEFT JOIN returns only rows from the left table"},
+        {"id": "B", "text": "INNER JOIN returns only rows with matching values in both tables, while LEFT JOIN returns all rows from the left table and matching rows from the right table"},
+        {"id": "C", "text": "INNER JOIN returns all rows from the right table, while LEFT JOIN returns only rows from the left table"},
+        {"id": "D", "text": "INNER JOIN returns only rows from the left table, while LEFT JOIN returns all rows from the right table"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The INNER JOIN clause returns only rows with matching values in both tables, while the LEFT JOIN clause returns all rows from the left table and matching rows from the right table."
+    },
+    {
+      "title": "What is the purpose of the SQL INDEX data structure?",
+      "options": [
+        {"id": "A", "text": "To improve data security by encrypting sensitive data"},
+        {"id": "B", "text": "To improve query performance by providing a quick way to locate specific data"},
+        {"id": "C", "text": "To reduce storage requirements by compressing data"},
+        {"id": "D", "text": "To increase data redundancy by duplicating data"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The SQL INDEX data structure is used to improve query performance by providing a quick way to locate specific data, allowing the database to quickly locate and retrieve the required data."
+    },
+    {
+      "title": "Which SQL data type is used to store a fixed-length string of characters?",
+      "options": [
+        {"id": "A", "text": "VARCHAR"},
+        {"id": "B", "text": "CHAR"},
+        {"id": "C", "text": "TEXT"},
+        {"id": "D", "text": "BLOB"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The CHAR data type is used to store a fixed-length string of characters, whereas the VARCHAR data type is used to store a variable-length string of characters."
+    },
+    {
+      "title": "What is the purpose of the SQL COMMIT statement?",
+      "options": [
+        {"id": "A", "text": "To undo changes made to a database"},
+        {"id": "B", "text": "To save changes made to a database"},
+        {"id": "C", "text": "To delete data from a database"},
+        {"id": "D", "text": "To create a new database"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The SQL COMMIT statement is used to save changes made to a database, making them permanent and visible to other users."
+    },
+    {
+      "title": "Which SQL clause is used to specify the order in which data is returned in a result set?",
+      "options": [
+        {"id": "A", "text": "WHERE"},
+        {"id": "B", "text": "GROUP BY"},
+        {"id": "C", "text": "HAVING"},
+        {"id": "D", "text": "ORDER BY"}
+      ],
+      "correct_answer": "D",
+      "explanation": "The ORDER BY clause is used to specify the order in which data is returned in a result set, allowing the user to sort the data in ascending or descending order."
+    },
+    {
+      "title": "What is the purpose of the SQL TRANSACTION statement?",
+      "options": [
+        {"id": "A", "text": "To manage a sequence of operations that are executed as a single, all-or-nothing unit"},
+        {"id": "B", "text": "To create a new database"},
+        {"id": "C", "text": "To delete data from a database"},
+        {"id": "D", "text": "To modify existing data in a database"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The SQL TRANSACTION statement is used to manage a sequence of operations that are executed as a single, all-or-nothing unit, ensuring that either all or none of the operations are committed to the database."
+    },
+    {
+      "title": "Which SQL function is used to calculate the average value of a set of numbers?",
+      "options": [
+        {"id": "A", "text": "SUM"},
+        {"id": "B", "text": "AVG"},
+        {"id": "C", "text": "MAX"},
+        {"id": "D", "text": "MIN"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The AVG function is used to calculate the average value of a set of numbers, whereas the SUM function is used to calculate the total value of a set of numbers."
+    },
+    {
+      "title": "What is the purpose of the SQL SUBQUERY statement?",
+      "options": [
+        {"id": "A", "text": "To retrieve data from a single table"},
+        {"id": "B", "text": "To retrieve data from multiple tables"},
+        {"id": "C", "text": "To perform a calculation that is used in the outer query"},
+        {"id": "D", "text": "To create a new table"}
+      ],
+      "correct_answer": "C",
+      "explanation": "The SQL SUBQUERY statement is used to perform a calculation that is used in the outer query, allowing the user to retrieve data based on the result of the subquery."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T07:09:34.095Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: N/A
+  ...
+Response: ```json
+{
+  "score": 0,
+  "suggestions": [
+    "**Create a Targeted Professional Headline:** Replace 'N/A' with a concise, keyword-rich headline that clearly states your desired role or professional brand (e.g., 'Software Engineer | AI/ML Specialist' or 'Marketing Manager | Digital Strategy & Analytics'). This immediately communicates your value proposition.",
+    "**Populate Skills with Relevant Hard & Soft Skills:** List specific technical skills (programming languages, software, tools, methodologies) and key soft skills (communication, problem-solving, teamwork) that are pertinent to your target roles. Prioritize those frequently mentioned in job descriptions you're applying for.",
+    "**Add Impactful Projects with Quantifiable Outcomes:** Include 2-4 significant projects, describing the problem addressed, your specific contributions, the technologies used, and, most importantly, the measurable results or impact achieved. This demonstrates practical application of your skills.",
+    "**Detail Experience with Action Verbs and STAR Method:** For each work experience entry, use strong action verbs (e.g., 'Developed,' 'Managed,' 'Optimized') and structure your bullet points using the STAR method (Situation, Task, Action, Result) to highlight achievements. Quantify results whenever possible (e.g., 'Increased efficiency by 20%,' 'Managed a budget of $X').",
+    "**Tailor and Proofread Rigorously:** Customize your resume for each specific job application by highlighting the skills and experiences most relevant to that job description. Before submitting, proofread meticulously for any grammatical errors, typos, or inconsistencies in formatting."
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T07:19:31.535Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "title": "You have a `Sales` table with columns: `sale_id INT PRIMARY KEY, product_id INT, sale_date DATE, amount DECIMAL(10, 2), region VARCHAR(50), category VARCHAR(50)`. Which SQL query correctly calculates the total sales amount for 'Electronics' products and 'Clothing' products, specifically for the 'North' region, displaying both totals in a single result row?",
+      "options": [
+        {"id": "A", "text": "SELECT SUM(CASE WHEN category = 'Electronics' THEN amount ELSE 0 END) AS ElectronicsSales, SUM(CASE WHEN category = 'Clothing' THEN amount ELSE 0 END) AS ClothingSales FROM Sales WHERE region = 'North';"},
+        {"id": "B", "text": "SELECT category, SUM(amount) AS TotalSales FROM Sales WHERE region = 'North' AND category IN ('Electronics', 'Clothing') GROUP BY category;"},
+        {"id": "C", "text": "SELECT SUM(amount) FILTER (WHERE category = 'Electronics') AS ElectronicsSales, SUM(amount) FILTER (WHERE category = 'Clothing') AS ClothingSales FROM Sales WHERE region = 'North';"},
+        {"id": "D", "text": "SELECT SUM(amount) AS ElectronicsSales, SUM(amount) AS ClothingSales FROM Sales WHERE region = 'North' AND (category = 'Electronics' OR category = 'Clothing') GROUP BY category;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses conditional aggregation with `SUM` and `CASE WHEN` statements to calculate the total sales for 'Electronics' and 'Clothing' categories, respectively, within the 'North' region. This approach presents both results in a single row with distinct column names. Option B would return two separate rows, one for each category. Option C uses the `FILTER` clause, which is a PostgreSQL-specific syntax and not standard SQL. Option D would also return two separate rows due to the `GROUP BY category` clause, and the alias names are misleading for the output structure."
+    },
+    {
+      "title": "Given two tables: `Products` (product_id INT PRIMARY KEY, category_id INT, price DECIMAL(10,2)) and `Categories` (category_id INT PRIMARY KEY, category_name VARCHAR(100)). Which SQL query lists the `category_name` of categories that contain more than 3 products priced over $50?",
+      "options": [
+        {"id": "A", "text": "SELECT C.category_name FROM Categories C INNER JOIN Products P ON C.category_id = P.category_id WHERE P.price > 50 GROUP BY C.category_name HAVING COUNT(P.product_id) > 3;"},
+        {"id": "B", "text": "SELECT C.category_name FROM Categories C LEFT JOIN Products P ON C.category_id = P.category_id GROUP BY C.category_name HAVING COUNT(P.product_id) > 3 AND MAX(P.price) > 50;"},
+        {"id": "C", "text": "SELECT C.category_name FROM Categories C, Products P WHERE C.category_id = P.category_id AND COUNT(P.product_id) > 3 AND P.price > 50 GROUP BY C.category_name;"},
+        {"id": "D", "text": "SELECT C.category_name FROM Categories C WHERE C.category_id IN (SELECT category_id FROM Products GROUP BY category_id HAVING COUNT(*) > 3 AND MAX(price) > 50);"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly joins the `Categories` and `Products` tables. It first filters products by price (`WHERE P.price > 50`), then groups the results by `category_name`, and finally uses `HAVING COUNT(P.product_id) > 3` to filter these groups, ensuring only categories with more than 3 such high-priced products are listed. Option B uses `LEFT JOIN` which isn't strictly necessary and `MAX(P.price) > 50` in `HAVING` incorrectly counts all products then checks if any single product exceeds $50. Option C uses an aggregate function (`COUNT`) directly in the `WHERE` clause, which is syntactically incorrect. Option D's subquery has a logical flaw: it groups all products first, then checks `MAX(price) > 50` in `HAVING`, meaning it counts *all* products in a category, then checks if *any* of them are over $50, not that more than 3 *of the products over $50* exist."
+    },
+    {
+      "title": "You have a table `Employee_Salaries` (employee_id INT PRIMARY KEY, department_id INT, salary DECIMAL(10, 2), salary_date DATE). Which SQL query correctly retrieves the `employee_id` and `salary` of the employee with the second highest salary within each `department_id`? Assume there are no ties for the highest and second highest salaries within a department.",
+      "options": [
+        {"id": "A", "text": "WITH RankedSalaries AS (SELECT employee_id, department_id, salary, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) as rn FROM Employee_Salaries) SELECT employee_id, salary FROM RankedSalaries WHERE rn = 2;"},
+        {"id": "B", "text": "SELECT E1.employee_id, E1.salary FROM Employee_Salaries E1 WHERE (SELECT COUNT(DISTINCT E2.salary) FROM Employee_Salaries E2 WHERE E2.salary > E1.salary) = 1;"},
+        {"id": "C", "text": "SELECT department_id, MAX(salary) AS second_highest_salary FROM Employee_Salaries WHERE salary < (SELECT MAX(salary) FROM Employee_Salaries GROUP BY department_id) GROUP BY department_id;"},
+        {"id": "D", "text": "SELECT employee_id, salary FROM Employee_Salaries ORDER BY department_id, salary DESC OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a Common Table Expression (CTE) and the `ROW_NUMBER()` window function. It partitions the data by `department_id` and orders by `salary` in descending order, assigning a sequential rank (`rn`) within each department. Filtering for `rn = 2` then retrieves the employee with the second highest salary in each department. Option B is incorrect because its subquery does not correlate by `department_id` (it's missing `E2.department_id = E1.department_id`), meaning it would attempt to find the global second highest salary instead of the second highest *per department*. Option C attempts to find the highest salary per department but its subquery logic for `MAX(salary)` is flawed and it does not correctly retrieve the second highest. Option D uses `OFFSET` and `FETCH` but applies it globally to the entire result set, not within each department, making it unable to find the second highest per group."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-08T07:25:29.792Z
+Model: gemini-2.5-flash
+Prompt: 
+      You are a senior technical interviewer. Generate 5 unique technical interview questions for a...
+Response: [
+  "You've worked with distributed systems and microservices. Describe the key challenges in maintaining data consistency and transaction integrity across multiple services and databases in a highly distributed environment. How would you approach designing a system that requires eventual consistency versus strong consistency for different types of data, providing concrete examples of patterns you'd employ?",
+  "You have significant experience with Python, JavaScript, and TypeScript. Discuss a scenario where you had to optimize a critical application's performance. Detail the specific profiling tools and techniques you used in one of these languages, the bottlenecks you identified (e.g., CPU, I/O, memory), and the algorithmic or language-specific optimizations you implemented. How would your approach differ slightly if you were working in Python versus TypeScript?",
+  "In your experience building REST APIs and microservices, security is paramount. Describe a time you encountered a significant security vulnerability or design flaw in a system you were involved with. What steps did you take to identify, mitigate, and prevent recurrence of this issue? What trade-offs did you have to consider between security, performance, and development velocity?",
+  "You have experience with databases and normalization. Consider a high-traffic e-commerce application processing millions of transactions daily, with complex product relationships and user profiles. How would you design its database schema, discussing the trade-offs between strict normalization and denormalization for read performance? If Oracle is the primary database, what specific features or strategies would you leverage to ensure scalability and high availability, and how would you handle schema migrations in a production environment?",
+  "Imagine you need to build a new service that processes large volumes of unstructured text data (potentially including Rich Text Format documents, if that's relevant to your background, or just general text) to extract entities and perform sentiment analysis using machine learning models. Design the architecture for this service, explaining how you would handle data ingestion, model serving, scaling for real-time processing, and integrating with other microservices. Discuss how you would monitor the performance and drift of your ML models in production."
+]
+
+[GEMINI] 2026-05-09T07:12:33.531Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: o;jikv...
+Response: ```json
+{
+  "score": 5,
+  "suggestions": [
+    "Replace the gibberish headline 'o;jikvg' with a concise, professional headline or summary that highlights your key skills and career aspirations (e.g., 'Software Engineer | Python & JavaScript Developer' or 'Full-Stack Developer with ML Experience').",
+    "Thoroughly clean up and refine the 'Skills' section: remove all placeholder/gibberish entries ('hard', 'medium', 'easy', 'lkjh'), consolidate duplicate skills (list Python, JavaScript, Java, C++ only once each), and remove internal notes like '(claimed)', '(evidence)', '(strong_verified)'. Focus on relevant technical skills, grouping them logically (e.g., Languages, Frameworks, Databases, Tools).",
+    "Replace generic project names ('lkm', 'python', 'ew', 'w') with actual project titles. For each project, provide a brief description, list the technologies used, and, most importantly, highlight your specific contributions and the impact or outcome of the project.",
+    "Fully detail your 'Experience' section: replace 'l/ at SQWDCA, k at l' with complete job titles, company names, locations, and dates of employment. For each role, use action-oriented bullet points to describe your responsibilities and, critically, your achievements and contributions, ideally quantifying them.",
+    "Throughout the resume (especially in Experience and Projects), focus on quantifying your achievements and the impact of your work using metrics and numbers. Instead of just listing what you did, explain the results (e.g., 'Optimized database queries, reducing load times by 15%' instead of 'Worked with databases')."
+  ]
+}
+```
+
+[GEMINI] 2026-05-09T07:16:36.176Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: ll
+   ...
+Response: ```json
+{
+  "score": 10,
+  "suggestions": [
+    "Replace the current headline 'll' with a strong, keyword-rich professional title that clearly states your target role and key expertise (e.g., 'Software Engineer | Python & Java Developer' or 'Full-Stack Developer with Machine Learning Focus').",
+    "Completely overhaul the 'Skills' section: remove 'Rich Text Format' unless directly relevant to a specific niche, consolidate duplicate entries, categorize skills (e.g., Programming Languages, Frameworks, Databases, Tools, Cloud), and ensure all claimed skills are backed by evidence from projects or experience.",
+    "Replace the placeholder project names with detailed descriptions for each project. For each project, include its title, a brief overview, the technologies used, your specific contributions, and any quantifiable results or impact.",
+    "Replace the placeholder experience entries with comprehensive details for each past role. For each position, include the job title, company name, location, dates of employment, and 3-5 bullet points detailing your responsibilities and quantifiable achievements.",
+    "Add a professional summary or 'About Me' section at the top of the resume. This concise 3-4 sentence paragraph should highlight your key skills, experience, and career aspirations, tailored to the types of roles you are pursuing."
+  ]
+}
+```
+
+[GEMINI] 2026-05-09T07:21:42.153Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: Sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "title": "Consider two tables: `Orders (OrderID, CustomerID, OrderDate, TotalAmount)` and `Customers (CustomerID, CustomerName, Region)`. You want to retrieve all customers who have placed an order in 2023, along with their most recent order date if they have any, or 'N/A' if they haven't placed any orders in 2023. Which query correctly achieves this, focusing on customers who specifically ordered in 2023?",
+      "options": [
+        {"id": "A", "text": "SELECT c.CustomerName, MAX(COALESCE(o.OrderDate, 'N/A')) AS LastOrderDate2023 FROM Customers c LEFT JOIN Orders o ON c.CustomerID = o.CustomerID AND YEAR(o.OrderDate) = 2023 GROUP BY c.CustomerName;"},
+        {"id": "B", "text": "SELECT c.CustomerName, MAX(o.OrderDate) AS LastOrderDate2023 FROM Customers c JOIN Orders o ON c.CustomerID = o.CustomerID WHERE YEAR(o.OrderDate) = 2023 GROUP BY c.CustomerName;"},
+        {"id": "C", "text": "SELECT c.CustomerName, MAX(CASE WHEN YEAR(o.OrderDate) = 2023 THEN o.OrderDate ELSE 'N/A' END) AS LastOrderDate2023 FROM Customers c LEFT JOIN Orders o ON c.CustomerID = o.CustomerID GROUP BY c.CustomerName;"},
+        {"id": "D", "text": "SELECT c.CustomerName, COALESCE(MAX(o.OrderDate), 'N/A') AS LastOrderDate2023 FROM Customers c LEFT JOIN Orders o ON c.CustomerID = o.CustomerID WHERE YEAR(o.OrderDate) = 2023 GROUP BY c.CustomerName;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a LEFT JOIN with the `YEAR(o.OrderDate) = 2023` condition placed directly in the `ON` clause. This ensures that customers with no orders in 2023 will still appear, and their `o.OrderDate` will be NULL, which `COALESCE` then converts to 'N/A'. The `GROUP BY` and `MAX` correctly find the most recent order for each customer within that filtered set (or NULL if none). Option D puts the `YEAR(o.OrderDate) = 2023` in the `WHERE` clause, effectively converting the `LEFT JOIN` into an `INNER JOIN` for customers without 2023 orders. Option B uses an `INNER JOIN` directly, omitting customers without 2023 orders. Option C applies the `CASE` after the join and might incorrectly show 'N/A' for customers who had orders in other years but not 2023, while still trying to show their name."
+    },
+    {
+      "title": "You have a table `Products (ProductID, ProductName, CategoryID, Price)` and `Categories (CategoryID, CategoryName)`. You need to find all products that belong to categories which have more than 10 products. Which SQL statement efficiently retrieves the ProductID and ProductName for such products?",
+      "options": [
+        {"id": "A", "text": "SELECT p.ProductID, p.ProductName FROM Products p WHERE p.CategoryID IN (SELECT CategoryID FROM Products GROUP BY CategoryID HAVING COUNT(ProductID) > 10);"},
+        {"id": "B", "text": "SELECT p.ProductID, p.ProductName FROM Products p JOIN (SELECT CategoryID FROM Products GROUP BY CategoryID HAVING COUNT(ProductID) > 10) AS SubQuery ON p.CategoryID = SubQuery.CategoryID;"},
+        {"id": "C", "text": "SELECT p.ProductID, p.ProductName FROM Products p WHERE EXISTS (SELECT 1 FROM Products WHERE CategoryID = p.CategoryID GROUP BY CategoryID HAVING COUNT(ProductID) > 10);"},
+        {"id": "D", "text": "SELECT p.ProductID, p.ProductName FROM Products p, Categories c WHERE p.CategoryID = c.CategoryID AND (SELECT COUNT(*) FROM Products WHERE CategoryID = c.CategoryID) > 10;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A uses a non-correlated subquery with `IN` to first identify `CategoryID`s that have more than 10 products, and then filters the main `Products` table based on these `CategoryID`s. This is a common and efficient way to solve this problem. Option B achieves the same result using a derived table (inline view) which is also correct and often optimized similarly. Option C uses `EXISTS` in a correlated subquery which might be less efficient for this specific case as the subquery is re-evaluated for each row of the outer query. Option D also uses a correlated subquery in the `WHERE` clause, which can be inefficient due to recalculation for every row and lacks proper explicit JOIN syntax."
+    },
+    {
+      "title": "Given a table `Employees (EmployeeID, DepartmentID, Salary, HireDate)`, you want to find the top 3 highest-paid employees within each department. If there are ties in salary for the 3rd position, all employees with that salary should be included. Which of the following SQL queries achieves this result?",
+      "options": [
+        {"id": "A", "text": "WITH RankedEmployees AS ( SELECT EmployeeID, DepartmentID, Salary, DENSE_RANK() OVER (PARTITION BY DepartmentID ORDER BY Salary DESC) as RankNum FROM Employees ) SELECT EmployeeID, DepartmentID, Salary FROM RankedEmployees WHERE RankNum <= 3;"},
+        {"id": "B", "text": "SELECT EmployeeID, DepartmentID, Salary FROM Employees e WHERE (SELECT COUNT(DISTINCT Salary) FROM Employees WHERE DepartmentID = e.DepartmentID AND Salary > e.Salary) < 3;"},
+        {"id": "C", "text": "SELECT EmployeeID, DepartmentID, Salary FROM Employees e WHERE EXISTS ( SELECT 1 FROM Employees WHERE DepartmentID = e.DepartmentID AND Salary >= e.Salary GROUP BY DepartmentID HAVING COUNT(DISTINCT Salary) <= 3 );"},
+        {"id": "D", "text": "SELECT EmployeeID, DepartmentID, Salary FROM ( SELECT EmployeeID, DepartmentID, Salary, ROW_NUMBER() OVER (PARTITION BY DepartmentID ORDER BY Salary DESC) as rn FROM Employees ) AS Ranked WHERE rn <= 3;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a Common Table Expression (CTE) with the `DENSE_RANK()` window function. `DENSE_RANK()` assigns ranks within each `DepartmentID` partition based on `Salary` in descending order. Crucially, it assigns the same rank to employees with the same salary and doesn't skip ranks, which matches the requirement to include all tied employees for the 3rd position. Option B is an older, less readable, and often less performant way to achieve a similar result using a correlated subquery, but it would only include employees if their distinct salary rank is less than 3, which is not exactly 'top 3 highest paid with ties'. Option C is an incorrect usage of `EXISTS` and `GROUP BY/HAVING` for this specific problem. Option D uses `ROW_NUMBER()`, which assigns a unique rank even for tied salaries, meaning it would arbitrarily pick one employee if there's a tie for the 3rd position, which contradicts the requirement."
+    },
+    {
+      "title": "You have a table `Sales (SaleID, ProductID, SaleDate, Quantity, Price)`. You want to calculate the total sales amount for each product, but only for products that have generated more than $10,000 in total sales. Which SQL query is the most appropriate?",
+      "options": [
+        {"id": "A", "text": "SELECT ProductID, SUM(Quantity * Price) AS TotalSales FROM Sales GROUP BY ProductID HAVING SUM(Quantity * Price) > 10000;"},
+        {"id": "B", "text": "SELECT ProductID, SUM(Quantity * Price) AS TotalSales FROM Sales WHERE (Quantity * Price) > 10000 GROUP BY ProductID;"},
+        {"id": "C", "text": "SELECT ProductID, SUM(Quantity * Price) AS TotalSales FROM Sales WHERE ProductID IN (SELECT ProductID FROM Sales GROUP BY ProductID HAVING SUM(Quantity * Price) > 10000);"},
+        {"id": "D", "text": "SELECT ProductID, TotalSales FROM (SELECT ProductID, SUM(Quantity * Price) AS TotalSales FROM Sales GROUP BY ProductID) AS ProductAggregates WHERE TotalSales > 10000; "}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A is the most direct and correct way to filter groups based on an aggregate condition. The `GROUP BY` clause groups the sales by `ProductID`, and the `HAVING` clause then filters these groups based on the `SUM(Quantity * Price)` aggregate condition. Option B incorrectly applies the filter before aggregation, only considering individual sales records greater than $10,000. Option C uses a subquery in the `WHERE` clause, which is unnecessarily complex compared to `HAVING`. Option D uses a derived table (subquery in the `FROM` clause), which also works and is conceptually similar to A, but A is more concise for this specific use case as `HAVING` is designed precisely for filtering groups."
+    },
+    {
+      "title": "A company stores employee information in `Employees (EmployeeID, FirstName, LastName, DepartmentID, Salary)` and department information in `Departments (DepartmentID, DepartmentName)`. Due to an organizational restructuring, all employees in the 'Sales' department need to have their salary reduced by 10%. Which SQL statement correctly performs this update?",
+      "options": [
+        {"id": "A", "text": "UPDATE Employees SET Salary = Salary * 0.90 WHERE DepartmentID = (SELECT DepartmentID FROM Departments WHERE DepartmentName = 'Sales');"},
+        {"id": "B", "text": "UPDATE Employees e SET e.Salary = e.Salary * 0.90 FROM Employees e JOIN Departments d ON e.DepartmentID = d.DepartmentID WHERE d.DepartmentName = 'Sales';"},
+        {"id": "C", "text": "UPDATE Employees SET Salary = Salary * 0.90 FROM Departments WHERE Employees.DepartmentID = Departments.DepartmentID AND Departments.DepartmentName = 'Sales';"},
+        {"id": "D", "text": "UPDATE Employees SET Salary = Salary * 0.90 WHERE DepartmentName = 'Sales';"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A uses a subquery in the `WHERE` clause to correctly identify the `DepartmentID` for 'Sales' and then updates the `Salary` for employees belonging to that `DepartmentID`. This is a widely supported and effective method. Option B shows a syntax for `UPDATE` with a `JOIN` which is common in some SQL dialects (like SQL Server, PostgreSQL) but not universally supported or the standard SQL way to update using another table's value in a single statement. Option C's `FROM` clause in `UPDATE` statement is syntactically incorrect in standard SQL. Option D is incorrect because the `Employees` table does not have a `DepartmentName` column directly."
+    },
+    {
+      "title": "You are managing a database for an online store. The `Orders` table has columns `OrderID`, `CustomerID`, `OrderDate`, and `OrderStatus`. You need to create a report that shows each order, and for each order, indicates if it was placed on a 'Weekday' or 'Weekend'. Assume Sunday is day 1 and Saturday is day 7 (consistent with some SQL systems like MySQL's `DAYOFWEEK`). Which SQL query would accomplish this?",
+      "options": [
+        {"id": "A", "text": "SELECT OrderID, OrderDate, CASE WHEN DAYOFWEEK(OrderDate) IN (1, 7) THEN 'Weekend' ELSE 'Weekday' END AS DayType FROM Orders;"},
+        {"id": "B", "text": "SELECT OrderID, OrderDate, IF(DAYOFWEEK(OrderDate) IN (1, 7), 'Weekend', 'Weekday') AS DayType FROM Orders;"},
+        {"id": "C", "text": "SELECT OrderID, OrderDate, DECODE(DAYOFWEEK(OrderDate), 1, 'Weekend', 7, 'Weekend', 'Weekday') AS DayType FROM Orders;"},
+        {"id": "D", "text": "SELECT OrderID, OrderDate, CASE DAYOFWEEK(OrderDate) WHEN 1 OR 7 THEN 'Weekend' ELSE 'Weekday' END AS DayType FROM Orders;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses the `CASE` expression, which is standard SQL, to evaluate the `DAYOFWEEK` function. It checks if the day number is 1 (Sunday) or 7 (Saturday) to label it 'Weekend', otherwise 'Weekday'. Option B uses `IF`, which is specific to MySQL and some other databases, not standard SQL. Option C uses `DECODE`, which is specific to Oracle. Option D has incorrect syntax within the `CASE` statement (`WHEN 1 OR 7` is invalid; it should be `WHEN 1 THEN ... WHEN 7 THEN ...` or `WHEN IN (1,7) THEN ...`)."
+    },
+    {
+      "title": "You have a `Customers` table with `CustomerID`, `FirstName`, `LastName`, and `Email`. The `Email` column can sometimes be `NULL`. You need to display a contact name for each customer. If an email exists, display the email; otherwise, display 'No Email Provided'. Which SQL function should you use for the `Email` column in your `SELECT` statement?",
+      "options": [
+        {"id": "A", "text": "COALESCE(Email, 'No Email Provided')"},
+        {"id": "B", "text": "NULLIF(Email, 'No Email Provided')"},
+        {"id": "C", "text": "ISNULL(Email, 'No Email Provided')"},
+        {"id": "D", "text": "NVL(Email, 'No Email Provided')"}
+      ],
+      "correct_answer": "A",
+      "explanation": "`COALESCE` is a standard SQL function that returns the first non-NULL expression in its argument list. In this case, if `Email` is not NULL, it returns `Email`; otherwise, it returns 'No Email Provided'. `NULLIF` returns NULL if the two expressions are equal, otherwise it returns the first expression. `ISNULL` is specific to SQL Server, and `NVL` is specific to Oracle. Therefore, `COALESCE` is the correct and most portable choice for this requirement."
+    },
+    {
+      "title": "You have a table `Events (EventID, EventName, EventDate)`. You want to find all events that occurred exactly 30 days after a specific reference date, say '2023-01-01'. Which query correctly identifies these events?",
+      "options": [
+        {"id": "A", "text": "SELECT EventID, EventName FROM Events WHERE EventDate = DATE_ADD('2023-01-01', INTERVAL 30 DAY);"},
+        {"id": "B", "text": "SELECT EventID, EventName FROM Events WHERE DATEDIFF(EventDate, '2023-01-01') = 30;"},
+        {"id": "C", "text": "SELECT EventID, EventName FROM Events WHERE EventDate = '2023-01-01' + 30;"},
+        {"id": "D", "text": "SELECT EventID, EventName FROM Events WHERE EventDate - '2023-01-01' = 30; "}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A uses `DATE_ADD` with `INTERVAL`, which is a common and standard-compliant way to add a time interval to a date in SQL (especially in MySQL, PostgreSQL, and compatible systems). It correctly calculates the date 30 days after '2023-01-01' and matches `EventDate` against it. Option B uses `DATEDIFF`, which is also common (e.g., SQL Server, MySQL), but it calculates the difference, not a direct addition. While `DATEDIFF(EventDate, '2023-01-01') = 30` would work, `DATE_ADD` is more semantically direct for 'exactly 30 days after'. Options C and D use simple arithmetic operators (`+` or `-`) on dates, which is specific to certain databases (like PostgreSQL or SQLite for C, or some limited contexts for D) but not universally standard or explicit for date arithmetic across all SQL databases."
+    },
+    {
+      "title": "You are analyzing customer behavior. The `Transactions` table contains `TransactionID`, `CustomerID`, `TransactionDate`, and `Amount`. You want to identify customers who have made their first transaction in the year 2023. Which query correctly returns the `CustomerID` for such customers?",
+      "options": [
+        {"id": "A", "text": "WITH CustomerFirstTransaction AS ( SELECT CustomerID, MIN(TransactionDate) AS FirstTransactionDate FROM Transactions GROUP BY CustomerID ) SELECT c.CustomerID FROM CustomerFirstTransaction c WHERE YEAR(c.FirstTransactionDate) = 2023;"},
+        {"id": "B", "text": "SELECT CustomerID FROM Transactions WHERE YEAR(TransactionDate) = 2023 AND TransactionDate = (SELECT MIN(TransactionDate) FROM Transactions AS T2 WHERE T2.CustomerID = Transactions.CustomerID);"},
+        {"id": "C", "text": "SELECT DISTINCT CustomerID FROM Transactions WHERE YEAR(TransactionDate) = 2023 AND CustomerID NOT IN (SELECT CustomerID FROM Transactions WHERE YEAR(TransactionDate) < 2023);"},
+        {"id": "D", "text": "SELECT CustomerID FROM Transactions GROUP BY CustomerID HAVING YEAR(MIN(TransactionDate)) = 2023;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A uses a Common Table Expression (CTE) to first find the `MIN(TransactionDate)` for each `CustomerID` (their first transaction ever) and then filters these results to only include customers whose `FirstTransactionDate` falls in the year 2023. This is a clear, readable, and efficient approach. Option B uses a correlated subquery, which can be less efficient for large datasets as the subquery is executed for each row. Option C finds customers who transacted in 2023 and excludes those who transacted before 2023, which correctly identifies the set but the logic is slightly more convoluted than using `MIN(TransactionDate)`. Option D is the most concise and also correct, using `GROUP BY` and `HAVING` directly on the aggregate function `MIN(TransactionDate)`. However, the prompt implies a multi-step logic which CTE usually enhances readability for. Given the options, A is a very strong candidate for a 'medium' difficulty question highlighting CTEs for breaking down logic. Option D is also very good, but A emphasizes CTE structure."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-10T09:47:13.588Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: o;jikv...
+Response: ```json
+{
+  "score": 10,
+  "suggestions": [
+    "Replace the current headline 'o;jikvg' with a professional and descriptive title that reflects your target role (e.g., 'Software Engineer', 'Full-Stack Developer', 'Data Scientist').",
+    "Thoroughly clean and organize the 'Skills' section: remove all non-skill entries ('lkjh', 'hard', 'medium', 'easy'), consolidate duplicate entries, standardize casing (e.g., 'Python' not 'python', 'JavaScript' not 'javascript'), and consider grouping related skills (e.g., 'Programming Languages', 'Databases', 'Frameworks').",
+    "For each entry in the 'Projects' section, provide a clear and descriptive title, a brief explanation of the project's purpose, the technologies used, and highlight any impact or quantifiable results achieved.",
+    "Completely restructure the 'Experience' section: provide full company names, clear job titles, and specific start/end dates for each role. Under each position, add 3-5 bullet points detailing your responsibilities, key achievements, and the impact of your work, using strong action verbs and quantifying results whenever possible.",
+    "Add a professional summary or objective statement at the beginning of the resume (below the headline) that briefly highlights your key qualifications, years of experience, and career goals, tailored to the types of roles you are pursuing."
+  ]
+}
+```
+
+[GEMINI] 2026-05-10T09:59:33.056Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: Python
+DIFFICULTY: medium
+
+
+CORE REQUIRE...
+Response: ```json
+{
+  "questions": [
+    {
+      "title": "Understanding Decorator Application",
+      "options": [
+        {"id": "A", "text": "HELLO WORLD!"},
+        {"id": "B", "text": "hello world!"},
+        {"id": "C", "text": "None"},
+        {"id": "D", "text": "A TypeError will be raised"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The `uppercase_decorator` wraps the `greet` function. When `greet()` is called, it first executes the inner `wrapper` function. The wrapper calls the original `func()`, gets 'hello world!', and then applies `.upper()` to its result before returning. So, 'HELLO WORLD!' is printed."
+    },
+    {
+      "title": "Implementing a Fibonacci Sequence Generator",
+      "options": [
+        {"id": "A", "text": "[0, 1, 1, 2, 3]"},
+        {"id": "B", "text": "[0, 1, 2, 3, 5]"},
+        {"id": "C", "text": "A generator object"},
+        {"id": "D", "text": "[1, 1, 2, 3, 5]"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The `fibonacci_generator` function uses `yield` to create a generator. It starts with `a=0` and `b=1`. The loop `yield`s `a`, then updates `a` and `b`. The `list()` constructor iterates through the generator, collecting the first 5 yielded values: 0, 1, 1, 2, 3."
+    },
+    {
+      "title": "Custom Context Manager Behavior",
+      "options": [
+        {"id": "A", "text": "Entering resource\nProcessing...\nExiting resource, no error."},
+        {"id": "B", "text": "Entering resource\nProcessing...\nExiting resource, error handled: Division by zero"},
+        {"id": "C", "text": "Entering resource\nProcessing...\nA ZeroDivisionError will interrupt execution before 'Exiting resource' is printed."},
+        {"id": "D", "text": "Entering resource\nProcessing...\nExiting resource, error handled: <class 'ZeroDivisionError'>"}
+      ],
+      "correct_answer": "D",
+      "explanation": "When a `ZeroDivisionError` occurs inside the `with` block, Python calls the `__exit__` method. The exception type, value, and traceback are passed as arguments to `__exit__`. Our `__exit__` catches these and prints 'error handled:' followed by the exception type. It returns `True` to suppress the exception from propagating further."
+    },
+    {
+      "title": "Advanced Dictionary Comprehension",
+      "options": [
+        {"id": "A", "text": "{'apple': 5, 'banana': 6, 'cherry': 6}"},
+        {"id": "B", "text": "{'apple': 5, 'grape': 5}"},
+        {"id": "C", "text": "{'apple': 5, 'banana': 6}"},
+        {"id": "D", "text": "{'apple': 5}"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The dictionary comprehension iterates through `fruits`. The condition `if len(fruit) > 4` filters out 'grape'. For the remaining fruits ('apple', 'banana', 'cherry'), it creates a key-value pair where the key is the fruit name and the value is its length. Thus, {'apple': 5, 'banana': 6, 'cherry': 6} is the result."
+    },
+    {
+      "title": "Flexible Function Arguments with *args and **kwargs",
+      "options": [
+        {"id": "A", "text": "Total sum: 15"},
+        {"id": "B", "text": "Total sum: 20"},
+        {"id": "C", "text": "TypeError: process_data() got an unexpected keyword argument 'offset'"},
+        {"id": "D", "text": "Total sum: 10"}
+      ],
+      "correct_answer": "B",
+      "explanation": "The `process_data` function accepts arbitrary positional arguments (`*args`) and arbitrary keyword arguments (`**kwargs`). `sum(args)` calculates 1+2+3+4+5 = 15. The `offset` keyword argument is present in `kwargs`, so `kwargs.get('offset', 0)` returns 5. The final result is 15 + 5 = 20."
+    },
+    {
+      "title": "Correct Inheritance Initialization with `super()`",
+      "options": [
+        {"id": "A", "text": "My vehicle: Car. My wheels: 4. My doors: 4."},
+        {"id": "B", "text": "My vehicle: Car. My wheels: 4. My doors: None."},
+        {"id": "C", "text": "AttributeError: 'Car' object has no attribute 'vehicle_type'"},
+        {"id": "D", "text": "My vehicle: Car. My wheels: None. My doors: 4."}
+      ],
+      "correct_answer": "A",
+      "explanation": "The `Car` class correctly calls `super().__init__(vehicle_type, wheels)` to initialize the `Vehicle` base class's attributes (`self.vehicle_type` and `self.wheels`). Then, it initializes its own specific attribute `self.doors`. Therefore, all attributes are set correctly and printed."
+    },
+    {
+      "title": "Robust Error Handling with Custom Exceptions",
+      "options": [
+        {"id": "A", "text": "Value processed: 10\nFinished processing."},
+        {"id": "B", "text": "Error: Value must be positive.\nFinished processing."},
+        {"id": "C", "text": "Value processed: 10"},
+        {"id": "D", "text": "Error: Value must be positive."}
+      ],
+      "correct_answer": "B",
+      "explanation": "The `process_positive_value(0)` call causes `value <= 0` to be true, raising a `NegativeValueError`. The `except NegativeValueError` block catches this exception and prints 'Error: Value must be positive.'. The `finally` block always executes, printing 'Finished processing.'. The `else` block is skipped because an exception occurred."
+    },
+    {
+      "title": "Understanding Python Closures",
+      "options": [
+        {"id": "A", "text": "20"},
+        {"id": "B", "text": "10"},
+        {"id": "C", "text": "TypeError: 'int' object is not callable"},
+        {"id": "D", "text": "NameError: name 'factor' is not defined"}
+      ],
+      "correct_answer": "A",
+      "explanation": "The `make_multiplier` function returns an inner function `multiplier`. This inner function 'closes over' the `factor` variable from its enclosing scope. Even after `make_multiplier(10)` finishes, `double_it` (which is `multiplier` with `factor=10`) retains access to `factor`. When `double_it(2)` is called, it correctly computes `2 * 10 = 20`."
+    },
+    {
+      "title": "Functional Programming with Lambda, Map, and Filter",
+      "options": [
+        {"id": "A", "text": "[25, 36, 49]"},
+        {"id": "B", "text": "[5, 6, 7]"},
+        {"id": "C", "text": "An error will occur because `map` needs a list."},
+        {"id": "D", "text": "[25, 36, 49, 64, 81]"}
+      ],
+      "correct_answer": "A",
+      "explanation": "First, `filter(lambda x: x % 2 != 0, numbers)` filters `numbers` to keep only odd numbers: `[5, 7, 9]`. Then, `map(lambda x: x*x, ...)` takes this filtered sequence and squares each element: `[25, 49, 81]`. The `list()` constructor converts the map object into a list."
+    },
+    {
+      "title": "Distinguishing Object Identity and Equality",
+      "options": [
+        {"id": "A", "text": "False\nTrue"},
+        {"id": "B", "text": "True\nTrue"},
+        {"id": "C", "text": "False\nFalse"},
+        {"id": "D", "text": "True\nFalse"}
+      ],
+      "correct_answer": "A",
+      "explanation": "For lists, `list1 == list2` evaluates to `True` because their contents are identical. However, `list1 is list2` evaluates to `False` because `list1` and `list2` are two separate list objects in memory, even if they have the same values. They do not refer to the exact same object. Python's small integer caching for `num1 = 10` and `num2 = 10` (typically for -5 to 256) means `num1 is num2` could sometimes be true, but it's not guaranteed. When creating separate lists, they are distinct objects."
+    }
+  ]
+}
+```
+
+[GEMINI] 2026-05-11T16:42:17.270Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: o;jikv...
+Response: ```json
+{
+  "score": 5,
+  "suggestions": [
+    "Replace the gibberish headline 'o;jikvg' with a professional and descriptive title that highlights your primary role and expertise (e.g., 'Software Engineer | Python & Distributed Systems Specialist').",
+    "Thoroughly clean and organize the skills section: remove all irrelevant or non-technical terms ('lkjh', 'hard', 'medium', 'easy'), consolidate duplicate entries, standardize casing (e.g., 'JavaScript' not 'javascript'), and group related skills into logical categories (e.g., 'Programming Languages', 'Databases', 'Cloud Platforms').",
+    "Elaborate significantly on each project: provide a clear, descriptive title, a brief summary of the project's purpose and your specific contributions, and a list of technologies utilized. Avoid single-word entries like 'lkm', 'ew', 'w'.",
+    "Expand all experience entries to include full job titles, complete company names (e.g., ensure 'l' is a valid company name or replace it), location, and employment dates. Use action-oriented bullet points to describe responsibilities and quantifiable achievements for each role.",
+    "Add a concise professional summary or objective statement (2-4 sentences) at the top of your resume to provide an immediate overview of your key qualifications, years of experience, and career aspirations."
+  ]
+}
+```
+
+[GEMINI] 2026-05-11T17:19:46.479Z
+Model: gemini-2.5-flash
+Prompt: You are an advanced AI assessment generation engine.
+TOPIC: sql
+DIFFICULTY: medium
+
+
+CORE REQUIREMEN...
+Response: ```json
+{
+  "questions": [
+    {
+      "title": "Given an `Employees` table with columns `employee_id`, `name`, `department_id`, and `salary`, which SQL query correctly identifies **all** employee(s) who share the second highest salary within each department?",
+      "options": [
+        {"id": "A", "text": "SELECT employee_id, name, department_id, salary FROM (SELECT *, RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) as rnk FROM Employees) AS RankedSalaries WHERE rnk = 2;"},
+        {"id": "B", "text": "SELECT employee_id, name, department_id, salary FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) as rn FROM Employees) AS RankedSalaries WHERE rn = 2;"},
+        {"id": "C", "text": "SELECT e.employee_id, e.name, e.department_id, e.salary FROM Employees e WHERE e.salary = (SELECT DISTINCT salary FROM Employees WHERE department_id = e.department_id ORDER BY salary DESC LIMIT 1 OFFSET 1);"},
+        {"id": "D", "text": "SELECT e.employee_id, e.name, e.department_id, e.salary FROM Employees e JOIN (SELECT department_id, MAX(salary) AS max_s FROM Employees GROUP BY department_id) d ON e.department_id = d.department_id WHERE e.salary < d.max_s ORDER BY e.salary DESC LIMIT 1 OFFSET 1;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses `RANK()` partitioned by `department_id` and ordered by `salary DESC`. Filtering for `rnk = 2` accurately retrieves all employees who share the second highest salary for each department, handling ties correctly by assigning the same rank to employees with identical salaries. Option B uses `ROW_NUMBER()`, which would arbitrarily select only one employee if there are ties for the second highest salary. Option C uses a subquery with `LIMIT 1 OFFSET 1` to find the second distinct salary, which works, but the `ORDER BY` and `LIMIT` within the subquery might not be universally supported in this exact form or be less performant than `RANK()`. Option D attempts to use `LIMIT` and `OFFSET` but this approach is flawed for finding the second highest *per department* and doesn't account for ties effectively across departments."
+    },
+    {
+      "title": "Consider two tables: `Customers` (customer_id, name) and `Orders` (order_id, customer_id, order_date, total_amount). Which SQL query correctly lists the `customer_id` and `name` for customers who have placed at least 3 orders AND their average order amount exceeds $500?",
+      "options": [
+        {"id": "A", "text": "SELECT c.customer_id, c.name FROM Customers c JOIN Orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.name HAVING COUNT(o.order_id) >= 3 AND AVG(o.total_amount) > 500;"},
+        {"id": "B", "text": "SELECT c.customer_id, c.name FROM Customers c WHERE (SELECT COUNT(*) FROM Orders WHERE customer_id = c.customer_id) >= 3 AND (SELECT AVG(total_amount) FROM Orders WHERE customer_id = c.customer_id) > 500;"},
+        {"id": "C", "text": "SELECT c.customer_id, c.name FROM Customers c, Orders o WHERE c.customer_id = o.customer_id GROUP BY c.customer_id HAVING COUNT(o.order_id) >= 3 OR AVG(o.total_amount) > 500;"},
+        {"id": "D", "text": "SELECT c.customer_id, c.name FROM Customers c JOIN Orders o ON c.customer_id = o.customer_id WHERE COUNT(o.order_id) >= 3 AND AVG(o.total_amount) > 500 GROUP BY c.customer_id, c.name;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses `JOIN` to combine customer and order data, then `GROUP BY` to aggregate results per customer. The `HAVING` clause is correctly used to filter groups based on the `COUNT()` of orders (at least 3) and the `AVG()` order amount (greater than $500) using the `AND` operator. Option B uses correlated subqueries, which can be less efficient for this type of aggregation than a `JOIN` with `GROUP BY` and `HAVING`. Option C incorrectly uses `OR` instead of `AND` in the `HAVING` clause, which would return customers satisfying either condition. Option D incorrectly places aggregate functions (`COUNT`, `AVG`) in the `WHERE` clause, which operates on individual rows *before* grouping, leading to a syntax error."
+    },
+    {
+      "title": "Consider two tables: `Products` (product_id, product_name, category_id, price) and `Categories` (category_id, category_name). Which SQL query correctly lists the `product_name` and `price` for products that are more expensive than the average price of products within their own specific category?",
+      "options": [
+        {"id": "A", "text": "SELECT p.product_name, p.price FROM Products p WHERE p.price > (SELECT AVG(price) FROM Products WHERE category_id = p.category_id);"},
+        {"id": "B", "text": "SELECT p.product_name, p.price FROM Products p JOIN (SELECT category_id, AVG(price) AS avg_category_price FROM Products GROUP BY category_id) AS cat_avg ON p.category_id = cat_avg.category_id WHERE p.price > cat_avg.avg_category_price;"},
+        {"id": "C", "text": "SELECT p.product_name, p.price FROM Products p GROUP BY p.category_id HAVING p.price > AVG(p.price);"},
+        {"id": "D", "text": "SELECT p.product_name, p.price FROM Products p WHERE p.price > (SELECT AVG(price) FROM Products GROUP BY category_id);"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a correlated subquery in the `WHERE` clause. For each product in the outer query (aliased as `p`), the subquery calculates the average price of products belonging to the same `category_id` (`WHERE category_id = p.category_id`) and then compares the product's price to that category average. Option B achieves the same result using a `JOIN` with a derived table. While often more efficient, it's not the technique specifically demonstrated by a correlated subquery. Option C is syntactically incorrect; `HAVING` filters groups, and `p.price` is an individual row value, not an aggregate, so it cannot be directly compared against `AVG(p.price)` in this manner. Option D uses a non-correlated subquery that would return multiple average prices (one for each category), which cannot be directly compared to a single `p.price` in the `WHERE` clause, leading to an error."
+    },
+    {
+      "title": "Consider two tables: `Departments` (department_id, department_name) and `Employees` (employee_id, name, department_id). Which SQL query correctly lists all departments, along with the total number of employees in each department? Departments that currently have no employees should still appear in the result with an employee count of 0.",
+      "options": [
+        {"id": "A", "text": "SELECT d.department_name, COUNT(e.employee_id) AS total_employees FROM Departments d LEFT JOIN Employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.department_name;"},
+        {"id": "B", "text": "SELECT d.department_name, COUNT(*) AS total_employees FROM Departments d JOIN Employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.department_name;"},
+        {"id": "C", "text": "SELECT d.department_name, (SELECT COUNT(*) FROM Employees WHERE department_id = d.department_id) AS total_employees FROM Departments d;"},
+        {"id": "D", "text": "SELECT d.department_name, COUNT(*) AS total_employees FROM Employees e RIGHT JOIN Departments d ON d.department_id = e.department_id GROUP BY d.department_id, d.department_name;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a `LEFT JOIN` to ensure all departments are included, even those without matching employees. `COUNT(e.employee_id)` specifically counts non-NULL `employee_id` values. For departments with no employees, the `LEFT JOIN` will produce rows where `e.employee_id` is `NULL`, causing `COUNT(e.employee_id)` to correctly return 0 for those departments. Option B uses an `INNER JOIN`, which would exclude departments that have no employees. Option C uses a correlated subquery, which is a valid but often less efficient way to achieve the same result compared to a `LEFT JOIN` with `GROUP BY`. Option D uses a `RIGHT JOIN` (which is functionally similar to `LEFT JOIN` if table order is swapped) but `COUNT(*)` would count the `NULL`-padded row for departments with no employees as 1, leading to an incorrect count of 1 instead of 0 for those departments."
+    },
+    {
+      "title": "Given a `Sales` table with columns `sale_id`, `product_id`, `amount`, and `sale_date`. Which SQL query correctly categorizes each sale's `amount` into 'High Value' (amount > 1000), 'Medium Value' (amount > 200 AND amount <= 1000), or 'Low Value' (amount <= 200)?",
+      "options": [
+        {"id": "A", "text": "SELECT sale_id, amount, CASE WHEN amount > 1000 THEN 'High Value' WHEN amount > 200 THEN 'Medium Value' ELSE 'Low Value' END AS ValueCategory FROM Sales;"},
+        {"id": "B", "text": "SELECT sale_id, amount, IF(amount > 1000, 'High Value', IF(amount > 200, 'Medium Value', 'Low Value')) AS ValueCategory FROM Sales;"},
+        {"id": "C", "text": "SELECT sale_id, amount, CASE amount WHEN amount > 1000 THEN 'High Value' WHEN amount > 200 AND amount <= 1000 THEN 'Medium Value' ELSE 'Low Value' END AS ValueCategory FROM Sales;"},
+        {"id": "D", "text": "SELECT sale_id, amount, CASE WHEN amount > 1000 THEN 'High Value' ELSE (CASE WHEN amount > 200 THEN 'Medium Value' ELSE 'Low Value' END) END AS ValueCategory FROM Sales;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a searched `CASE` expression. The conditions are evaluated sequentially, so if `amount` is not `> 1000`, the next condition `amount > 200` implicitly means `amount <= 1000`. This is the most concise and standard SQL way to write such conditional logic. Option B uses the `IF` function, which is specific to MySQL/SQLite and not standard SQL. Option C uses an incorrect syntax for a `CASE` expression; `CASE expression WHEN value THEN ...` expects a specific value to match, not a boolean condition in the `WHEN` clause. Option D is functionally correct, as it uses nested `CASE` statements, but it is unnecessarily verbose compared to the sequential evaluation of a single searched `CASE` statement as shown in Option A."
+    },
+    {
+      "title": "You have a table named `Users` with columns `user_id` (PRIMARY KEY), `username`, `email`, `registration_date`. You want to ensure that the `email` column always contains unique values across all rows. Which SQL statement correctly adds a `UNIQUE` constraint to the `email` column?",
+      "options": [
+        {"id": "A", "text": "ALTER TABLE Users ADD CONSTRAINT UQ_Users_Email UNIQUE (email);"},
+        {"id": "B", "text": "ALTER TABLE Users MODIFY COLUMN email UNIQUE;"},
+        {"id": "C", "text": "CREATE UNIQUE INDEX IX_Users_Email ON Users (email);"},
+        {"id": "D", "text": "ALTER TABLE Users ADD UNIQUE (email);"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A is the standard and most explicit way to add a named `UNIQUE` constraint to an existing column in SQL. Naming the constraint (e.g., `UQ_Users_Email`) makes it easier to reference or drop later. Option B uses `MODIFY COLUMN`, which is typically used for changing data types or nullability, not for adding constraints. Option C creates a unique index, which does enforce uniqueness but is not the direct DDL statement for adding a named `UNIQUE` constraint itself (though many databases implement unique constraints using unique indexes internally). Option D is syntactically valid in many SQL dialects for adding an unnamed unique constraint, but Option A is preferred for clarity and manageability."
+    },
+    {
+      "title": "You have an `Employees` table with columns `employee_id`, `salary`, and `department_id`. You need to update the salaries of all employees in the 'Sales' department (assume `department_id = 101`) to be 10% higher than the current average salary of employees in the 'Marketing' department (assume `department_id = 102`). Which SQL statement accomplishes this?",
+      "options": [
+        {"id": "A", "text": "UPDATE Employees SET salary = (SELECT AVG(salary) * 1.10 FROM Employees WHERE department_id = 102) WHERE department_id = 101;"},
+        {"id": "B", "text": "UPDATE Employees e1 JOIN (SELECT AVG(salary) AS avg_marketing_salary FROM Employees WHERE department_id = 102) e2 ON e1.department_id = 101 SET e1.salary = e2.avg_marketing_salary * 1.10;"},
+        {"id": "C", "text": "UPDATE Employees SET salary = (SELECT AVG(salary) FROM Employees WHERE department_id = 102) * 1.10;"},
+        {"id": "D", "text": "UPDATE Employees SET salary = (SELECT AVG(salary) FROM Employees WHERE department_id = 102) WHERE department_id = 101 AND salary > 0;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses a subquery in the `SET` clause to calculate the average salary of employees in the 'Marketing' department (department_id = 102) and applies a 10% increase. The `WHERE` clause then correctly restricts this update to only employees in the 'Sales' department (department_id = 101). Option B attempts a multi-table update using `JOIN` within the `UPDATE` statement, which is a database-specific syntax (e.g., MySQL, SQL Server) and not standard SQL; furthermore, its `ON` clause is not correctly structured for this specific problem. Option C applies the updated salary to *all* employees in the table, not just those in the 'Sales' department, because it lacks a `WHERE` clause to filter the update. Option D correctly calculates the new salary and filters by department, but the additional `AND salary > 0` condition was not specified in the requirements and might unintentionally exclude valid employees."
+    },
+    {
+      "title": "You have a `Sales` table with columns `sale_id`, `region`, and `amount`. You need to identify `region`s where their total sales amount is greater than the overall average total sales amount across ALL regions. Which SQL query effectively uses a Common Table Expression (CTE) to solve this?",
+      "options": [
+        {"id": "A", "text": "WITH RegionalSales AS ( SELECT region, SUM(amount) AS TotalRegionalSales FROM Sales GROUP BY region ) SELECT region FROM RegionalSales WHERE TotalRegionalSales > (SELECT AVG(TotalRegionalSales) FROM RegionalSales);"},
+        {"id": "B", "text": "WITH RegionalSales AS ( SELECT region, SUM(amount) AS TotalRegionalSales FROM Sales GROUP BY region ) SELECT rs.region FROM RegionalSales rs INNER JOIN RegionalSales rs2 ON rs.region = rs2.region WHERE rs.TotalRegionalSales > (SELECT AVG(TotalRegionalSales) FROM RegionalSales);"},
+        {"id": "C", "text": "SELECT region, SUM(amount) AS TotalRegionalSales FROM Sales GROUP BY region HAVING TotalRegionalSales > (SELECT AVG(amount) FROM Sales);"},
+        {"id": "D", "text": "WITH RegionalSales AS ( SELECT region, SUM(amount) AS TotalRegionalSales FROM Sales GROUP BY region ) SELECT region FROM RegionalSales WHERE TotalRegionalSales > (SELECT SUM(amount) / COUNT(DISTINCT region) FROM Sales);"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly defines a CTE `RegionalSales` to calculate total sales per region. It then queries this CTE, filtering for regions where `TotalRegionalSales` exceeds the overall average of `TotalRegionalSales` (calculated from the CTE itself using a subquery). This is a clean and standard use of CTEs. Option B incorrectly attempts to join the `RegionalSales` CTE with itself (`INNER JOIN RegionalSales rs2 ON rs.region = rs2.region`) which is not the correct approach for comparing a regional sum to an overall average, making the query logically flawed for the stated goal. Option C calculates total sales per region but incorrectly compares it to the overall average of *individual sale amounts* (`AVG(amount)`) from the base `Sales` table, rather than the average of the grouped total sales. Option D attempts to calculate the overall average by dividing the grand total sales (`SUM(amount)`) by the number of distinct regions (`COUNT(DISTINCT region)`). This calculation is generally incorrect for finding the average of `TotalRegionalSales` because it assumes equal distribution and does not reflect the average of the *sums* if regional sales vary."
+    },
+    {
+      "title": "You have two tables: `CurrentCustomers` (customer_id, name, city) and `PastCustomers` (customer_id, name, city, reason_for_leaving). You want to retrieve a combined list of all customer names and cities from both tables, ensuring that duplicate entries (if a customer exists in both tables with the same name and city, or if there are multiple entries in one table) are included in the final result. Which SQL query should you use?",
+      "options": [
+        {"id": "A", "text": "SELECT name, city FROM CurrentCustomers UNION ALL SELECT name, city FROM PastCustomers;"},
+        {"id": "B", "text": "SELECT name, city FROM CurrentCustomers UNION SELECT name, city FROM PastCustomers;"},
+        {"id": "C", "text": "SELECT c.name, c.city FROM CurrentCustomers c JOIN PastCustomers p ON c.customer_id = p.customer_id;"},
+        {"id": "D", "text": "SELECT name, city FROM CurrentCustomers INTERSECT SELECT name, city FROM PastCustomers;"}
+      ],
+      "correct_answer": "A",
+      "explanation": "Option A correctly uses `UNION ALL`. `UNION ALL` combines the result sets of two or more `SELECT` statements, including all duplicate rows. This precisely matches the requirement to include duplicates. Option B uses `UNION`, which combines result sets but automatically removes duplicate rows, which is contrary to the requirement. Option C uses `JOIN`, which combines columns from related rows in two tables based on a join condition, rather than combining rows from two separate result sets. Option D uses `INTERSECT`, which returns only the rows that are common to both result sets, not a combined list that includes all entries from both."
+    }
+  ]
+}
+```
+

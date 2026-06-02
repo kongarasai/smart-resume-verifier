@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+:root {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background-color: #f5f4f0;
+  color: #1e1b17;
+}
+
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #e8e6df; }
+::-webkit-scrollbar-thumb { background: #b3ae9f; border-radius: 3px; }
+
+/* Card base */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8e6df;
+  box-shadow: 0 1px 4px rgba(30, 27, 23, 0.06);
+}
+
+/* Confidence badge colors */
+.confidence-high { color: #2d9e5f; background: #f0faf5; border-color: #a8dfbf; }
+.confidence-medium { color: #d4820a; background: #fdf8f0; border-color: #f5d49a; }
+.confidence-limited { color: #c0392b; background: #fdf2f1; border-color: #f0b4af; }
+
+/* Score bar */
+.score-bar { height: 6px; border-radius: 3px; background: #e8e6df; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Grain texture overlay */
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-ink-900 text-ink-50 text-sm font-medium
+           hover:bg-ink-800 active:bg-ink-950 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white text-ink-800 text-sm font-medium
+           border border-ink-200 hover:bg-ink-50 active:bg-ink-100 transition-all duration-150 disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium
+           hover:bg-red-700 transition-colors disabled:opacity-50;
+  }
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-ink-200 bg-white text-ink-900 text-sm
+           placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-ink-900/20 focus:border-ink-600
+           transition-all duration-150;
+  }
+  .label {
+    @apply block text-xs font-medium text-ink-600 mb-1.5 uppercase tracking-wide;
+  }
+  .section-title {
+    @apply font-display text-xl font-semibold text-ink-900;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+}
+
+/* Skill verification badges */
+.vbadge-claimed { background: #f5f4f0; color: #57534e; border: 1px solid #e8e6e0; }
+.vbadge-evidence { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.vbadge-verified { background: #f0faf5; color: #166534; border: 1px solid #a8dfbf; }
+.vbadge-expert   { background: #fdf8f0; color: #92400e; border: 1px solid #f5d49a; }
+
+/* Career readiness */
+.cr-beginner     { color: #991b1b; background: #fdf2f1; }
+.cr-developing   { color: #92400e; background: #fdf8f0; }
+.cr-job_ready    { color: #1e40af; background: #eff6ff; }
+.cr-interview_ready { color: #166534; background: #f0faf5; }
+.cr-top_performer { color: #5b21b6; background: #f5f3ff; }
