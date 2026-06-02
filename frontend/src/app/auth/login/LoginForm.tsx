@@ -37,6 +37,11 @@ export default function LoginForm() {
   const selectedRole = watch('role');
 
   useEffect(() => { if (inviteToken) { setIsRegister(true); setValue('role', 'candidate'); } }, [inviteToken]);
+  useEffect(() => {
+    if (isRegister && !watch('role')) {
+      setValue('role', 'candidate');
+    }
+  }, [isRegister]);
 
   const onSubmit = async (data: any) => {
     setLoading(true);
@@ -48,7 +53,19 @@ export default function LoginForm() {
       router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
     } catch (err: any) {
       console.error('Login Error:', err);
-      const msg = err.response?.data?.error || err.message || 'Something went wrong';
+      let msg = err.response?.data?.error || err.message || 'Something went wrong';
+      if (err.response?.data?.details) {
+        const details = err.response.data.details;
+        const errorsList = [];
+        for (const key in details) {
+          if (key !== '_errors' && details[key]?._errors) {
+            errorsList.push(`${key}: ${details[key]._errors.join(', ')}`);
+          }
+        }
+        if (errorsList.length > 0) {
+          msg = `${msg} (${errorsList.join('; ')})`;
+        }
+      }
       toast.error(`Error: ${msg}`);
     } finally { setLoading(false); }
   };
