@@ -225,11 +225,22 @@ CREATE TABLE invites (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- ASSIGNMENTS (created by mentor)
+CREATE TABLE assignments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- QUESTIONS (created by mentor/teacher)
 CREATE TABLE questions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_by UUID REFERENCES users(id),
   group_id UUID REFERENCES groups(id),
+  assignment_id UUID REFERENCES assignments(id) ON DELETE SET NULL,
   category VARCHAR(50) NOT NULL CHECK (category IN ('coding', 'aptitude', 'technical_mcq', 'hr', 'general')),
   difficulty VARCHAR(20) NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
   title VARCHAR(500) NOT NULL,
@@ -242,6 +253,7 @@ CREATE TABLE questions (
   time_limit_seconds INTEGER DEFAULT 300,
   max_attempts INTEGER DEFAULT 3,
   is_active BOOLEAN DEFAULT TRUE,
+  expires_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

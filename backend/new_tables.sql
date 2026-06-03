@@ -16,3 +16,18 @@ CREATE TABLE IF NOT EXISTS hr_evaluations (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Practice assignments table
+CREATE TABLE IF NOT EXISTS assignments (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Link questions to assignments
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS assignment_id UUID REFERENCES assignments(id) ON DELETE SET NULL;
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE;
+

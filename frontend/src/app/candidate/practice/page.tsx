@@ -17,6 +17,7 @@ const CATEGORIES = [
 ];
 
 export default function PracticePage() {
+  const now = new Date();
   const [phase, setPhase] = useState<Phase>('select');
   const [category, setCategory] = useState('');
   const [questions, setQuestions] = useState<any[]>([]);
@@ -143,7 +144,6 @@ export default function PracticePage() {
   const q = questions[idx];
   const currentAnswer = q ? answers[q.id] : null;
   const correct = Object.values(answers).filter((a: any) => a.result?.is_correct).length;
-  const now = new Date();
   const activeAssignments = data.assignments.filter(a => !a.expires_at || new Date(a.expires_at) > now);
   const expiredAssignments = data.assignments.filter(a => a.expires_at && new Date(a.expires_at) <= now);
 

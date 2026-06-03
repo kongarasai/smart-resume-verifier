@@ -285,12 +285,13 @@ const endSession = async (req, res) => {
       if (staff) {
         const recipients = [staff.mentor_id, staff.teacher_id].filter(Boolean);
         for (const rId of recipients) {
-          await notificationCtrl.sendNotification({
-            userId: rId,
-            type: 'candidate_practice_complete',
-            title: 'Assignment Completed',
-            message: `${req.user.full_name} completed ${category} with ${percentage}% score.`
-          }).catch(() => {});
+          await sendNotification(
+            req.app,
+            rId,
+            'candidate_practice_complete',
+            'Assignment Completed',
+            `${req.user.full_name} completed ${category} with ${percentage}% score.`
+          ).catch(() => {});
         }
       }
     }
@@ -566,13 +567,13 @@ const bulkCreateQuestions = async (req, res) => {
 
     const created = [];
     for (const q of questions) {
-      const res = await query(
+      const qRes = await query(
         `INSERT INTO questions (created_by, group_id, assignment_id, category, difficulty, title, description, question_type, options, correct_answer, points, tags, time_limit_seconds, expires_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
         [req.user.id, group_id, assignmentId, q.category || 'technical_mcq', q.difficulty || 'medium', q.title, q.description, q.question_type || 'mcq',
         q.options ? JSON.stringify(q.options) : null, q.correct_answer, q.points || 10, q.tags || [], q.time_limit_seconds || 300, expires_at || q.expires_at || null]
       );
-      created.push(res.rows[0]);
+      created.push(qRes.rows[0]);
     }
     res.json({ message: `Successfully created ${created.length} questions`, questions: created, assignment_id: assignmentId });
   } catch (err) {

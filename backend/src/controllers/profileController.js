@@ -32,6 +32,12 @@ const calcCareerReadiness = (completeness, confidence) => {
 const getProfile = async (req, res) => {
   const userId = req.params.userId || req.user.id;
 
+  // Validate UUID format to prevent database crash on invalid user IDs
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (req.params.userId && !uuidRegex.test(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format' });
+  }
+
   // Privacy check for non-owners
   if (userId !== req.user.id) {
     const privacyRes = await query('SELECT * FROM privacy_settings WHERE user_id=$1', [userId]);

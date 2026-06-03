@@ -3,11 +3,32 @@ const { query } = require('../config/database');
 const { runVerification } = require('./skillVerificationEngine');
 
 const GITHUB_API = 'https://api.github.com';
-const getHeaders = () => ({
-  Authorization: `token ${process.env.GITHUB_TOKEN}`,
-  Accept: 'application/vnd.github.v3+json',
-  'User-Agent': 'SmartResumeVerifier/2.0',
-});
+const getHeaders = () => {
+  const headers = {
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'SmartResumeVerifier/2.0',
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token && token !== 'ghp_test_token_12345' && !token.startsWith('ghp_your_') && token.trim() !== '') {
+    headers.Authorization = `token ${token}`;
+  }
+  return headers;
+};
+
+const githubGet = async (url) => {
+  const headers = getHeaders();
+  try {
+    return await axios.get(url, { headers, timeout: 10000 });
+  } catch (err) {
+    if (err.response?.status === 401 && headers.Authorization) {
+      console.warn('GitHub API returned 401 with token. Retrying without token...');
+      const cleanHeaders = { ...headers };
+      delete cleanHeaders.Authorization;
+      return await axios.get(url, { headers: cleanHeaders, timeout: 10000 });
+    }
+    throw err;
+  }
+};
 
 const extractUsername = (url) => {
   if (!url) return null;
@@ -37,8 +58,8 @@ const fetchGitHubData = async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Invalid GitHub URL format. Expected: https://github.com/username' });
 
     const [userResp, reposResp] = await Promise.all([
-      axios.get(`${GITHUB_API}/users/${username}`, { headers: getHeaders(), timeout: 10000 }),
-      axios.get(`${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`, { headers: getHeaders(), timeout: 10000 }),
+      githubGet(`${GITHUB_API}/users/${username}`),
+      githubGet(`${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`),
     ]);
 
     const userData = userResp.data;
@@ -67,7 +88,7 @@ const fetchGitHubData = async (req, res) => {
     let pushEventsCount = 0;
     try {
       // 🚨 Check commit frequency / recent events
-      const evRes = await axios.get(`${GITHUB_API}/users/${username}/events?per_page=100`, { headers: getHeaders(), timeout: 8000 });
+      const evRes = await githubGet(`${GITHUB_API}/users/${username}/events?per_page=100`);
       const pushEvents = evRes.data.filter(e => e.type === 'PushEvent');
       pushEventsCount = pushEvents.length;
       totalCommits = pushEvents.reduce((s, e) => s + (e.payload?.commits?.length || 0), 0);

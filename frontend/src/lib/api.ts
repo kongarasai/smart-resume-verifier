@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
+const rawApiUrl = cleanUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
 const API_URL = (rawApiUrl.endsWith('/api') || rawApiUrl.endsWith('/api/') ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, '')}/api`).replace(/\/+$/, '') + '/';
 
 const api = axios.create({

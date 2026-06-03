@@ -55,7 +55,7 @@ export default function JobsPage() {
     if (!analyzeInput.trim()) return;
     setAnalyzing(true);
     try {
-      const res = await jobAPI.analyze(analyzeInput.trim());
+      const res = await jobAPI.analyze({ job_title: analyzeInput.trim() });
       setAnalysis(res.data);
     } catch (err: any) { toast.error(err.response?.data?.error || 'Analysis failed'); }
     finally { setAnalyzing(false); }

@@ -38,7 +38,7 @@ export default function LeetCodePage() {
     }
     setVerifying(true);
     try {
-      const res = await leetcodeAPI.verify(urlToUse !== profileUrl ? urlToUse : undefined);
+      const res = await leetcodeAPI.verify(urlToUse !== profileUrl ? { leetcode_url: urlToUse } : {});
       setData(res.data);
       setProfileUrl(urlToUse);
       toast.success(`Verified! @${res.data.username} — ${res.data.total_solved} problems solved`);
