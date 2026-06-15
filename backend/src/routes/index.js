@@ -202,8 +202,16 @@ router.patch('/notifications/read-all', authenticate, notificationController.mar
 
 const debugCtrl = require('../controllers/debugController');
 router.get('/debug/db', debugCtrl.dbCheck);
+router.get('/debug/firebase', async (req, res) => {
+  try {
+    const { db } = require('../config/firebase');
+    const snap = await db.collection('users').limit(1).get();
+    res.json({ ok: true, docs: snap.size });
+  } catch (e) {
+    res.status(500).json({ error: e.message, stack: e.stack });
+  }
+});
 router.post('/debug/log', (req, res, next) => {
-  // Optional auth for debug logs
   next();
 }, debugCtrl.log);
 
