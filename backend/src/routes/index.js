@@ -205,12 +205,19 @@ router.get('/debug/db', debugCtrl.dbCheck);
 router.get('/debug/firebase', async (req, res) => {
   try {
     const { db } = require('../config/firebase');
+    const admin = require('firebase-admin');
+    const app = admin.app();
     const snap = await db.collection('users').limit(1).get();
     res.json({ 
       ok: true, 
       docs: snap.size, 
       has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT,
-      project: process.env.GOOGLE_CLOUD_PROJECT || 'none'
+      project: process.env.GOOGLE_CLOUD_PROJECT || 'none',
+      app_name: app.name,
+      app_options: {
+         projectId: app.options.projectId,
+         serviceAccountId: app.options.credential ? app.options.credential.getAccessToken().then(t=>t.access_token.substring(0,10)) : 'none'
+      }
     });
   } catch (e) {
     res.status(500).json({ error: e.message, stack: e.stack, has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT });

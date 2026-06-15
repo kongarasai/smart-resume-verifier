@@ -25,7 +25,7 @@ const csrfProtection = (req, res, next) => {
   if (origin) {
     const isVercel = origin.endsWith('.vercel.app');
     const isTrusted = trustedFrontends.some(url => origin.startsWith(url) || url.startsWith(origin));
-    const isLocalhost = origin.startsWith('http://localhost');
+    const isLocalhost = origin.startsWith('http://localhost') || origin.startsWith('capacitor://localhost');
     
     if (isVercel || isTrusted || isLocalhost) {
       return next();
