@@ -70,7 +70,7 @@ export default function GitHubPage() {
                 <div className="score-bar-fill bg-signal-blue" style={{ width: `${data.skill_match_score}%` }} />
               </div>
               <div className="mt-5 text-xs text-ink-500">
-                Last verified: {new Date(data.fetched_at).toLocaleDateString()}
+                Last verified: {data.fetched_at && !isNaN(new Date(data.fetched_at).getTime()) ? new Date(data.fetched_at).toLocaleDateString() : 'Recently updated'}
               </div>
             </div>
 
@@ -114,10 +114,10 @@ export default function GitHubPage() {
                 <div className="space-y-3">
                   {data.top_repos.map((repo: any) => (
                     <div key={repo.name} className="flex items-start justify-between gap-2 py-2 border-b border-ink-100 last:border-0">
-                      <div>
-                        <a href={repo.url} target="_blank" className="text-sm font-medium text-ink-900 hover:text-signal-blue">{repo.name}</a>
-                        {repo.description && <p className="text-xs text-ink-500 mt-0.5 line-clamp-1">{repo.description}</p>}
-                        {repo.language && <span className="text-xs text-ink-400">{repo.language}</span>}
+                      <div className="flex-1">
+                        <a href={repo.url} target="_blank" className="text-sm font-medium text-ink-900 hover:text-signal-blue block">{repo.name}</a>
+                        {repo.description && <p className="text-xs text-ink-500 mt-1 line-clamp-1">{repo.description}</p>}
+                        {repo.language && <span className="inline-flex mt-1.5 px-2 py-0.5 bg-ink-50 text-ink-500 text-[10px] rounded font-medium border border-ink-100">{repo.language}</span>}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-ink-400 shrink-0">
                         <Star size={11} /> {repo.stars}

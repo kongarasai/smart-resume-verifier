@@ -225,11 +225,15 @@ const triggerRecalculate = async (req, res) => {
       calculated_at: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    const membershipsSnap = await db.collectionGroup('members').where('user_id', '==', userId).get();
-    for (const mDoc of membershipsSnap.docs) {
-      if (mDoc.data().is_active !== true) continue;
-      const groupId = mDoc.ref.parent.parent.id;
-      await recalculateGroupRanking(groupId);
+    // Workaround: Avoid collectionGroup index requirement by querying each group individually
+    const groupsSnap = await db.collection('groups').get();
+    for (const gDoc of groupsSnap.docs) {
+      const memberQuery = await db.collection('groups').doc(gDoc.id).collection('members').where('user_id', '==', userId).get();
+      if (!memberQuery.empty) {
+        if (memberQuery.docs[0].data().is_active === true) {
+          await recalculateGroupRanking(gDoc.id);
+        }
+      }
     }
     await recalculateOverallRanking();
 
