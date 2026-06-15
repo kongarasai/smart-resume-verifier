@@ -17,9 +17,9 @@ ALTER TABLE interviews ADD CONSTRAINT interviews_status_check
 
 -- HR shortlist table
 CREATE TABLE IF NOT EXISTS hr_shortlists (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  hr_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  candidate_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  id SERIAL PRIMARY KEY,
+  hr_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  candidate_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   notes TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(hr_id, candidate_id)
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS job_fetch_log (
 
 -- Skill cross-source verification view (materialised as table for performance)
 CREATE TABLE IF NOT EXISTS skill_verifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   skill_name VARCHAR(100) NOT NULL,
   has_resume BOOLEAN DEFAULT FALSE,
   has_github BOOLEAN DEFAULT FALSE,

@@ -62,7 +62,7 @@ export default function PracticePage() {
     setCategory(cat);
     try {
       const res = await practiceAPI.startSession({ category: cat, tag });
-      setQuestions(res.data.questions);
+      setQuestions(res.data || []);
       setIdx(0);
       setAnswers({});
       setTimer(0);

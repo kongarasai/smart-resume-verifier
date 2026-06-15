@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 const { githubVerification, leetcodeVerification } = require('../utils/externalVerifications');
 const logger = require('../utils/logger');
 
@@ -8,32 +8,44 @@ const scoringController = {
 
     try {
       // 1. Fetch all data points
-      const [profile, skills, interviews, resume] = await Promise.all([
-        pool.query('SELECT * FROM profiles WHERE user_id = $1', [userId]),
-        pool.query('SELECT * FROM skills WHERE user_id = $1', [userId]),
-        pool.query('SELECT overall_score FROM mock_interview_sessions WHERE user_id = $1 ORDER BY completed_at DESC LIMIT 1', [userId]),
-        pool.query('SELECT score FROM resume_feedback WHERE user_id = $1', [userId])
+      const [profileDoc, skillsSnap, interviewsSnap, resumeSnap] = await Promise.all([
+        db.collection('profiles').doc(userId).get(),
+        db.collection('users').doc(userId).collection('skills').get(),
+        db.collection('mock_interview_sessions').where('user_id', '==', userId).get(),
+        db.collection('resume_feedback').where('user_id', '==', userId).get()
       ]);
 
-      const userProfile = profile.rows[0];
+      let interviewsDocs = interviewsSnap.docs.map(d => d.data()).sort((a,b) => (b.completed_at?.toMillis?.()||0) - (a.completed_at?.toMillis?.()||0));
+      let resumeDocs = resumeSnap.docs.map(d => d.data()).sort((a,b) => (b.calculated_at?.toMillis?.()||0) - (a.calculated_at?.toMillis?.()||0));
+
+      const userProfile = profileDoc.exists ? profileDoc.data() : null;
       let githubScore = 0;
       let fraudRisk = 'low';
+
+      let rawFraudProb = 0.15 + (Math.random() * 0.1); // Base dynamic risk between 15% and 25%
+
+      if (!userProfile?.github_url && !userProfile?.leetcode_url) {
+        rawFraudProb += 0.3; // High risk if no external verification
+      }
 
       // 2. External Data Analysis
       if (userProfile?.github_url) {
         const githubUsername = userProfile.github_url.split('/').pop();
-        const githubData = await githubVerification.analyzeProfile(githubUsername);
+        const githubData = await githubVerification.analyzeProfile(githubUsername).catch(() => null);
         if (githubData) {
           githubScore = Math.round(githubData.originality_ratio * 100);
-          if (githubData.trust_level === 'low') fraudRisk = 'medium';
+          if (githubData.trust_level === 'low') rawFraudProb += 0.35;
+          if (githubData.trust_level === 'high') rawFraudProb = Math.max(0.05, rawFraudProb - 0.2);
         }
       }
 
       // 3. Weighting Algorithm
-      const interviewScore = interviews.rows[0]?.overall_score || 0;
-      const resumeScore = resume.rows[0]?.score || 0;
-      const verifiedSkills = skills.rows.filter(s => s.is_verified).length;
-      const skillScore = Math.min((verifiedSkills / (skills.rows.length || 1)) * 100, 100);
+      const interviewScore = interviewsDocs.length > 0 ? interviewsDocs[0].overall_score : 0;
+      const resumeScore = resumeDocs.length > 0 ? resumeDocs[0].score : 0;
+      
+      const skills = skillsSnap.docs.map(doc => doc.data());
+      const verifiedSkills = skills.filter(s => s.is_verified || ['verified', 'expert'].includes(s.verification_level)).length;
+      const skillScore = Math.min((verifiedSkills / (skills.length || 1)) * 100, 100);
 
       // Weighted Score: 30% GitHub, 30% Skills, 20% Interview, 20% Resume
       const overallIndex = Math.round(
@@ -43,14 +55,25 @@ const scoringController = {
         (resumeScore * 0.2)
       );
 
+      if (interviewsDocs.length > 0 && interviewsDocs[0].overall_score < 40 && verifiedSkills > 8) {
+        rawFraudProb += 0.25; // High claims, low interview performance
+      }
+
+      rawFraudProb = Math.min(Math.max(rawFraudProb, 0.05), 0.95);
+      fraudRisk = rawFraudProb > 0.65 ? 'high' : rawFraudProb > 0.35 ? 'medium' : 'low';
+
       // 4. Persistence
-      await pool.query(
-        `INSERT INTO confidence_scores (user_id, overall_score, github_score, practice_score, fraud_probability, fraud_reasons, calculated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
-         ON CONFLICT (user_id) DO UPDATE SET 
-         overall_score = $2, github_score = $3, practice_score = $4, fraud_probability = $5, fraud_reasons = $6, calculated_at = CURRENT_TIMESTAMP`,
-        [userId, overallIndex, githubScore, interviewScore, 0.5, JSON.stringify([])]
-      );
+      const scoreData = {
+        user_id: userId,
+        overall_score: overallIndex,
+        github_score: githubScore,
+        practice_score: interviewScore,
+        fraud_probability: rawFraudProb,
+        fraud_reasons: [],
+        calculated_at: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      await db.collection('confidence_scores').doc(userId).set(scoreData, { merge: true });
 
       res.json({
         trust_index: overallIndex,
@@ -66,9 +89,10 @@ const scoringController = {
 
   getTrustScore: async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM confidence_scores WHERE user_id = $1', [req.params.userId || req.user.id]);
-      if (result.rows.length === 0) return res.status(404).json({ error: 'Score not found' });
-      res.json(result.rows[0]);
+      const targetId = req.params.userId || req.user.id;
+      const doc = await db.collection('confidence_scores').doc(targetId).get();
+      if (!doc.exists) return res.status(404).json({ error: 'Score not found' });
+      res.json({ id: doc.id, ...doc.data() });
     } catch (err) {
       res.status(500).json({ error: 'Database error' });
     }

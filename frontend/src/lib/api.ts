@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
 const rawApiUrl = cleanUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
@@ -7,6 +8,7 @@ const API_URL = (rawApiUrl.endsWith('/api') || rawApiUrl.endsWith('/api/') ? raw
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
+  timeout: 60000, // Increased timeout for AI Generation requests
   headers: { 
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true'
@@ -39,7 +41,7 @@ const unwrap = (r: any) => {
   return d;
 };
 
-// ── Response Interceptor: global 401 redirect ──
+// ── Response Interceptor: global 401 redirect & Error Toasts ──
 api.interceptors.response.use(
   (res) => {
     console.log(`[API SUCCESS] ${res.config.method?.toUpperCase()} ${res.config.url}`);
@@ -47,11 +49,21 @@ api.interceptors.response.use(
   },
   (err) => {
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
+    
+    // Handle Network Timeouts & Server Drops
+    if (err.code === 'ECONNABORTED' || err.message.includes('timeout') || err.message === 'Network Error') {
+      if (typeof window !== 'undefined') toast.error('Connection to server lost. Please check your network.');
+    } else if (err.response?.status >= 500) {
+      if (typeof window !== 'undefined') toast.error(err.response.data?.error || 'The server encountered an error.');
+    }
+
     if (
       err.response?.status === 401 &&
       typeof window !== 'undefined' &&
       !window.location.pathname.includes('/auth/')
     ) {
+      toast.error('Session expired. Please log in again.');
+      localStorage.removeItem('token');
       window.location.href = '/auth/login';
     }
     return Promise.reject(err);

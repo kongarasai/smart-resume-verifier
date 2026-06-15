@@ -7,7 +7,7 @@ let interviewWorker = null;
 if (USE_REDIS) {
   const { Worker } = require('bullmq');
   const IORedis = require('ioredis');
-  const { pool } = require('../config/database');
+  const { db, admin } = require('../config/firebase');
   const { analyzeResumeWithAI, evaluateInterviewWithAI } = require('../utils/aiProviders');
 
   const { getRedisOptions, sanitizedUrl } = require('../utils/redis');
@@ -19,10 +19,12 @@ if (USE_REDIS) {
     
     try {
       const analysis = await analyzeResumeWithAI(resumeText);
-      await pool.query(
-        'INSERT INTO resume_feedback (user_id, score, feedback) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET score = $2, feedback = $3',
-        [userId, analysis.score, JSON.stringify(analysis.tips)]
-      );
+      await db.collection('resume_feedback').doc(userId).set({
+        user_id: userId,
+        score: analysis.score,
+        feedback: analysis.tips,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
 
       if (global.io) {
         global.io.to(`user_${userId}`).emit('RESUME_PARSED', { 
@@ -43,10 +45,11 @@ if (USE_REDIS) {
 
     try {
       const evaluation = await evaluateInterviewWithAI(sessionData);
-      await pool.query(
-        'UPDATE mock_interview_sessions SET feedback = $1, overall_score = $2 WHERE id = $3',
-        [JSON.stringify(evaluation.feedback), evaluation.overall_score, sessionData.sessionId]
-      );
+      await db.collection('mock_interview_sessions').doc(sessionData.sessionId).update({
+        feedback: evaluation.feedback,
+        overall_score: evaluation.overall_score,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      });
 
       if (global.io) {
         global.io.to(`user_${userId}`).emit('INTERVIEW_EVALUATED', { 

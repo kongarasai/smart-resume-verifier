@@ -9,12 +9,10 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const logger = require('./utils/logger');
-const { pool } = require('./config/database');
 const routes = require('./routes');
 const { aiWorker, interviewWorker } = require('./workers/aiWorker');
 const { metricsMiddleware, getMetrics } = require('./middleware/metrics');
 const { csrfProtection, generateCsrfToken } = require('./middleware/security');
-const migrate = require('../migrate');
 
 const app = express();
 app.set('trust proxy', 1); // Trust Ngrok proxy for rate limiting
@@ -148,9 +146,6 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  // Run migrations before starting
-  await migrate();
-  
   server.listen(PORT, '0.0.0.0', () => {
     logger.info(`🚀 Smart Resume Verifier [${process.env.NODE_ENV}] running on port ${PORT}`);
   });
@@ -161,10 +156,8 @@ startServer();
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
   server.close(() => {
-    pool.end(() => {
-      logger.info('Process terminated.');
-      process.exit(0);
-    });
+    logger.info('Process terminated.');
+    process.exit(0);
   });
 });
 

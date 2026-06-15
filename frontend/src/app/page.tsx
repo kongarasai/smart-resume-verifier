@@ -21,8 +21,14 @@ export default function Home() {
         router.replace(`/candidates/view/?id=${sid}`);
         return;
       }
-      if (!user) router.replace('/auth/login');
-      else router.replace(REDIRECTS[user.role] || '/auth/login');
+      if (!user) {
+        router.replace('/auth/login');
+        setTimeout(() => { if (window.location.pathname === '/') window.location.href = '/auth/login'; }, 500);
+      } else {
+        const target = REDIRECTS[user.role] || '/admin/dashboard';
+        router.replace(target);
+        setTimeout(() => { if (window.location.pathname === '/') window.location.href = target; }, 500);
+      }
     }
   }, [user, isLoading]);
 

@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Smart Resume Verifier',
   webDir: 'out',
   server: {
-    androidScheme: 'https',
+    androidScheme: 'http',
     cleartext: true
   }
 };

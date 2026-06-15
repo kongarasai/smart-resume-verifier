@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 const { getAIResponse } = require('../services/ai/aiRouter');
 const logger = require('../utils/logger');
 
@@ -7,18 +7,22 @@ const generateQuestions = async (req, res) => {
     const userId = req.user.id;
     
     // Fetch profile data to personalize questions
-    const [profile, skills, projects] = await Promise.all([
-      query('SELECT headline, bio, years_experience FROM profiles WHERE user_id = $1', [userId]),
-      query('SELECT name FROM skills WHERE user_id = $1', [userId]),
-      query('SELECT title, description FROM projects WHERE user_id = $1', [userId])
+    const [profileDoc, skillsSnap, projectsSnap] = await Promise.all([
+      db.collection('profiles').doc(userId).get(),
+      db.collection('users').doc(userId).collection('skills').get(),
+      db.collection('users').doc(userId).collection('projects').get()
     ]);
+
+    const profile = profileDoc.exists ? profileDoc.data() : {};
+    const skills = skillsSnap.docs.map(doc => doc.data());
+    const projects = projectsSnap.docs.map(doc => doc.data());
 
     const prompt = `
       You are a senior technical interviewer. Generate 5 unique technical interview questions for a candidate with the following profile:
-      - Headline: ${profile.rows[0]?.headline || 'Software Developer'}
-      - Experience: ${profile.rows[0]?.years_experience || 0} years
-      - Skills: ${skills.rows.map(s => s.name).join(', ')}
-      - Projects: ${projects.rows.map(p => p.title).join(', ')}
+      - Headline: ${profile.headline || 'Software Developer'}
+      - Experience: ${profile.years_experience || 0} years
+      - Skills: ${skills.map(s => s.name).join(', ')}
+      - Projects: ${projects.map(p => p.title).join(', ')}
 
       The questions should range from conceptual to situational (behavioral technical).
       Return ONLY a JSON array of strings.
@@ -62,11 +66,16 @@ const evaluateResponse = async (req, res) => {
 const saveSession = async (req, res) => {
   const { overall_score, feedback, questions_count } = req.body;
   try {
-    const result = await query(
-      'INSERT INTO mock_interview_sessions (user_id, overall_score, feedback, questions_count) VALUES ($1,$2,$3,$4) RETURNING *',
-      [req.user.id, overall_score, JSON.stringify(feedback), questions_count]
-    );
-    res.status(201).json(result.rows[0]);
+    const newSession = {
+      user_id: req.user.id,
+      overall_score,
+      feedback,
+      questions_count,
+      completed_at: admin.firestore.FieldValue.serverTimestamp()
+    };
+    
+    const docRef = await db.collection('mock_interview_sessions').add(newSession);
+    res.status(201).json({ id: docRef.id, ...newSession });
   } catch (err) {
     logger.error('Failed to save mock session:', err);
     res.status(500).json({ error: 'Failed to save session' });
@@ -75,11 +84,13 @@ const saveSession = async (req, res) => {
 
 const getHistory = async (req, res) => {
   try {
-    const result = await query(
-      'SELECT * FROM mock_interview_sessions WHERE user_id=$1 ORDER BY completed_at DESC',
-      [req.user.id]
-    );
-    res.json(result.rows);
+    const snap = await db.collection('mock_interview_sessions')
+      .where('user_id', '==', req.user.id)
+      .orderBy('completed_at', 'desc')
+      .get();
+      
+    const history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(history);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load history' });
   }

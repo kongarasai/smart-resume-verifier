@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     <span className="text-sm">{s.name}</span>
                     {s.verification_level !== 'claimed' && <Shield size={12} className="text-green-600" />}
                     <button 
-                      onClick={(e) => { e.stopPropagation(); deleteSkill(s.ids[0], e); }}
+                      onClick={(e) => { e.stopPropagation(); deleteSkill(s.id, e); }}
                       className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-opacity"
                     >
                       <Trash2 size={12} />

@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 
 const scheduleInterview = async (req, res) => {
   const { candidate_id, scheduled_date, scheduled_time, mode, notes, meeting_link } = req.body;
@@ -7,31 +7,42 @@ const scheduleInterview = async (req, res) => {
   }
 
   try {
-    const cand = await query('SELECT id, full_name FROM users WHERE id=$1 AND role=$2', [candidate_id, 'candidate']);
-    if (!cand.rows[0]) return res.status(404).json({ error: 'Candidate not found' });
+    const candDoc = await db.collection('users').doc(candidate_id).get();
+    if (!candDoc.exists || candDoc.data().role !== 'candidate') return res.status(404).json({ error: 'Candidate not found' });
 
-    const riskRes = await query('SELECT overall_score FROM confidence_scores WHERE user_id=$1', [candidate_id]);
-    const score = riskRes.rows[0]?.overall_score || 0;
+    const riskDoc = await db.collection('confidence_scores').doc(candidate_id).get();
+    const score = riskDoc.exists ? riskDoc.data().overall_score : 0;
     const risk_level = score >= 70 ? 'low' : score >= 40 ? 'medium' : 'high';
 
-    const result = await query(
-      `INSERT INTO interviews (candidate_id, hr_id, scheduled_date, scheduled_time, mode, notes, meeting_link, risk_level)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [candidate_id, req.user.id, scheduled_date, scheduled_time, mode, notes, meeting_link, risk_level]
-    );
+    const newInterview = {
+      candidate_id,
+      hr_id: req.user.id,
+      scheduled_date,
+      scheduled_time,
+      mode,
+      notes: notes || '',
+      meeting_link: meeting_link || '',
+      risk_level,
+      status: 'scheduled',
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    };
 
-    const hrRes = await query('SELECT full_name FROM users WHERE id=$1', [req.user.id]);
+    const docRef = await db.collection('interviews').add(newInterview);
+
+    const hrDoc = await db.collection('users').doc(req.user.id).get();
+    const hrName = hrDoc.exists ? hrDoc.data().full_name : 'An HR Representative';
+
     const { sendNotification } = require('./notificationController');
     await sendNotification(
       req.app, 
       candidate_id, 
       'interview_scheduled', 
       'Interview Scheduled', 
-      `Your interview has been scheduled for ${scheduled_date} at ${scheduled_time} (${mode}) by ${hrRes.rows[0]?.full_name}`, 
-      result.rows[0].id
+      `Your interview has been scheduled for ${scheduled_date} at ${scheduled_time} (${mode}) by ${hrName}`, 
+      docRef.id
     );
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ id: docRef.id, ...newInterview });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to schedule interview' });
@@ -41,18 +52,32 @@ const scheduleInterview = async (req, res) => {
 const getMyInterviews = async (req, res) => {
   const field = req.user.role === 'hr' ? 'hr_id' : 'candidate_id';
   try {
-    const result = await query(
-      `SELECT i.*,
-              u_c.full_name as candidate_name, u_c.email as candidate_email,
-              u_h.full_name as hr_name, u_h.email as hr_email
-       FROM interviews i
-       JOIN users u_c ON u_c.id = i.candidate_id
-       JOIN users u_h ON u_h.id = i.hr_id
-       WHERE i.${field} = $1
-       ORDER BY i.scheduled_date DESC, i.scheduled_time DESC`,
-      [req.user.id]
-    );
-    res.json(result.rows);
+    const snap = await db.collection('interviews').where(field, '==', req.user.id).get();
+    const interviews = [];
+    
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const [candDoc, hrDoc] = await Promise.all([
+        db.collection('users').doc(data.candidate_id).get(),
+        db.collection('users').doc(data.hr_id).get()
+      ]);
+      
+      const cand = candDoc.exists ? candDoc.data() : {};
+      const hr = hrDoc.exists ? hrDoc.data() : {};
+      
+      interviews.push({
+        id: doc.id, ...data,
+        candidate_name: cand.full_name, candidate_email: cand.email,
+        hr_name: hr.full_name, hr_email: hr.email
+      });
+    }
+
+    interviews.sort((a, b) => {
+      if (a.scheduled_date !== b.scheduled_date) return b.scheduled_date.localeCompare(a.scheduled_date);
+      return (b.scheduled_time || '').localeCompare(a.scheduled_time || '');
+    });
+
+    res.json(interviews);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load interviews' });
   }
@@ -61,37 +86,58 @@ const getMyInterviews = async (req, res) => {
 const updateInterview = async (req, res) => {
   const { status, notes, meeting_link } = req.body;
   try {
-    const result = await query(
-      `UPDATE interviews SET status=$1, notes=COALESCE($2,notes), meeting_link=COALESCE($3,meeting_link), updated_at=NOW()
-       WHERE id=$4 AND hr_id=$5 RETURNING *`,
-      [status, notes, meeting_link, req.params.id, req.user.id]
-    );
-    if (!result.rows[0]) return res.status(404).json({ error: 'Interview not found' });
-    res.json(result.rows[0]);
+    const docRef = db.collection('interviews').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists || doc.data().hr_id !== req.user.id) {
+      return res.status(404).json({ error: 'Interview not found' });
+    }
+
+    const updates = { updated_at: admin.firestore.FieldValue.serverTimestamp() };
+    if (status !== undefined) updates.status = status;
+    if (notes !== undefined) updates.notes = notes;
+    if (meeting_link !== undefined) updates.meeting_link = meeting_link;
+
+    await docRef.update(updates);
+    const updatedDoc = await docRef.get();
+    
+    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
   } catch (err) {
     res.status(500).json({ error: 'Update failed' });
   }
 };
 
-// Get all HR contacts the candidate has an interview with (for messaging)
 const getMyInterviewContacts = async (req, res) => {
   try {
-    const result = await query(
-      `SELECT DISTINCT u.id, u.full_name, u.email, i.status, i.scheduled_date, i.scheduled_time, i.mode
-       FROM interviews i
-       JOIN users u ON u.id = CASE WHEN i.candidate_id=$1 THEN i.hr_id ELSE i.candidate_id END
-       WHERE (i.candidate_id=$1 OR i.hr_id=$1)
-         AND i.status != 'cancelled'
-       ORDER BY i.scheduled_date DESC`,
-      [req.user.id]
-    );
-    res.json(result.rows);
+    const asHrSnap = await db.collection('interviews').where('hr_id', '==', req.user.id).get();
+    const asCandSnap = await db.collection('interviews').where('candidate_id', '==', req.user.id).get();
+    
+    const allInterviews = [...asHrSnap.docs, ...asCandSnap.docs].map(d => ({ id: d.id, ...d.data() })).filter(i => i.status !== 'cancelled');
+    
+    const contactsMap = new Map();
+    for (const i of allInterviews) {
+      const otherId = i.candidate_id === req.user.id ? i.hr_id : i.candidate_id;
+      if (!contactsMap.has(otherId)) {
+        contactsMap.set(otherId, { ...i, target_user: otherId });
+      }
+    }
+
+    const contacts = [];
+    for (const [otherId, i] of contactsMap.entries()) {
+      const uDoc = await db.collection('users').doc(otherId).get();
+      const u = uDoc.exists ? uDoc.data() : {};
+      contacts.push({
+        id: otherId, full_name: u.full_name, email: u.email,
+        status: i.status, scheduled_date: i.scheduled_date, scheduled_time: i.scheduled_time, mode: i.mode
+      });
+    }
+
+    contacts.sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
+    res.json(contacts);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load contacts' });
   }
 };
 
-// FIX: Proper parentheses so AND/OR precedence works correctly
 const sendMessage = async (req, res) => {
   const { receiver_id, content } = req.body;
   if (!receiver_id || !content?.trim()) {
@@ -99,37 +145,40 @@ const sendMessage = async (req, res) => {
   }
 
   try {
-    // FIXED: Proper parentheses around OR clause
-    const interviewCheck = await query(
-      `SELECT id FROM interviews 
-       WHERE ((candidate_id=$1 AND hr_id=$2) OR (candidate_id=$2 AND hr_id=$1))
-         AND status != 'cancelled'
-       LIMIT 1`,
-      [req.user.id, receiver_id]
-    );
+    const asHrSnap = await db.collection('interviews').where('hr_id', '==', req.user.id).where('candidate_id', '==', receiver_id).get();
+    const asCandSnap = await db.collection('interviews').where('hr_id', '==', receiver_id).where('candidate_id', '==', req.user.id).get();
+    
+    const allInterviews = [...asHrSnap.docs, ...asCandSnap.docs].filter(d => d.data().status !== 'cancelled');
 
-    if (!interviewCheck.rows[0]) {
+    if (allInterviews.length === 0) {
       return res.status(403).json({ error: 'Messaging is only enabled after an interview is scheduled between you' });
     }
 
-    const result = await query(
-      `INSERT INTO messages (sender_id, receiver_id, interview_id, content)
-       VALUES ($1,$2,$3,$4) RETURNING *`,
-      [req.user.id, receiver_id, interviewCheck.rows[0].id, content.trim()]
-    );
+    const newMessage = {
+      sender_id: req.user.id,
+      receiver_id,
+      interview_id: allInterviews[0].id,
+      content: content.trim(),
+      is_read: false,
+      sent_at: admin.firestore.FieldValue.serverTimestamp()
+    };
 
-    const senderRes = await query('SELECT full_name FROM users WHERE id=$1', [req.user.id]);
+    const docRef = await db.collection('messages').add(newMessage);
+
+    const senderDoc = await db.collection('users').doc(req.user.id).get();
+    const senderName = senderDoc.exists ? senderDoc.data().full_name : 'Someone';
+
     const { sendNotification } = require('./notificationController');
     await sendNotification(
       req.app, 
       receiver_id, 
       'new_message', 
       'New Message', 
-      `New message from ${senderRes.rows[0]?.full_name}`, 
-      result.rows[0].id
+      `New message from ${senderName}`, 
+      docRef.id
     );
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ id: docRef.id, ...newMessage });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to send message' });
@@ -139,31 +188,41 @@ const sendMessage = async (req, res) => {
 const getConversation = async (req, res) => {
   const other = req.params.userId;
   try {
-    // Verify they have an interview together before showing messages
-    const interviewCheck = await query(
-      `SELECT id FROM interviews 
-       WHERE ((candidate_id=$1 AND hr_id=$2) OR (candidate_id=$2 AND hr_id=$1))
-         AND status != 'cancelled'
-       LIMIT 1`,
-      [req.user.id, other]
-    );
-    if (!interviewCheck.rows[0]) {
+    const asHrSnap = await db.collection('interviews').where('hr_id', '==', req.user.id).where('candidate_id', '==', other).get();
+    const asCandSnap = await db.collection('interviews').where('hr_id', '==', other).where('candidate_id', '==', req.user.id).get();
+    const allInterviews = [...asHrSnap.docs, ...asCandSnap.docs].filter(d => d.data().status !== 'cancelled');
+
+    if (allInterviews.length === 0) {
       return res.status(403).json({ error: 'Messaging only available after an interview is scheduled' });
     }
 
-    const result = await query(
-      `SELECT m.*, u.full_name as sender_name
-       FROM messages m JOIN users u ON u.id = m.sender_id
-       WHERE (m.sender_id=$1 AND m.receiver_id=$2)
-          OR (m.sender_id=$2 AND m.receiver_id=$1)
-       ORDER BY m.sent_at ASC`,
-      [req.user.id, other]
-    );
-    await query(
-      `UPDATE messages SET is_read=true WHERE receiver_id=$1 AND sender_id=$2`,
-      [req.user.id, other]
-    );
-    res.json(result.rows);
+    const sentSnap = await db.collection('messages').where('sender_id', '==', req.user.id).where('receiver_id', '==', other).get();
+    const recvSnap = await db.collection('messages').where('sender_id', '==', other).where('receiver_id', '==', req.user.id).get();
+    
+    const messages = [...sentSnap.docs, ...recvSnap.docs].map(d => ({ id: d.id, ...d.data() }));
+
+    const u1 = await db.collection('users').doc(req.user.id).get();
+    const u2 = await db.collection('users').doc(other).get();
+    const n1 = u1.exists ? u1.data().full_name : 'Unknown';
+    const n2 = u2.exists ? u2.data().full_name : 'Unknown';
+
+    messages.forEach(m => {
+      m.sender_name = m.sender_id === req.user.id ? n1 : n2;
+    });
+
+    messages.sort((a, b) => {
+      const aTime = a.sent_at ? a.sent_at.toMillis() : 0;
+      const bTime = b.sent_at ? b.sent_at.toMillis() : 0;
+      return aTime - bTime;
+    });
+
+    const batch = db.batch();
+    recvSnap.docs.forEach(doc => {
+      if (!doc.data().is_read) batch.update(doc.ref, { is_read: true });
+    });
+    await batch.commit();
+
+    res.json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message || 'Failed to load messages' });
   }
@@ -171,48 +230,50 @@ const getConversation = async (req, res) => {
 
 const getMyConversations = async (req, res) => {
   try {
-    const result = await query(
-      `SELECT DISTINCT ON (other_user_id)
-         other_user_id,
-         other_name,
-         last_message,
-         last_sent_at,
-         unread_count
-       FROM (
-         SELECT
-           CASE WHEN m.sender_id=$1 THEN m.receiver_id ELSE m.sender_id END as other_user_id,
-           u.full_name as other_name,
-           m.content as last_message,
-           m.sent_at as last_sent_at,
-           (SELECT COUNT(*) FROM messages m2 
-            WHERE m2.receiver_id=$1 
-              AND m2.sender_id = CASE WHEN m.sender_id=$1 THEN m.receiver_id ELSE m.sender_id END
-              AND m2.is_read=false) as unread_count
-         FROM messages m
-         JOIN users u ON u.id = CASE WHEN m.sender_id=$1 THEN m.receiver_id ELSE m.sender_id END
-         WHERE m.sender_id=$1 OR m.receiver_id=$1
-         ORDER BY m.sent_at DESC
-       ) sub
-       ORDER BY other_user_id, last_sent_at DESC`,
-      [req.user.id]
-    );
-    res.json(result.rows);
+    const sentSnap = await db.collection('messages').where('sender_id', '==', req.user.id).get();
+    const recvSnap = await db.collection('messages').where('receiver_id', '==', req.user.id).get();
+    
+    const allMessages = [...sentSnap.docs, ...recvSnap.docs].map(d => ({ id: d.id, ...d.data() }));
+    
+    const convMap = new Map();
+    for (const m of allMessages) {
+      const otherId = m.sender_id === req.user.id ? m.receiver_id : m.sender_id;
+      if (!convMap.has(otherId)) {
+        convMap.set(otherId, { last_message: m.content, last_sent_at: m.sent_at, unread_count: 0 });
+      } else {
+        const existing = convMap.get(otherId);
+        const aTime = m.sent_at ? m.sent_at.toMillis() : 0;
+        const bTime = existing.last_sent_at ? existing.last_sent_at.toMillis() : 0;
+        if (aTime > bTime) {
+          existing.last_message = m.content;
+          existing.last_sent_at = m.sent_at;
+        }
+      }
+      if (m.receiver_id === req.user.id && !m.is_read) {
+        convMap.get(otherId).unread_count++;
+      }
+    }
+
+    const conversations = [];
+    for (const [otherId, data] of convMap.entries()) {
+      const uDoc = await db.collection('users').doc(otherId).get();
+      conversations.push({
+        other_user_id: otherId,
+        other_name: uDoc.exists ? uDoc.data().full_name : 'Unknown',
+        ...data
+      });
+    }
+
+    conversations.sort((a, b) => {
+      const aTime = a.last_sent_at ? a.last_sent_at.toMillis() : 0;
+      const bTime = b.last_sent_at ? b.last_sent_at.toMillis() : 0;
+      return bTime - aTime;
+    });
+
+    res.json(conversations);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load conversations' });
   }
-};
-
-const getNotifications = async (req, res) => {
-  const result = await query(
-    'SELECT * FROM notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20',
-    [req.user.id]
-  );
-  res.json(result.rows);
-};
-
-const markNotificationRead = async (req, res) => {
-  await query('UPDATE notifications SET is_read=true WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
-  res.json({ message: 'Marked as read' });
 };
 
 module.exports = {

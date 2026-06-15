@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 
 const TECH_SKILLS = [
   'javascript','typescript','python','java','c++','golang','rust','ruby','php','swift','kotlin',
@@ -28,13 +28,12 @@ const fetchRemotive = async () => {
   let count = 0;
   for (const job of res.data.jobs || []) {
     const skills = extractSkills(`${job.title} ${(job.tags||[]).join(' ')} ${job.description?.substring(0,400)||''}`);
-    await query(
-      `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, job_type, apply_url, source_platform)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'remotive')
-       ON CONFLICT (external_id, source_platform) DO UPDATE SET title=$2, company=$3, fetched_at=NOW()`,
-      [String(job.id), job.title, job.company_name, job.candidate_required_location||'Remote',
-       (job.description||'').substring(0,600), skills, job.job_type, job.url]
-    ).catch(()=>{});
+    await db.collection('job_listings').doc(`remotive_${job.id}`).set({
+      external_id: String(job.id), title: job.title, company: job.company_name,
+      location: job.candidate_required_location||'Remote', description: (job.description||'').substring(0,600),
+      required_skills: skills, job_type: job.job_type, apply_url: job.url,
+      source_platform: 'remotive', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(()=>{});
     count++;
   }
   return count;
@@ -46,13 +45,12 @@ const fetchJobicy = async () => {
   let count = 0;
   for (const job of res.data.jobs || []) {
     const skills = extractSkills(`${job.jobTitle} ${job.jobIndustry||''} ${job.jobExcerpt||''}`);
-    await query(
-      `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, apply_url, source_platform)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'jobicy')
-       ON CONFLICT (external_id, source_platform) DO UPDATE SET title=$2, company=$3, fetched_at=NOW()`,
-      [String(job.id), job.jobTitle, job.companyName, job.jobGeo||'Remote',
-       (job.jobExcerpt||'').substring(0,600), skills, job.url]
-    ).catch(()=>{});
+    await db.collection('job_listings').doc(`jobicy_${job.id}`).set({
+      external_id: String(job.id), title: job.jobTitle, company: job.companyName,
+      location: job.jobGeo||'Remote', description: (job.jobExcerpt||'').substring(0,600),
+      required_skills: skills, apply_url: job.url,
+      source_platform: 'jobicy', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(()=>{});
     count++;
   }
   return count;
@@ -65,13 +63,12 @@ const fetchArbeitnow = async () => {
   for (const job of (res.data.data||[]).slice(0,80)) {
     const skills = extractSkills(`${job.title} ${(job.tags||[]).join(' ')} ${job.description?.substring(0,400)||''}`);
     const eid = job.slug || Buffer.from(job.title+job.company_name).toString('base64').substring(0,40);
-    await query(
-      `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, apply_url, source_platform)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'arbeitnow')
-       ON CONFLICT (external_id, source_platform) DO UPDATE SET title=$2, company=$3, fetched_at=NOW()`,
-      [eid, job.title, job.company_name, job.location||'Remote',
-       (job.description||'').substring(0,600), skills, job.url]
-    ).catch(()=>{});
+    await db.collection('job_listings').doc(`arbeitnow_${eid}`).set({
+      external_id: eid, title: job.title, company: job.company_name,
+      location: job.location||'Remote', description: (job.description||'').substring(0,600),
+      required_skills: skills, apply_url: job.url,
+      source_platform: 'arbeitnow', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(()=>{});
     count++;
   }
   return count;
@@ -85,40 +82,39 @@ const fetchFindwork = async () => {
     let count = 0;
     for (const job of (res.data.results||[]).slice(0,50)) {
       const skills = extractSkills(`${job.role} ${(job.keywords||[]).join(' ')}`);
-      await query(
-        `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, apply_url, source_platform)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,'findwork')
-         ON CONFLICT (external_id, source_platform) DO UPDATE SET title=$2, company=$3, fetched_at=NOW()`,
-        [String(job.id), job.role, job.company_name, job.location||'Remote',
-         (job.text||'').substring(0,600), skills, job.url]
-      ).catch(()=>{});
+      await db.collection('job_listings').doc(`findwork_${job.id}`).set({
+        external_id: String(job.id), title: job.role, company: job.company_name,
+        location: job.location||'Remote', description: (job.text||'').substring(0,600),
+        required_skills: skills, apply_url: job.url,
+        source_platform: 'findwork', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(()=>{});
       count++;
     }
     return count;
   } catch { return 0; }
 };
 
-// ── Source 5: Otta (public RSS/scrape alternative) via Himalayas ──
+// ── Source 5: Otta (via Himalayas) ──
 const fetchHimalayas = async () => {
   try {
     const res = await axios.get('https://himalayas.app/jobs/api?limit=50', { timeout: 12000 });
     let count = 0;
     for (const job of res.data.jobs || []) {
       const skills = extractSkills(`${job.title} ${(job.skills||[]).join(' ')} ${job.description?.substring(0,400)||''}`);
-      await query(
-        `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, apply_url, source_platform)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,'himalayas')
-         ON CONFLICT (external_id, source_platform) DO UPDATE SET title=$2, company=$3, fetched_at=NOW()`,
-        [String(job.id||job.slug), job.title, job.company?.name||'Unknown', job.location||'Remote',
-         (job.description||'').substring(0,600), skills, job.applicationLink||job.url]
-      ).catch(()=>{});
+      const eid = String(job.id||job.slug);
+      await db.collection('job_listings').doc(`himalayas_${eid}`).set({
+        external_id: eid, title: job.title, company: job.company?.name||'Unknown',
+        location: job.location||'Remote', description: (job.description||'').substring(0,600),
+        required_skills: skills, apply_url: job.applicationLink||job.url,
+        source_platform: 'himalayas', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(()=>{});
       count++;
     }
     return count;
   } catch { return 0; }
 };
 
-// ── Source 6: Wellfound / AngelList public feed ──
+// ── Source 6: Wellfound ──
 const fetchWellfound = async () => {
   try {
     const res = await axios.get('https://api.wellfound.com/graphql', {
@@ -130,14 +126,13 @@ const fetchWellfound = async () => {
     for (const edge of (res.data.data?.jobListings?.edges||[])) {
       const j = edge.node;
       const skills = extractSkills(`${j.title} ${(j.skills||[]).map(function(s){return s.name||"";}).join(' ')}`);
-      await query(
-        `INSERT INTO job_listings (external_id, title, company, location, description, required_skills, apply_url, source_platform)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,'wellfound')
-         ON CONFLICT (external_id, source_platform) DO UPDATE SET fetched_at=NOW()`,
-        [Buffer.from(j.title+j.company?.name||'').toString('base64').substring(0,40),
-         j.title, j.company?.name||'Startup', 'Remote',
-         (j.description||'').substring(0,600), skills, j.applyUrl||'']
-      ).catch(()=>{});
+      const eid = Buffer.from(j.title+(j.company?.name||'')).toString('base64').substring(0,40);
+      await db.collection('job_listings').doc(`wellfound_${eid}`).set({
+        external_id: eid, title: j.title, company: j.company?.name||'Startup',
+        location: 'Remote', description: (j.description||'').substring(0,600),
+        required_skills: skills, apply_url: j.applyUrl||'',
+        source_platform: 'wellfound', fetched_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(()=>{});
       count++;
     }
     return count;
@@ -160,7 +155,7 @@ const fetchAllJobs = async () => {
       const cnt = await src.fn();
       total += cnt;
       console.log(`[Jobs] ${src.name}: ${cnt} jobs`);
-      await query('INSERT INTO job_fetch_log (source, jobs_fetched) VALUES ($1,$2)', [src.name, cnt]).catch(()=>{});
+      await db.collection('job_fetch_log').add({ source: src.name, jobs_fetched: cnt, fetched_at: admin.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     } catch (e) {
       console.error(`[Jobs] ${src.name} failed:`, e.message);
     }
@@ -170,8 +165,12 @@ const fetchAllJobs = async () => {
 
 const calcMatch = async (userId, requiredSkills) => {
   if (!requiredSkills?.length) return { match_pct: 0, matched: [], missing: [] };
-  const skillsRes = await query('SELECT DISTINCT LOWER(name) as name FROM skills WHERE user_id=$1', [userId]);
-  const userSet = new Set(skillsRes.rows.map(r => normalise(r.name)));
+  const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
+  const userSet = new Set();
+  skillsSnap.forEach(doc => {
+    if (doc.data().name) userSet.add(normalise(doc.data().name));
+  });
+  
   const matched = requiredSkills.filter(s => userSet.has(normalise(s)));
   const missing = requiredSkills.filter(s => !userSet.has(normalise(s)));
   return {
@@ -184,40 +183,38 @@ const calcMatch = async (userId, requiredSkills) => {
 const getJobs = async (req, res) => {
   const { tab = 'all', page = 1, limit = 25, search } = req.query;
   try {
-    // Auto-fetch if stale
-    const staleRes = await query("SELECT MAX(fetched_at) as last, COUNT(*) as cnt FROM job_listings");
-    const cnt = parseInt(staleRes.rows[0]?.cnt || 0);
-    const last = staleRes.rows[0]?.last;
-    const isStale = !last || (Date.now() - new Date(last).getTime() > 6*60*60*1000);
-    if (cnt === 0 || isStale) fetchAllJobs().catch(e => console.error('[Jobs] bg fetch err:', e.message));
+    const logSnap = await db.collection('job_fetch_log').orderBy('fetched_at', 'desc').limit(1).get();
+    const lastFetch = logSnap.empty ? null : logSnap.docs[0].data().fetched_at?.toDate();
+    const isStale = !lastFetch || (Date.now() - lastFetch.getTime() > 6*60*60*1000);
+    
+    if (isStale) fetchAllJobs().catch(e => console.error('[Jobs] bg fetch err:', e.message));
 
-    let sql = 'SELECT * FROM job_listings WHERE 1=1';
-    const params = [];
+    let jobsSnap = await db.collection('job_listings').orderBy('fetched_at', 'desc').limit(100).get();
+    let allJobs = jobsSnap.docs.map(doc => doc.data());
 
     if (search) {
-      params.push(`%${search.toLowerCase()}%`);
-      sql += ` AND (LOWER(title) LIKE $${params.length} OR LOWER(company) LIKE $${params.length})`;
+      const s = search.toLowerCase();
+      allJobs = allJobs.filter(j => j.title?.toLowerCase().includes(s) || j.company?.toLowerCase().includes(s));
     }
 
     if (tab === 'matched' && req.user) {
-      const skillsRes = await query('SELECT DISTINCT LOWER(name) as name FROM skills WHERE user_id=$1', [req.user.id]);
-      const userSkills = skillsRes.rows.map(r => normalise(r.name));
-      if (!userSkills.length) {
-        return res.json({ jobs: [], total: 0, message: 'Add skills to your profile to see matched jobs. Upload and parse your resume, then verify GitHub and LeetCode.' });
+      const skillsSnap = await db.collection('users').doc(req.user.id).collection('skills').get();
+      const userSet = new Set();
+      skillsSnap.forEach(doc => { if (doc.data().name) userSet.add(normalise(doc.data().name)); });
+      
+      if (userSet.size === 0) {
+        return res.json({ jobs: [], total: 0, message: 'Add skills to your profile to see matched jobs.' });
       }
-      params.push(userSkills);
-      sql += ` AND required_skills && $${params.length}::text[]`;
+      
+      allJobs = allJobs.filter(j => j.required_skills && j.required_skills.some(skill => userSet.has(normalise(skill))));
     }
 
-    const countRes = await query(sql.replace('SELECT *', 'SELECT COUNT(*) as total'), params);
-    const total = parseInt(countRes.rows[0]?.total || 0);
+    const total = allJobs.length;
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const paginated = allJobs.slice(startIndex, startIndex + parseInt(limit));
 
-    params.push(parseInt(limit), (parseInt(page)-1)*parseInt(limit));
-    sql += ` ORDER BY fetched_at DESC LIMIT $${params.length-1} OFFSET $${params.length}`;
-
-    const jobsRes = await query(sql, params);
     const jobs = [];
-    for (const job of jobsRes.rows) {
+    for (const job of paginated) {
       if (req.user && job.required_skills?.length) {
         const m = await calcMatch(req.user.id, job.required_skills);
         jobs.push({ ...job, ...m });
@@ -226,11 +223,10 @@ const getJobs = async (req, res) => {
       }
     }
 
-    res.json({ jobs, total, page: parseInt(page), has_more: total > parseInt(page)*parseInt(limit) });
+    res.json({ jobs, total, page: parseInt(page), has_more: total > startIndex + parseInt(limit) });
   } catch (err) {
     console.error('Get jobs error:', err);
-    const fallback = await query('SELECT * FROM job_listings ORDER BY fetched_at DESC LIMIT 25').catch(()=>({rows:[]}));
-    res.json({ jobs: fallback.rows, total: fallback.rows.length, fallback: true });
+    res.status(500).json({ error: 'Failed to load jobs' });
   }
 };
 
@@ -257,8 +253,10 @@ const analyzeJobRole = async (req, res) => {
   }
   if (!roleData) roleData = { role: job_title, required: extractSkills(job_title).slice(0,5), nice: [] };
 
-  const skillsRes = await query('SELECT DISTINCT LOWER(name) as name FROM skills WHERE user_id=$1', [req.user.id]);
-  const userSet = new Set(skillsRes.rows.map(r => normalise(r.name)));
+  const skillsSnap = await db.collection('users').doc(req.user.id).collection('skills').get();
+  const userSet = new Set();
+  skillsSnap.forEach(doc => { if (doc.data().name) userSet.add(normalise(doc.data().name)); });
+
   const matched = roleData.required.filter(s => userSet.has(normalise(s)));
   const missing = roleData.required.filter(s => !userSet.has(normalise(s)));
   const match_pct = roleData.required.length > 0 ? Math.round((matched.length/roleData.required.length)*100) : 0;

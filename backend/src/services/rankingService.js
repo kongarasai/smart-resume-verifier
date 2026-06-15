@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 
 // Ranking formula weights
 const WEIGHTS = {
@@ -11,21 +11,31 @@ const WEIGHTS = {
 };
 
 const calculateUserScores = async (userId) => {
-  const [practiceRes, githubRes, leetcodeRes, skillsRes, projectsRes, activityRes] = await Promise.all([
-    query('SELECT AVG(score_percentage) as avg, COUNT(*) as count FROM practice_sessions WHERE user_id=$1', [userId]),
-    query('SELECT skill_match_score FROM github_data WHERE user_id=$1', [userId]),
-    query('SELECT coding_evidence_score, total_solved FROM leetcode_data WHERE user_id=$1', [userId]),
-    query('SELECT COUNT(DISTINCT name) as count FROM skills WHERE user_id=$1', [userId]),
-    query('SELECT COUNT(*) as count FROM projects WHERE user_id=$1', [userId]),
-    query('SELECT COUNT(*) as count FROM practice_attempts WHERE user_id=$1 AND attempted_at > NOW() - INTERVAL \'30 days\'', [userId]),
+  const [practiceSnap, githubDoc, leetcodeDoc, skillsSnap, projectsSnap, activitySnap] = await Promise.all([
+    db.collection('users').doc(userId).collection('practice_sessions').get(),
+    db.collection('github_data').doc(userId).get(),
+    db.collection('leetcode_data').doc(userId).get(),
+    db.collection('users').doc(userId).collection('skills').get(),
+    db.collection('users').doc(userId).collection('projects').get(),
+    db.collection('users').doc(userId).collection('practice_attempts')
+      .where('attempted_at', '>', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).get(),
   ]);
 
-  const practiceScore = Math.min(parseFloat(practiceRes.rows[0]?.avg || 0) || 0, 100);
-  const githubScore = Math.min(parseFloat(githubRes.rows[0]?.skill_match_score || 0) || 0, 100);
-  const leetcodeScore = Math.min(parseFloat(leetcodeRes.rows[0]?.coding_evidence_score || 0) || 0, 100);
-  const skillCount = parseInt(skillsRes.rows[0]?.count || 0);
-  const projectCount = parseInt(projectsRes.rows[0]?.count || 0);
-  const activityCount = parseInt(activityRes.rows[0]?.count || 0);
+  let practiceSum = 0;
+  practiceSnap.forEach(doc => practiceSum += (doc.data().score_percentage || 0));
+  const practiceAvg = practiceSnap.size > 0 ? practiceSum / practiceSnap.size : 0;
+
+  const uniqueSkills = new Set();
+  skillsSnap.forEach(doc => {
+    if (doc.data().name) uniqueSkills.add(doc.data().name.toLowerCase());
+  });
+
+  const practiceScore = Math.min(practiceAvg, 100);
+  const githubScore = Math.min(parseFloat(githubDoc.exists ? githubDoc.data().skill_match_score : 0) || 0, 100);
+  const leetcodeScore = Math.min(parseFloat(leetcodeDoc.exists ? leetcodeDoc.data().coding_evidence_score : 0) || 0, 100);
+  const skillCount = uniqueSkills.size;
+  const projectCount = projectsSnap.size;
+  const activityCount = activitySnap.size;
 
   const skillScore = Math.min(skillCount * 5, 100);
   const projectScore = Math.min(projectCount * 20, 100);
@@ -52,15 +62,15 @@ const calculateUserScores = async (userId) => {
 };
 
 const recalculateGroupRanking = async (groupId) => {
-  const membersRes = await query(
-    "SELECT user_id FROM group_members WHERE group_id=$1 AND is_active=TRUE AND role='candidate'",
-    [groupId]
-  );
+  const membersSnap = await db.collection('groups').doc(groupId).collection('members')
+    .where('is_active', '==', true)
+    .where('role', '==', 'candidate').get();
 
   const memberScores = [];
-  for (const member of membersRes.rows) {
-    const scores = await calculateUserScores(member.user_id);
-    memberScores.push({ user_id: member.user_id, ...scores });
+  for (const doc of membersSnap.docs) {
+    const userId = doc.data().user_id || doc.id;
+    const scores = await calculateUserScores(userId);
+    memberScores.push({ user_id: userId, ...scores });
   }
 
   memberScores.sort((a, b) => b.total_score - a.total_score);
@@ -68,30 +78,36 @@ const recalculateGroupRanking = async (groupId) => {
   for (let i = 0; i < memberScores.length; i++) {
     const m = memberScores[i];
     const newRank = i + 1;
+    const rankDocId = `${m.user_id}_${groupId}`;
 
-    // Get previous rank
-    const prevRes = await query('SELECT rank_position FROM rankings WHERE user_id=$1 AND group_id=$2', [m.user_id, groupId]);
-    const prevRank = prevRes.rows[0]?.rank_position || newRank;
-    const rankChange = prevRank - newRank; // positive = improved
+    const prevDoc = await db.collection('rankings').doc(rankDocId).get();
+    const prevRank = prevDoc.exists ? prevDoc.data().rank_position : newRank;
+    const rankChange = prevRank - newRank;
 
-    await query(
-      `INSERT INTO rankings (user_id, group_id, rank_position, total_score, practice_score, github_score,
-        leetcode_score, project_score, skill_score, activity_score, previous_rank, rank_change, calculated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW())
-       ON CONFLICT (user_id, group_id) DO UPDATE SET
-       rank_position=$3, total_score=$4, practice_score=$5, github_score=$6, leetcode_score=$7,
-       project_score=$8, skill_score=$9, activity_score=$10, previous_rank=$11, rank_change=$12, calculated_at=NOW()`,
-      [m.user_id, groupId, newRank, m.total_score, m.practice_score, m.github_score,
-       m.leetcode_score, m.project_score, m.skill_score, m.activity_score, prevRank, rankChange]
-    );
+    await db.collection('rankings').doc(rankDocId).set({
+      user_id: m.user_id,
+      group_id: groupId,
+      rank_position: newRank,
+      total_score: m.total_score,
+      practice_score: m.practice_score,
+      github_score: m.github_score,
+      leetcode_score: m.leetcode_score,
+      project_score: m.project_score,
+      skill_score: m.skill_score,
+      activity_score: m.activity_score,
+      previous_rank: prevRank,
+      rank_change: rankChange,
+      calculated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    // Notify on rank improvement
     if (rankChange > 0) {
-      await query(
-        `INSERT INTO notifications (user_id, type, title, message)
-         VALUES ($1, 'ranking_update', 'Ranking Improved!', $2)`,
-        [m.user_id, `Your rank improved from #${prevRank} to #${newRank} in this group!`]
-      ).catch(() => {});
+      await db.collection('notifications').add({
+        user_id: m.user_id,
+        type: 'ranking_update',
+        title: 'Ranking Improved!',
+        message: `Your rank improved from #${prevRank} to #${newRank} in this group!`,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      }).catch(() => {});
     }
   }
 
@@ -99,61 +115,92 @@ const recalculateGroupRanking = async (groupId) => {
 };
 
 const recalculateOverallRanking = async () => {
-  const candidatesRes = await query("SELECT id FROM users WHERE role='candidate' AND is_active=TRUE");
+  const candidatesSnap = await db.collection('users').where('role', '==', 'candidate').where('is_active', '==', true).get();
   const allScores = [];
 
-  for (const c of candidatesRes.rows) {
+  for (const c of candidatesSnap.docs) {
     const scores = await calculateUserScores(c.id);
     allScores.push({ user_id: c.id, ...scores });
   }
 
   allScores.sort((a, b) => b.total_score - a.total_score);
 
+  const batch = db.batch();
   for (let i = 0; i < allScores.length; i++) {
     const m = allScores[i];
     const newRank = i + 1;
-    const prevRes = await query('SELECT rank_position FROM overall_rankings WHERE user_id=$1', [m.user_id]);
-    const prevRank = prevRes.rows[0]?.rank_position || newRank;
+    const docRef = db.collection('overall_rankings').doc(m.user_id);
+    const prevDoc = await docRef.get();
+    const prevRank = prevDoc.exists ? prevDoc.data().rank_position : newRank;
 
-    await query(
-      `INSERT INTO overall_rankings (user_id, rank_position, total_score, previous_rank, rank_change, calculated_at)
-       VALUES ($1,$2,$3,$4,$5,NOW())
-       ON CONFLICT (user_id) DO UPDATE SET
-       rank_position=$2, total_score=$3, previous_rank=$4, rank_change=$5, calculated_at=NOW()`,
-      [m.user_id, newRank, m.total_score, prevRank, prevRank - newRank]
-    );
+    batch.set(docRef, {
+      user_id: m.user_id,
+      rank_position: newRank,
+      total_score: m.total_score,
+      previous_rank: prevRank,
+      rank_change: prevRank - newRank,
+      calculated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
   }
+  await batch.commit();
 };
 
-// API handlers
 const getRanking = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
-    const [groupRes, overallRes] = await Promise.all([
-      query(`SELECT r.*, g.name as group_name, w.name as workspace_name
-             FROM rankings r JOIN groups g ON g.id=r.group_id JOIN workspaces w ON w.id=g.workspace_id
-             WHERE r.user_id=$1 ORDER BY r.rank_position ASC`, [userId]),
-      query('SELECT * FROM overall_rankings WHERE user_id=$1', [userId]),
+    const [groupSnap, overallDoc] = await Promise.all([
+      db.collection('rankings').where('user_id', '==', userId).get(),
+      db.collection('overall_rankings').doc(userId).get()
     ]);
-    res.json({ group_rankings: groupRes.rows, overall: overallRes.rows[0] || null });
+    
+    const group_rankings = [];
+    for (const doc of groupSnap.docs) {
+      const data = doc.data();
+      let groupName = 'Unknown Group', workspaceName = 'Workspace';
+      try {
+        const gDoc = await db.collection('groups').doc(data.group_id).get();
+        if (gDoc.exists) {
+          groupName = gDoc.data().name;
+          const wDoc = await db.collection('workspaces').doc(gDoc.data().workspace_id).get();
+          if (wDoc.exists) workspaceName = wDoc.data().name;
+        }
+      } catch (e) {}
+      group_rankings.push({ ...data, group_name: groupName, workspace_name: workspaceName });
+    }
+    
+    group_rankings.sort((a, b) => a.rank_position - b.rank_position);
+
+    res.json({ group_rankings, overall: overallDoc.exists ? overallDoc.data() : null });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to load rankings' });
+    res.status(500).json({ error: 'Failed to load rankings: ' + err.message });
   }
 };
 
 const getGroupRanking = async (req, res) => {
   const { groupId } = req.params;
   try {
-    const result = await query(
-      `SELECT r.*, u.full_name, u.photo_url, p.headline, p.profile_completeness
-       FROM rankings r
-       JOIN users u ON u.id=r.user_id
-       LEFT JOIN profiles p ON p.user_id=r.user_id
-       WHERE r.group_id=$1 AND u.role='candidate'
-       ORDER BY r.rank_position ASC`,
-      [groupId]
-    );
-    res.json(result.rows);
+    const rankingsSnap = await db.collection('rankings').where('group_id', '==', groupId).get();
+    const results = [];
+    
+    for (const rDoc of rankingsSnap.docs) {
+      const r = rDoc.data();
+      const [uDoc, pDoc] = await Promise.all([
+        db.collection('users').doc(r.user_id).get(),
+        db.collection('profiles').doc(r.user_id).get()
+      ]);
+      if (uDoc.exists && uDoc.data().role === 'candidate') {
+        results.push({
+          ...r,
+          full_name: uDoc.data().full_name,
+          photo_url: uDoc.data().photo_url,
+          headline: pDoc.exists ? pDoc.data().headline : null,
+          profile_completeness: pDoc.exists ? pDoc.data().profile_completeness : 0
+        });
+      }
+    }
+    
+    results.sort((a, b) => a.rank_position - b.rank_position);
+    res.json(results);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load group ranking' });
   }
@@ -164,32 +211,37 @@ const triggerRecalculate = async (req, res) => {
   try {
     const scores = await calculateUserScores(userId);
 
-    // Update confidence score
-    await query(
-      `INSERT INTO confidence_scores (user_id, github_score, practice_score, coding_evidence_score,
-        profile_completeness_score, project_score, overall_score, confidence_label, calculated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
-       ON CONFLICT (user_id) DO UPDATE SET
-       github_score=$2, practice_score=$3, coding_evidence_score=$4, profile_completeness_score=$5,
-       project_score=$6, overall_score=$7, confidence_label=$8, calculated_at=NOW()`,
-      [userId, scores.github_score, scores.practice_score, scores.leetcode_score,
-       scores.skill_score, scores.project_score, scores.total_score,
-       scores.total_score >= 70 ? 'high' : scores.total_score >= 40 ? 'medium' : 'limited']
-    );
+    const confidenceLabel = scores.total_score >= 70 ? 'high' : scores.total_score >= 40 ? 'medium' : 'limited';
+    
+    await db.collection('confidence_scores').doc(userId).set({
+      user_id: userId,
+      github_score: scores.github_score,
+      practice_score: scores.practice_score,
+      coding_evidence_score: scores.leetcode_score,
+      profile_completeness_score: scores.skill_score,
+      project_score: scores.project_score,
+      overall_score: scores.total_score,
+      confidence_label: confidenceLabel,
+      calculated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    // Recalculate all groups user is in
-    const groupsRes = await query('SELECT group_id FROM group_members WHERE user_id=$1 AND is_active=TRUE', [userId]);
-    for (const g of groupsRes.rows) {
-      await recalculateGroupRanking(g.group_id);
+    const membershipsSnap = await db.collectionGroup('members').where('user_id', '==', userId).get();
+    for (const mDoc of membershipsSnap.docs) {
+      if (mDoc.data().is_active !== true) continue;
+      const groupId = mDoc.ref.parent.parent.id;
+      await recalculateGroupRanking(groupId);
     }
     await recalculateOverallRanking();
 
-    // Update career readiness
-    const profileRes = await query('SELECT profile_completeness FROM profiles WHERE user_id=$1', [userId]);
-    const completeness = profileRes.rows[0]?.profile_completeness || 0;
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const completeness = profileDoc.exists ? (profileDoc.data().profile_completeness || 0) : 0;
     const combined = completeness * 0.4 + scores.total_score * 0.6;
     const readiness = combined >= 85 ? 'top_performer' : combined >= 70 ? 'interview_ready' : combined >= 55 ? 'job_ready' : combined >= 35 ? 'developing' : 'beginner';
-    await query('UPDATE profiles SET career_readiness=$1, job_readiness_score=$2 WHERE user_id=$3', [readiness, Math.round(combined), userId]);
+    
+    await db.collection('profiles').doc(userId).update({
+      career_readiness: readiness,
+      job_readiness_score: Math.round(combined)
+    });
 
     res.json({ scores, career_readiness: readiness, message: 'Rankings recalculated' });
   } catch (err) {

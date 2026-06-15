@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 
 exports.saveHREvaluation = async (req, res) => {
   const { candidateId } = req.params;
@@ -21,10 +21,15 @@ exports.saveHREvaluation = async (req, res) => {
   try {
     console.log(`Saving HR evaluation: candidate=${candidateId}, hr=${hrId}, status=${status}`);
     
-    const result = await query(
-      'INSERT INTO hr_evaluations (id, candidate_id, hr_id, status, notes) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *',
-      [candidateId, hrId, status, notes]
-    );
+    const newEval = {
+      candidate_id: candidateId,
+      hr_id: hrId,
+      status: status,
+      notes: notes,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    };
+    
+    const evalRef = await db.collection('hr_evaluations').add(newEval);
 
     // Add specific timeline event
     const eventTypeMap = {
@@ -41,18 +46,24 @@ exports.saveHREvaluation = async (req, res) => {
     };
     const eventTitle = eventTitleMap[status] || 'HR Review Status Updated';
 
-    await query(
-      "INSERT INTO progress_events (id, user_id, event_type, event_title, event_detail) VALUES (gen_random_uuid(), $1, $2, $3, $4)",
-      [candidateId, eventType, eventTitle, notes || `Status updated to ${status}`]
-    ).catch(e => console.error('Timeline error:', e));
+    db.collection('users').doc(candidateId).collection('progress_events').add({
+      event_type: eventType,
+      event_title: eventTitle,
+      event_detail: notes || `Status updated to ${status}`,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.error('Timeline error:', e));
 
     // Notify candidate
-    await query(
-      "INSERT INTO notifications (id, user_id, type, title, message) VALUES (gen_random_uuid(), $1, $2, $3, $4)",
-      [candidateId, 'hiring_update', eventTitle, notes || `HR has updated your recruitment status to ${status}`]
-    ).catch(e => console.error('Notification error:', e));
+    db.collection('notifications').add({
+      user_id: candidateId,
+      type: 'hiring_update',
+      title: eventTitle,
+      message: notes || `HR has updated your recruitment status to ${status}`,
+      is_read: false,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.error('Notification error:', e));
 
-    res.json(result.rows[0]);
+    res.json({ id: evalRef.id, ...newEval });
   } catch (err) {
     console.error('HR Eval Save Error:', err);
     res.status(500).json({ error: 'Failed to save evaluation: ' + err.message });
@@ -63,8 +74,14 @@ exports.getHREvaluation = async (req, res) => {
   const { candidateId } = req.params;
   const hrId = req.user.id;
   try {
-    const data = (await query('SELECT * FROM hr_evaluations WHERE candidate_id=$1 AND hr_id=$2', [candidateId, hrId])).rows[0];
-    res.json(data || null);
+    const snap = await db.collection('hr_evaluations')
+      .where('candidate_id', '==', candidateId)
+      .where('hr_id', '==', hrId)
+      .orderBy('created_at', 'desc')
+      .limit(1)
+      .get();
+      
+    res.json(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch evaluation' });
@@ -77,18 +94,23 @@ exports.saveTeacherFeedback = async (req, res) => {
     const { notes } = req.body;
   
     try {
-      const result = await query(
-          'INSERT INTO teacher_feedbacks (candidate_id, teacher_id, notes) VALUES ($1, $2, $3) RETURNING *',
-          [candidateId, teacherId, notes]
-      );
+      const newFeedback = {
+        candidate_id: candidateId,
+        teacher_id: teacherId,
+        notes: notes,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      };
+      const result = await db.collection('teacher_feedbacks').add(newFeedback);
       
       // Add timeline event
-      await query(
-        "INSERT INTO progress_events (user_id, event_type, event_title, event_detail) VALUES ($1, 'teacher_feedback', 'Teacher Feedback Added', $2)",
-        [candidateId, 'A teacher provided feedback on your profile.']
-      );
+      db.collection('users').doc(candidateId).collection('progress_events').add({
+        event_type: 'teacher_feedback',
+        event_title: 'Teacher Feedback Added',
+        event_detail: 'A teacher provided feedback on your profile.',
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      }).catch(e => console.error(e));
   
-      res.json(result.rows[0]);
+      res.json({ id: result.id, ...newFeedback });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Failed to save feedback' });
@@ -98,11 +120,19 @@ exports.saveTeacherFeedback = async (req, res) => {
 exports.getTeacherFeedbacks = async (req, res) => {
     const { candidateId } = req.params;
     try {
-      const data = await query(
-          'SELECT t.*, u.full_name as teacher_name FROM teacher_feedbacks t JOIN users u ON t.teacher_id=u.id WHERE t.candidate_id=$1 ORDER BY t.created_at DESC', 
-          [candidateId]
-      );
-      res.json(data.rows);
+      const snap = await db.collection('teacher_feedbacks')
+        .where('candidate_id', '==', candidateId)
+        .orderBy('created_at', 'desc')
+        .get();
+        
+      const feedbacks = [];
+      for (const doc of snap.docs) {
+        const data = doc.data();
+        const teacherDoc = await db.collection('users').doc(data.teacher_id).get();
+        const teacherName = teacherDoc.exists ? teacherDoc.data().full_name : 'Unknown Teacher';
+        feedbacks.push({ id: doc.id, teacher_name: teacherName, ...data });
+      }
+      res.json(feedbacks);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Failed to fetch feedbacks' });

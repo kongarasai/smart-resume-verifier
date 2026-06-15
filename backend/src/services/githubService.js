@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 const { runVerification } = require('./skillVerificationEngine');
 
 const GITHUB_API = 'https://api.github.com';
@@ -50,8 +50,8 @@ const calcGitHubScore = ({ repos, stars, commits, languages, followers, ageYears
 const fetchGitHubData = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
-    const profileRes = await query('SELECT github_url FROM profiles WHERE user_id=$1', [userId]);
-    const githubUrl = profileRes.rows[0]?.github_url;
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const githubUrl = profileDoc.exists ? profileDoc.data().github_url : null;
     if (!githubUrl) return res.status(400).json({ error: 'No GitHub URL in profile. Add your GitHub URL first.' });
 
     const username = extractUsername(githubUrl);
@@ -111,41 +111,47 @@ const fetchGitHubData = async (req, res) => {
 
     const skillMatchScore = calcGitHubScoreEnhanced({ originalRepos: originalRepoCount, stars: totalStars, commits: totalCommits, pushEnvCnt: pushEventsCount, languages: langMap, followers: userData.followers, ageYears });
 
-    await query(
-      `INSERT INTO github_data (user_id, github_username, total_repos, total_stars, total_forks, total_commits,
-         languages, top_repos, followers, following, account_created_at, last_active, skill_match_score, raw_data, fetched_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW())
-       ON CONFLICT (user_id) DO UPDATE SET
-         github_username=$2, total_repos=$3, total_stars=$4, total_forks=$5, total_commits=$6,
-         languages=$7, top_repos=$8, followers=$9, following=$10, account_created_at=$11,
-         last_active=$12, skill_match_score=$13, raw_data=$14, fetched_at=NOW()`,
-      [userId, username, repos.length, totalStars, totalForks, totalCommits,
-       JSON.stringify(langMap), JSON.stringify(topRepos), userData.followers, userData.following,
-       userData.created_at?.split('T')[0], userData.updated_at?.split('T')[0],
-       skillMatchScore, JSON.stringify({ public_repos: userData.public_repos, bio: userData.bio })]
-    );
+    const githubData = {
+      github_username: username,
+      total_repos: repos.length,
+      total_stars: totalStars,
+      total_forks: totalForks,
+      total_commits: totalCommits,
+      languages: langMap,
+      top_repos: topRepos,
+      followers: userData.followers,
+      following: userData.following,
+      account_created_at: userData.created_at?.split('T')[0] || null,
+      last_active: userData.updated_at?.split('T')[0] || null,
+      skill_match_score: skillMatchScore,
+      raw_data: { public_repos: userData.public_repos, bio: userData.bio },
+      fetched_at: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection('github_data').doc(userId).set(githubData, { merge: true });
 
     // Upsert GitHub language skills
+    const batch = db.batch();
     for (const lang of Object.keys(langMap)) {
-      await query(
-        `INSERT INTO skills (user_id, name, source, verification_level) VALUES ($1,$2,'github','evidence')
-         ON CONFLICT (user_id, name, source) DO NOTHING`,
-        [userId, lang]
-      ).catch(() => {});
+      const docRef = db.collection('users').doc(userId).collection('skills').doc(lang.toLowerCase().replace(/[^a-z0-9]/g, '-'));
+      batch.set(docRef, { name: lang, source: 'github', verification_level: 'evidence' }, { merge: true });
     }
 
     // Progress event
-    await query(
-      `INSERT INTO progress_events (user_id, event_type, event_title, event_detail)
-       VALUES ($1,'github_verified','GitHub Verified',$2)`,
-      [userId, `${repos.length} repos, ${Object.keys(langMap).length} languages detected`]
-    ).catch(() => {});
+    batch.set(db.collection('users').doc(userId).collection('progress_events').doc(), {
+      event_type: 'github_verified',
+      event_title: 'GitHub Verified',
+      event_detail: `${repos.length} repos, ${Object.keys(langMap).length} languages detected`,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
 
     // Run cross-source verification
     await runVerification(userId).catch(e => console.error('Verification after GitHub:', e.message));
 
-    const stored = await query('SELECT * FROM github_data WHERE user_id=$1', [userId]);
-    res.json(stored.rows[0]);
+    const storedDoc = await db.collection('github_data').doc(userId).get();
+    res.json(storedDoc.data());
   } catch (err) {
     console.error('GitHub error:', err.response?.data || err.message);
     if (err.response?.status === 404) return res.status(404).json({ error: `GitHub user not found. Check the URL in your profile.` });
@@ -156,11 +162,11 @@ const fetchGitHubData = async (req, res) => {
 
 const getGitHubData = async (req, res) => {
   const userId = req.params.userId || req.user.id;
-  const result = await query('SELECT * FROM github_data WHERE user_id=$1', [userId]);
-  const profileRes = await query('SELECT github_url FROM profiles WHERE user_id=$1', [userId]);
-  const ghUrl = profileRes.rows[0]?.github_url;
+  const resultDoc = await db.collection('github_data').doc(userId).get();
+  const profileDoc = await db.collection('profiles').doc(userId).get();
+  const ghUrl = profileDoc.exists ? profileDoc.data().github_url : null;
   const username = ghUrl ? extractUsername(ghUrl) : null;
-  res.json(result.rows[0] ? { ...result.rows[0], username } : null);
+  res.json(resultDoc.exists ? { ...resultDoc.data(), username } : null);
 };
 
 module.exports = { fetchGitHubData, getGitHubData };

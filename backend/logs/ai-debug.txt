@@ -1879,3 +1879,370 @@ Response: ```json
 }
 ```
 
+[GEMINI] 2026-06-15T05:36:28.563Z
+Model: gemini-2.5-flash
+Prompt: 
+      Evaluate the following professional profile for resume optimization:
+      - Headline: N/A
+  ...
+Response: ```json
+{
+  "score": 5,
+  "suggestions": [
+    "**Create a Compelling Headline/Summary:** Start by crafting a professional headline that states your target role and key value proposition (e.g., 'Software Engineer | Python & AWS Specialist | Building Scalable Web Applications'). Follow with a brief 2-4 sentence summary highlighting your top skills, experience level, and career aspirations, tailored to the types of jobs you're applying for.",
+    "**Populate a Targeted Skills Section:** Develop a comprehensive skills section, categorizing skills into relevant areas like 'Programming Languages,' 'Frameworks,' 'Tools,' 'Cloud Platforms,' and 'Soft Skills.' Include all technical skills you possess and are relevant to your target roles. Use keywords from job descriptions to ensure ATS compatibility.",
+    "**Detail Relevant Projects:** If you have limited professional experience, fill the 'Projects' section with personal, academic, or open-source projects. For each project, describe the problem you solved, the technologies used, your specific contributions, and the outcome or impact (e.g., 'Developed a full-stack e-commerce site using MERN stack, resulting in a 20% faster checkout process').",
+    "**Add Professional Experience with Impact:** For any past work experience (paid, internship, volunteer), provide detailed bullet points under each role. Start each bullet with a strong action verb and quantify your achievements whenever possible (e.g., 'Managed a client portfolio of 50+ accounts, increasing customer retention by 15% through proactive engagement'). Focus on results and value delivered.",
+    "**Include Education and Contact Information:** Ensure your resume includes your educational background (degrees, institutions, dates, relevant coursework/GPA if recent graduate) and clear contact information (phone, email, LinkedIn URL, portfolio/GitHub if applicable). Organize your resume sections logically (e.g., Contact Info, Summary, Skills, Experience, Projects, Education) for readability."
+  ]
+}
+```
+
+[GEMINI] 2026-06-15T05:36:48.153Z
+Model: gemini-2.5-flash
+Prompt: 
+      You are a senior technical interviewer. Generate 5 unique technical interview questions for a...
+Response: ```json
+[
+  "Explain what a 'variable' is in programming and why it's useful. How does it differ from a 'constant'?",
+  "Imagine you need to organize a playlist of 100 songs, but you want to listen to them in a random order, ensuring each song plays exactly once before any song repeats. Describe the steps you would take to implement this logic without writing specific code.",
+  "As a new developer with no prior professional experience, how do you approach learning a new programming language or framework that you've never encountered before, especially if it's crucial for a project?",
+  "Why is it important for code to be \"readable\" and \"maintainable\"? Provide a small example of what might make code difficult to read or maintain.",
+  "You've written a small program, and it's not working as expected. You're not getting an error message, but the output is incorrect. What steps would you take to try and find the bug?"
+]
+```
+
+[GEMINI] 2026-06-15T05:39:57.634Z
+Model: gemini-2.5-flash
+Prompt: 
+Generate 10 multiple-choice questions (MCQs) about the topic "Python " with a difficulty level of "...
+Response: [
+  {
+    "title": "What is the primary difference between a Python list and a Python tuple?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "Lists are mutable, while tuples are immutable." },
+      { "id": "b", "text": "Tuples are mutable, while lists are immutable." },
+      { "id": "c", "text": "Lists can store heterogeneous data, while tuples can only store homogeneous data." },
+      { "id": "d", "text": "Tuples allow duplicate elements, while lists do not." }
+    ],
+    "correct_answer": "a", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "How would you define a function in Python that can accept an arbitrary number of positional arguments?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "def func(args):" },
+      { "id": "b", "text": "def func(*args):" },
+      { "id": "c", "text": "def func(**kwargs):" },
+      { "id": "d", "text": "def func(args[]):" }
+    ],
+    "correct_answer": "b", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "In Python, which special method is called automatically when a new instance of a class is created and initialized?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "__new__" },
+      { "id": "b", "text": "__call__" },
+      { "id": "c", "text": "__init__" },
+      { "id": "d", "text": "__str__" }
+    ],
+    "correct_answer": "c", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "Consider the following Python code snippet. What will be its output?",
+    "description": "try:\n    x = 1 / 0\nexcept ZeroDivisionError:\n    print(\"Cannot divide by zero!\")\nexcept:\n    print(\"An unknown error occurred.\")\nelse:\n    print(\"No error occurred.\")\nfinally:\n    print(\"Execution finished.\")",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "Cannot divide by zero!\nExecution finished." },
+      { "id": "b", "text": "An unknown error occurred.\nExecution finished." },
+      { "id": "c", "text": "No error occurred.\nExecution finished." },
+      { "id": "d", "text": "Only Execution finished." }
+    ],
+    "correct_answer": "a", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "What is the primary purpose of the `yield` keyword in Python?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "To return a value from a function and immediately terminate its execution." },
+      { "id": "b", "text": "To raise an exception within a function." },
+      { "id": "c", "text": "To define an anonymous function." },
+      { "id": "d", "text": "To create a generator function, pausing execution and returning a value, allowing resumption later." }
+    ],
+    "correct_answer": "d", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "Which of the following list comprehensions correctly squares each odd number in the range from 0 to 4 (inclusive)?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "[x**2 for x in range(5) if x % 2 == 1]" },
+      { "id": "b", "text": "[x for x in range(5) if x % 2 == 1]" },
+      { "id": "c", "text": "[x**2 if x % 2 == 1 for x in range(5)]" },
+      { "id": "d", "text": "[x**2 for x in range(5) if x % 2 == 0]" }
+    ],
+    "correct_answer": "a", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "Why is it generally recommended to use the `with open(...)` statement when working with files in Python?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "It automatically converts file content to Unicode." },
+      { "id": "b", "text": "It automatically closes the file, even if errors occur." },
+      { "id": "c", "text": "It provides better performance for large files." },
+      { "id": "d", "text": "It's the only way to write binary data to a file." }
+    ],
+    "correct_answer": "b", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "What is a Python decorator primarily used for?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "To define a new class inheriting from another." },
+      { "id": "b", "text": "To modify or enhance the behavior of a function or method without changing its source code." },
+      { "id": "c", "text": "To create a new instance of an object." },
+      { "id": "d", "text": "To handle exceptions in a centralized manner." }
+    ],
+    "correct_answer": "b", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "Which of the following correctly defines a lambda function that takes two arguments `a` and `b` and returns their sum?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "def sum(a, b): return a + b" },
+      { "id": "b", "text": "lambda a, b: a + b" },
+      { "id": "c", "text": "(a, b) => a + b" },
+      { "id": "d", "text": "sum_func = lambda (a, b): a + b" }
+    ],
+    "correct_answer": "b", 
+    "points": 10,
+    "tags": ["Python "]
+  },
+  {
+    "title": "How can you efficiently check if a key named 'my_key' exists in a Python dictionary `my_dict`?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "my_dict.has_key('my_key')" },
+      { "id": "b", "text": "'my_key' in my_dict" },
+      { "id": "c", "text": "my_dict.get('my_key') != None" },
+      { "id": "d", "text": "if my_dict['my_key']:" }
+    ],
+    "correct_answer": "b", 
+    "points": 10,
+    "tags": ["Python "]
+  }
+]
+
+[GEMINI] 2026-06-15T05:40:16.383Z
+Model: gemini-2.5-flash
+Prompt: 
+Generate 10 multiple-choice questions (MCQs) about the topic "Python " with a difficulty level of "...
+Response: [
+  {
+    "title": "What will be the output of the following Python code snippet?",
+    "description": "my_list = [x*2 for x in range(5) if x % 2 == 0]\nprint(my_list)",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "[0, 4, 8]" },
+      { "id": "b", "text": "[0, 2, 4, 6, 8]" },
+      { "id": "c", "text": "[0, 2, 4]" },
+      { "id": "d", "text": "[0, 4]" }
+    ],
+    "correct_answer": "a",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "Which of the following best describes the primary purpose of a Python decorator?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "To define a new class by inheriting from an existing one." },
+      { "id": "b", "text": "To modify or enhance the behavior of a function or method without permanently altering its source code." },
+      { "id": "c", "text": "To handle exceptions that occur during program execution." },
+      { "id": "d", "text": "To convert a function into a generator." }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "What is the main difference between a regular function and a generator function in Python?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "A regular function uses `return` and a generator function uses `print`." },
+      { "id": "b", "text": "A regular function stores all its results in memory, while a generator function yields values one by one, saving memory." },
+      { "id": "c", "text": "A regular function can be called multiple times, while a generator function can only be called once." },
+      { "id": "d", "text": "A regular function can only return one value, while a generator function can return multiple values." }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "In Python, which block of code is guaranteed to execute regardless of whether an exception occurred or not?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "`try`" },
+      { "id": "b", "text": "`except`" },
+      { "id": "c", "text": "`finally`" },
+      { "id": "d", "text": "`else`" }
+    ],
+    "correct_answer": "c",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "Consider the following Python classes:\n\n```python\nclass Animal:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return \"Generic sound\"\n\nclass Dog(Animal):\n    def speak(self):\n        return f\"{self.name} barks\"\n\nmy_dog = Dog(\"Buddy\")\nprint(my_dog.speak())\n```\n\nWhat will be the output of `print(my_dog.speak())`?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "Buddy barks" },
+      { "id": "b", "text": "Generic sound" },
+      { "id": "c", "text": "Buddy Generic sound" },
+      { "id": "d", "text": "AttributeError: 'Dog' object has no attribute 'name'" }
+    ],
+    "correct_answer": "a",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "Which of the following is the correct way to define a lambda function that adds two numbers?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "def add(a, b): return a + b" },
+      { "id": "b", "text": "lambda x, y: x + y" },
+      { "id": "c", "text": "add = (x, y) => x + y" },
+      { "id": "d", "text": "function add(x, y) { return x + y; }" }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "What will be the output of the following Python code snippet?",
+    "description": "my_string = \"hello\"\nmy_iterator = iter(my_string)\nprint(next(my_iterator))\nprint(next(my_iterator))",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "h\ne" },
+      { "id": "b", "text": "he" },
+      { "id": "c", "text": "hello" },
+      { "id": "d", "text": "TypeError" }
+    ],
+    "correct_answer": "a",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "What is the primary benefit of using a `with` statement with a context manager in Python?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "It automatically converts the object into an iterator." },
+      { "id": "b", "text": "It ensures that resources (like files or locks) are properly acquired and released, even if errors occur." },
+      { "id": "c", "text": "It allows for dynamic method creation at runtime." },
+      { "id": "d", "text": "It explicitly defines global variables within a function." }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "In Python, what is the fundamental difference between a module and a package?",
+    "description": "",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "A module contains classes, while a package contains functions." },
+      { "id": "b", "text": "A module is a single `.py` file, while a package is a collection of modules organized in directories." },
+      { "id": "c", "text": "A module can be imported, but a package cannot be imported directly." },
+      { "id": "d", "text": "A module uses `import`, while a package uses `from ... import`." }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  },
+  {
+    "title": "What will be the output of the following Python code snippet?",
+    "description": "x = 10\ndef func():\n    x = 20\n    print(x)\nfunc()\nprint(x)",
+    "category": "technical_mcq",
+    "difficulty": "medium",
+    "question_type": "mcq",
+    "options": [
+      { "id": "a", "text": "20\n20" },
+      { "id": "b", "text": "20\n10" },
+      { "id": "c", "text": "10\n20" },
+      { "id": "d", "text": "10\n10" }
+    ],
+    "correct_answer": "b",
+    "points": 10,
+    "tags": ["Python"]
+  }
+]
+

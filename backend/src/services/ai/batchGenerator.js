@@ -1,6 +1,6 @@
 const { getAIResponse } = require('./aiRouter');
 const logger = require('../../utils/logger');
-const { query } = require('../../config/database');
+const { db } = require('../../config/firebase');
 
 // Simple concurrency limiter to avoid ESM dependency issues with p-limit
 const pLimit = (concurrency) => {
@@ -19,18 +19,21 @@ const generateBatches = async (topic, totalCount, difficulty, existingContext = 
   
   // 1. QUESTION BANK REUSE (Cache)
   // Try to find existing questions in the DB for this topic to reduce AI costs
-  const cachedRes = await query(
-    `SELECT title as question, options, correct_answer as "correctAnswer", description as explanation
-     FROM questions 
-     WHERE (LOWER(title) LIKE $1 OR LOWER(description) LIKE $1) 
-     AND is_active=TRUE 
-     ORDER BY RANDOM() LIMIT $2`,
-    [`%${topic.toLowerCase()}%`, Math.floor(targetCount * 0.5)] // Reuse up to 50% from cache
+  const recentSnap = await db.collection('questions').limit(100).get();
+  const allCached = recentSnap.docs.map(doc => doc.data());
+  const topicLower = topic.toLowerCase();
+  let cachedQuestionsRaw = allCached.filter(q => 
+    (q.title && q.title.toLowerCase().includes(topicLower)) ||
+    (q.description && q.description.toLowerCase().includes(topicLower))
   );
+  
+  cachedQuestionsRaw = cachedQuestionsRaw.sort(() => 0.5 - Math.random()).slice(0, Math.floor(targetCount * 0.5));
 
-  let cachedQuestions = cachedRes.rows.map(q => ({
-    ...q,
-    options: Array.isArray(q.options) ? q.options.map(o => o.text) : []
+  let cachedQuestions = cachedQuestionsRaw.map(q => ({
+    question: q.title,
+    options: Array.isArray(q.options) ? q.options.map(o => o.text || o) : [],
+    correctAnswer: q.correct_answer,
+    explanation: q.description || ""
   })).filter(q => q.options.length === 4);
 
   const remainingToGenerate = targetCount - cachedQuestions.length;

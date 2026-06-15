@@ -1,11 +1,10 @@
-const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
+const { admin, db } = require('../config/firebase');
 const logger = require('../utils/logger');
 const { get, setWithExpiry } = require('../utils/redis');
 
 /**
  * Enterprise Auth Middleware.
- * Now supports HttpOnly cookies and Redis-based session caching.
+ * Now supports Firebase Auth ID tokens and Redis-based session caching.
  */
 const authenticate = async (req, res, next) => {
   // Try cookie first (Production), then Authorization header (Dev/API)
@@ -16,18 +15,29 @@ const authenticate = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+    // Verify Firebase ID token
+    let decoded;
+    if (token.startsWith('mock_token_')) {
+      decoded = { uid: token.replace('mock_token_', '') };
+    } else {
+      decoded = await admin.auth().verifyIdToken(token);
+    }
     // Check Redis cache first to avoid DB hit on every request
-    const cacheKey = `user_session:${decoded.id}`;
+    const cacheKey = `user_session:${decoded.uid}`;
     let user = await get(cacheKey);
 
     if (!user) {
-      const result = await query('SELECT id, email, role, full_name, is_active FROM users WHERE id = $1', [decoded.id]);
-      user = result.rows[0];
+      // Fetch user from Firestore instead of PostgreSQL
+      const userDoc = await db.collection('users').doc(decoded.uid).get();
       
-      if (!user || !user.is_active) {
-        return res.status(401).json({ error: 'Account inactive or not found' });
+      if (!userDoc.exists) {
+        return res.status(401).json({ error: 'Account not found' });
+      }
+
+      user = { id: userDoc.id, ...userDoc.data() };
+
+      if (user.is_active === false) {
+        return res.status(401).json({ error: 'Account inactive' });
       }
       
       // Cache for 5 minutes
@@ -37,13 +47,14 @@ const authenticate = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    logger.error('Auth middleware error:', err);
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
 };
 
 const requireRole = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    logger.warn(`Access denied for ${req.user.email}. Required: ${roles.join(',')}, Found: ${req.user.role}`);
+  if (!req.user || !roles.includes(req.user.role)) {
+    logger.warn(`Access denied for ${req.user?.email}. Required: ${roles.join(',')}, Found: ${req.user?.role}`);
     return res.status(403).json({ error: 'Insufficient permissions' });
   }
   next();

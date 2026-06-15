@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 const { runVerification } = require('./skillVerificationEngine');
 
 const GRAPHQL = 'https://leetcode.com/graphql';
@@ -67,13 +67,16 @@ const verifyLeetCode = async (req, res) => {
   const { leetcode_url } = req.body;
   let urlToUse = leetcode_url;
   if (!urlToUse) {
-    const pr = await query('SELECT leetcode_url FROM profiles WHERE user_id=$1', [req.user.id]);
-    urlToUse = pr.rows[0]?.leetcode_url;
+    const profileDoc = await db.collection('profiles').doc(req.user.id).get();
+    urlToUse = profileDoc.exists ? profileDoc.data().leetcode_url : null;
   }
   if (!urlToUse) return res.status(400).json({ error: 'No LeetCode URL. Add it to your profile first.' });
 
   if (leetcode_url) {
-    await query('UPDATE profiles SET leetcode_url=$1, updated_at=NOW() WHERE user_id=$2', [leetcode_url, req.user.id]);
+    await db.collection('profiles').doc(req.user.id).set({
+      leetcode_url: leetcode_url,
+      updated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
   }
 
   const username = extractUsername(urlToUse);
@@ -84,37 +87,42 @@ const verifyLeetCode = async (req, res) => {
     const parsed = parseStats(user, contest);
     const codingScore = calcCodingScore(parsed);
 
-    await query(
-      `INSERT INTO leetcode_data (user_id, leetcode_username, total_solved, easy_solved, medium_solved, hard_solved,
-         languages_used, contest_rating, ranking, coding_evidence_score, extracted_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW())
-       ON CONFLICT (user_id) DO UPDATE SET
-         leetcode_username=$2, total_solved=$3, easy_solved=$4, medium_solved=$5, hard_solved=$6,
-         languages_used=$7, contest_rating=$8, ranking=$9, coding_evidence_score=$10, extracted_at=NOW()`,
-      [req.user.id, username, parsed.total_solved, parsed.easy_solved, parsed.medium_solved, parsed.hard_solved,
-       parsed.languages_used, parsed.contest_rating, parsed.ranking, codingScore]
-    );
+    const lcData = {
+      leetcode_username: username,
+      total_solved: parsed.total_solved,
+      easy_solved: parsed.easy_solved,
+      medium_solved: parsed.medium_solved,
+      hard_solved: parsed.hard_solved,
+      languages_used: parsed.languages_used,
+      contest_rating: parsed.contest_rating,
+      ranking: parsed.ranking,
+      coding_evidence_score: codingScore,
+      extracted_at: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection('leetcode_data').doc(req.user.id).set(lcData, { merge: true });
 
     // Add LeetCode languages as skills
+    const batch = db.batch();
     for (const lang of parsed.languages_used.slice(0, 6)) {
-      await query(
-        `INSERT INTO skills (user_id, name, source, verification_level) VALUES ($1,$2,'leetcode','evidence')
-         ON CONFLICT (user_id, name, source) DO NOTHING`,
-        [req.user.id, lang]
-      ).catch(() => {});
+      const docRef = db.collection('users').doc(req.user.id).collection('skills').doc(lang.toLowerCase().replace(/[^a-z0-9]/g, '-'));
+      batch.set(docRef, { name: lang, source: 'leetcode', verification_level: 'evidence' }, { merge: true });
     }
 
-    await query(
-      `INSERT INTO progress_events (user_id, event_type, event_title, event_detail)
-       VALUES ($1,'leetcode_verified','LeetCode Verified',$2)`,
-      [req.user.id, `${parsed.total_solved} problems solved, ${parsed.languages_used.length} languages`]
-    ).catch(() => {});
+    batch.set(db.collection('users').doc(req.user.id).collection('progress_events').doc(), {
+      event_type: 'leetcode_verified',
+      event_title: 'LeetCode Verified',
+      event_detail: `${parsed.total_solved} problems solved, ${parsed.languages_used.length} languages`,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
 
     // Run cross-source verification
     await runVerification(req.user.id).catch(e => console.error('Verification after LC:', e.message));
 
-    const stored = await query('SELECT * FROM leetcode_data WHERE user_id=$1', [req.user.id]);
-    res.json({ ...stored.rows[0], username, verified: true, contests_attended: parsed.contests_attended, top_percentage: parsed.top_percentage });
+    const storedDoc = await db.collection('leetcode_data').doc(req.user.id).get();
+    res.json({ ...storedDoc.data(), username, verified: true, contests_attended: parsed.contests_attended, top_percentage: parsed.top_percentage });
   } catch (err) {
     console.error('LC error:', err.message);
     if (err.message.includes('not found')) return res.status(404).json({ error: err.message });
@@ -125,10 +133,11 @@ const verifyLeetCode = async (req, res) => {
 
 const getLeetCodeData = async (req, res) => {
   const userId = req.params.userId || req.user.id;
-  const result = await query('SELECT * FROM leetcode_data WHERE user_id=$1', [userId]);
-  const pr = await query('SELECT leetcode_url FROM profiles WHERE user_id=$1', [userId]);
-  const un = pr.rows[0]?.leetcode_url ? extractUsername(pr.rows[0].leetcode_url) : null;
-  res.json(result.rows[0] ? { ...result.rows[0], username: result.rows[0].leetcode_username || un } : null);
+  const resultDoc = await db.collection('leetcode_data').doc(userId).get();
+  const profileDoc = await db.collection('profiles').doc(userId).get();
+  const lcUrl = profileDoc.exists ? profileDoc.data().leetcode_url : null;
+  const un = lcUrl ? extractUsername(lcUrl) : null;
+  res.json(resultDoc.exists ? { ...resultDoc.data(), username: resultDoc.data().leetcode_username || un } : null);
 };
 
 module.exports = { verifyLeetCode, getLeetCodeData };

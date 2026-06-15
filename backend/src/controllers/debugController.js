@@ -1,5 +1,5 @@
 const logger = require('../utils/logger');
-const { query } = require('../config/database');
+const { db } = require('../config/firebase');
 
 const log = (req, res) => {
   const { level, message, context } = req.body;
@@ -16,13 +16,11 @@ const log = (req, res) => {
 
 const dbCheck = async (req, res) => {
   try {
-    const tables = await query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-    const usersCols = await query("SELECT column_name FROM information_schema.columns WHERE table_name = 'users'");
+    const collections = await db.listCollections();
     
     res.json({
       status: 'ok',
-      tables: tables.rows.map(r => r.table_name),
-      usersColumns: usersCols.rows.map(r => r.column_name)
+      collections: collections.map(c => c.id)
     });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });

@@ -1,7 +1,7 @@
 const pdfParse = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
-const { query } = require('../config/database');
+const { db, admin } = require('../config/firebase');
 const { runVerification } = require('./skillVerificationEngine');
 
 const UPLOADS_DIR = path.resolve(__dirname, '../../uploads');
@@ -96,8 +96,8 @@ const extractSections = (text) => {
 
 const parseResume = async (req, res) => {
   try {
-    const profileRes = await query('SELECT resume_url, resume_filename FROM profiles WHERE user_id=$1', [req.user.id]);
-    const profile = profileRes.rows[0];
+    const profileDoc = await db.collection('profiles').doc(req.user.id).get();
+    const profile = profileDoc.exists ? profileDoc.data() : null;
 
     if (!profile?.resume_url) {
       return res.status(400).json({ error: 'No resume uploaded. Upload your PDF first using the Upload Resume button.' });
@@ -133,25 +133,30 @@ const parseResume = async (req, res) => {
     const urls = extractURLs(rawText);
 
     // ── Store parse result ──
-    await query(
-      `INSERT INTO resume_parse_results (user_id, raw_text, parsed_skills, parsed_experience, parsed_education, parsed_projects, parsed_at)
-       VALUES ($1,$2,$3,$4,$5,$6,NOW())
-       ON CONFLICT (user_id) DO UPDATE SET raw_text=$2, parsed_skills=$3, parsed_experience=$4, parsed_education=$5, parsed_projects=$6, parsed_at=NOW()`,
-      [req.user.id, rawText.substring(0, 10000), skills,
-       JSON.stringify(sections.experience), JSON.stringify(sections.education), JSON.stringify(sections.projects)]
-    );
+    await db.collection('resume_parse_results').doc(req.user.id).set({
+      user_id: req.user.id,
+      raw_text: rawText.substring(0, 10000),
+      parsed_skills: skills,
+      parsed_experience: sections.experience,
+      parsed_education: sections.education,
+      parsed_projects: sections.projects,
+      parsed_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    // ── Replace resume skills (no duplicates within source) ──
-    await query("DELETE FROM skills WHERE user_id=$1 AND source='resume'", [req.user.id]);
+    // ── Replace resume skills ──
+    const skillsRef = db.collection('users').doc(req.user.id).collection('skills');
+    const existingSkills = await skillsRef.where('source', '==', 'resume').get();
+    const batch = db.batch();
+    existingSkills.forEach(doc => batch.delete(doc.ref));
+
     let inserted = 0;
     for (const skillName of skills) {
-      await query(
-        `INSERT INTO skills (user_id, name, source, verification_level) VALUES ($1,$2,'resume','claimed')
-         ON CONFLICT (user_id, name, source) DO NOTHING`,
-        [req.user.id, skillName]
-      );
+      const safeId = skillName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const docRef = skillsRef.doc(safeId);
+      batch.set(docRef, { name: skillName, source: 'resume', verification_level: 'claimed' }, { merge: true });
       inserted++;
     }
+    await batch.commit();
 
     // ── Auto-fill profile URLs from resume ──
     const profileUpdates = {};
@@ -159,36 +164,35 @@ const parseResume = async (req, res) => {
     if (urls.linkedin) profileUpdates.linkedin_url = urls.linkedin;
     if (urls.leetcode) profileUpdates.leetcode_url = urls.leetcode;
 
-    if (Object.keys(profileUpdates).length > 0) {
-      const setClauses = Object.entries(profileUpdates).map(([k], i) => `${k}=$${i + 2}`).join(', ');
-      const values = [req.user.id, ...Object.values(profileUpdates)];
-      await query(`UPDATE profiles SET ${setClauses}, updated_at=NOW() WHERE user_id=$1`, values);
+    profileUpdates.resume_parsed_at = admin.firestore.FieldValue.serverTimestamp();
+    if (Object.keys(profileUpdates).length > 1) {
+      profileUpdates.updated_at = admin.firestore.FieldValue.serverTimestamp();
     }
-
-    // ── Update parsed timestamp ──
-    await query('UPDATE profiles SET resume_parsed_at=NOW() WHERE user_id=$1', [req.user.id]);
+    
+    await db.collection('profiles').doc(req.user.id).set(profileUpdates, { merge: true });
 
     // ── Auto-add portfolio projects ──
+    const projectsRef = db.collection('users').doc(req.user.id).collection('projects');
     let projectsAdded = 0;
     for (const url of urls.portfolio) {
       try {
-        const exists = await query('SELECT id FROM projects WHERE user_id=$1 AND project_url=$2', [req.user.id, url]);
-        if (!exists.rows[0]) {
-          await query(
-            "INSERT INTO projects (user_id, title, project_url, source) VALUES ($1,$2,$3,'resume')",
-            [req.user.id, `Project from resume`, url]
-          );
+        const existing = await projectsRef.where('project_url', '==', url).get();
+        if (existing.empty) {
+          await projectsRef.add({ title: 'Project from resume', project_url: url, source: 'resume' });
           projectsAdded++;
         }
       } catch {}
     }
 
     // ── Progress event ──
-    await query(
-      `INSERT INTO progress_events (user_id, event_type, event_title, event_detail)
-       VALUES ($1,'resume_parsed','Resume Parsed',$2)`,
-      [req.user.id, `Extracted ${inserted} skills, auto-filled ${Object.keys(profileUpdates).length} profile links`]
-    ).catch(() => {});
+    try {
+      await db.collection('users').doc(req.user.id).collection('progress_events').add({
+        event_type: 'resume_parsed',
+        event_title: 'Resume Parsed',
+        event_detail: `Extracted ${inserted} skills, auto-filled ${Object.keys(profileUpdates).length - 1} profile links`,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      });
+    } catch {}
 
     // ── Run full cross-source verification ──
     let verificationCounts = null;
@@ -217,8 +221,8 @@ const parseResume = async (req, res) => {
 
 const getParseResult = async (req, res) => {
   const userId = req.params.userId || req.user.id;
-  const result = await query('SELECT * FROM resume_parse_results WHERE user_id=$1', [userId]);
-  res.json(result.rows[0] || null);
+  const result = await db.collection('resume_parse_results').doc(userId).get();
+  res.json(result.exists ? result.data() : null);
 };
 
 module.exports = { parseResume, getParseResult };

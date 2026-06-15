@@ -42,19 +42,26 @@ if (!USE_REDIS) {
     logger.info(`[Queue:Mock] AI job ${jobId} queued`);
     // Import here to avoid circular deps
     const { generateBatches } = require('./ai/batchGenerator');
-    const { query } = require('../config/database');
+    const { db, admin } = require('../config/firebase');
     setTimeout(async () => {
       try {
         const questions = await generateBatches(data.topic, data.count, data.difficulty);
+        const batch = db.batch();
         for (const q of questions) {
-          await query(
-            `INSERT INTO questions (created_by, category, difficulty, title, description, question_type, options, correct_answer)
-             VALUES ($1, 'technical_mcq', $2, $3, $4, 'mcq', $5, $6)`,
-            [data.userId, data.difficulty, q.question, q.question,
-             JSON.stringify(q.options.map((opt, i) => ({ id: String.fromCharCode(65 + i), text: opt }))),
-             (q.correctAnswer || 'A').toUpperCase()]
-          );
+          const docRef = db.collection('questions').doc();
+          batch.set(docRef, {
+            created_by: data.userId,
+            category: 'technical_mcq',
+            difficulty: data.difficulty,
+            title: q.question || q.title,
+            description: q.question || q.title,
+            question_type: 'mcq',
+            options: q.options.map((opt, i) => ({ id: String.fromCharCode(65 + i), text: opt.text || opt })),
+            correct_answer: (q.correctAnswer || q.correct_answer || 'A').toUpperCase(),
+            created_at: admin.firestore.FieldValue.serverTimestamp()
+          });
         }
+        await batch.commit();
         logger.info(`[Queue:Mock] AI job ${jobId} complete: saved ${questions.length} questions`);
       } catch (err) {
         logger.error(`[Queue:Mock] AI job ${jobId} failed: ${err.message}`);
