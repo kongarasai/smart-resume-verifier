@@ -9,7 +9,11 @@ if (getApps().length === 0) {
   try {
     let credential;
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      credential = cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT));
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+      credential = cert(serviceAccount);
     } else {
       credential = applicationDefault();
     }
