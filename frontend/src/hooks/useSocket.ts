@@ -10,7 +10,7 @@ export const useSocket = () => {
   useEffect(() => {
     if (!token || !user) return;
 
-    const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://enviable-epic-shrunk.ngrok-free.dev';
+    const SOCKET_URL = 'https://smart-resume-backend-7jeu.onrender.com';
     
     // Connect with userId in query for targeted notifications
     socketRef.current = io(SOCKET_URL, {

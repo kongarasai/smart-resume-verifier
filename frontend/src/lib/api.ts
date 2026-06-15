@@ -2,8 +2,8 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
-const rawApiUrl = cleanUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
-const API_URL = (rawApiUrl.endsWith('/api') || rawApiUrl.endsWith('/api/') ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, '')}/api`).replace(/\/+$/, '') + '/';
+const rawApiUrl = 'https://smart-resume-backend-7jeu.onrender.com/api';
+const API_URL = 'https://smart-resume-backend-7jeu.onrender.com/api/';
 
 const api = axios.create({
   baseURL: API_URL,
