@@ -206,9 +206,14 @@ router.get('/debug/firebase', async (req, res) => {
   try {
     const { db } = require('../config/firebase');
     const snap = await db.collection('users').limit(1).get();
-    res.json({ ok: true, docs: snap.size });
+    res.json({ 
+      ok: true, 
+      docs: snap.size, 
+      has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+      project: process.env.GOOGLE_CLOUD_PROJECT || 'none'
+    });
   } catch (e) {
-    res.status(500).json({ error: e.message, stack: e.stack });
+    res.status(500).json({ error: e.message, stack: e.stack, has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT });
   }
 });
 router.post('/debug/log', (req, res, next) => {

@@ -8,16 +8,18 @@ let app;
 if (getApps().length === 0) {
   try {
     let credential;
+    let projectId;
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       if (serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
       }
       credential = cert(serviceAccount);
+      projectId = serviceAccount.project_id;
     } else {
       credential = applicationDefault();
     }
-    app = initializeApp({ credential });
+    app = initializeApp({ credential, projectId });
     console.log('Firebase Admin initialized successfully');
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
