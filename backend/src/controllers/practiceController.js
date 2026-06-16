@@ -11,7 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 const MAX_ATTEMPTS_PER_QUESTION = 3;
 
 const getQuestions = async (req, res) => {
-  const { category, difficulty, group_id, limit = 10, tag } = req.query;
+  const { category, difficulty, group_id, limit = 50, tag } = req.query;
   try {
     let qRef = db.collection('questions').where('is_active', '==', true);
     if (category) qRef = qRef.where('category', '==', category);
@@ -213,7 +213,7 @@ const getMyProgress = async (req, res) => {
       const t1 = a.completed_at?.toMillis ? a.completed_at.toMillis() : 0;
       const t2 = b.completed_at?.toMillis ? b.completed_at.toMillis() : 0;
       return t2 - t1;
-    }).slice(0, 20);
+    });
 
     const aSnap = await db.collection('practice_attempts').where('user_id', '==', req.user.id).get();
     let total = 0, correct = 0, total_points = 0;
@@ -223,10 +223,106 @@ const getMyProgress = async (req, res) => {
       total_points += (d.data().score || 0);
     });
 
+    // Compute by_category stats from sessions
+    const catMap = {};
+    sessions.forEach(s => {
+      const cat = s.category || 'unknown';
+      if (!catMap[cat]) catMap[cat] = { category: cat, total_sessions: 0, total_score: 0, best_score: 0, last_score: 0 };
+      catMap[cat].total_sessions++;
+      catMap[cat].total_score += (s.score_percentage || 0);
+      if ((s.score_percentage || 0) > catMap[cat].best_score) catMap[cat].best_score = s.score_percentage || 0;
+    });
+    // Set last_score from the most recent session per category
+    sessions.forEach(s => {
+      const cat = s.category || 'unknown';
+      if (catMap[cat] && !catMap[cat]._lastSet) {
+        catMap[cat].last_score = s.score_percentage || 0;
+        catMap[cat]._lastSet = true;
+      }
+    });
+    const by_category = Object.values(catMap).map(c => ({
+      category: c.category,
+      total_sessions: c.total_sessions,
+      avg_score: c.total_sessions > 0 ? Math.round(c.total_score / c.total_sessions) : 0,
+      best_score: c.best_score,
+      last_score: c.last_score
+    }));
+
+    // Compute active days in last 30 days
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const activeDays = new Set();
+    aSnap.forEach(d => {
+      const ts = d.data().attempted_at?.toMillis ? d.data().attempted_at.toMillis() : 0;
+      if (ts > thirtyDaysAgo) {
+        activeDays.add(new Date(ts).toDateString());
+      }
+    });
+
     const overall = { total, correct, total_points };
-    res.json({ sessions, overall, by_category: [], active_days_30: 0 }); // simplified stats
+    res.json({ sessions: sessions.slice(0, 20), overall, by_category, active_days_30: activeDays.size });
   } catch (err) {
     res.status(500).json({ error: 'Failed to load progress' });
+  }
+};
+
+const getSessionHistory = async (req, res) => {
+  try {
+    const sSnap = await db.collection('practice_sessions').where('user_id', '==', req.user.id).get();
+    let sessions = sSnap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        category: data.category,
+        total_questions: data.total_questions,
+        correct_answers: data.correct_answers,
+        score_percentage: data.score_percentage,
+        completed_at: data.completed_at?.toMillis ? data.completed_at.toMillis() : null
+      };
+    });
+    sessions.sort((a, b) => (b.completed_at || 0) - (a.completed_at || 0));
+    res.json(sessions);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load session history' });
+  }
+};
+
+const getSessionAttempts = async (req, res) => {
+  try {
+    const sessionDoc = await db.collection('practice_sessions').doc(req.params.sessionId).get();
+    if (!sessionDoc.exists) return res.status(404).json({ error: 'Session not found' });
+    const session = sessionDoc.data();
+    if (session.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+
+    // Get all attempts by this user
+    const aSnap = await db.collection('practice_attempts').where('user_id', '==', req.user.id).get();
+    const attempts = aSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Enrich with question data
+    const enriched = [];
+    for (const attempt of attempts) {
+      const qDoc = await db.collection('questions').doc(attempt.question_id).get();
+      if (qDoc.exists) {
+        const q = qDoc.data();
+        enriched.push({
+          question_id: attempt.question_id,
+          title: q.title,
+          description: q.description,
+          difficulty: q.difficulty,
+          question_type: q.question_type,
+          options: q.options,
+          correct_answer: q.correct_answer,
+          submitted_answer: attempt.submitted_answer,
+          is_correct: attempt.is_correct,
+          score: attempt.score,
+          time_taken_seconds: attempt.time_taken_seconds,
+          attempted_at: attempt.attempted_at?.toMillis ? attempt.attempted_at.toMillis() : null
+        });
+      }
+    }
+    enriched.sort((a, b) => (b.attempted_at || 0) - (a.attempted_at || 0));
+    res.json({ session: { id: sessionDoc.id, ...session }, attempts: enriched.slice(0, 100) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load session attempts' });
   }
 };
 
@@ -513,7 +609,8 @@ const bulkDeleteQuestions = async (req, res) => {
 
 module.exports = {
   getQuestions, getQuestion, submitAnswer, startSession, endSession,
-  getMyProgress, createQuestion, runCode, toggleStarQuestion,
+  getMyProgress, getSessionHistory, getSessionAttempts,
+  createQuestion, runCode, toggleStarQuestion,
   getStarredQuestions, bulkCreateQuestions, getAssignments, getAssignmentQuestions,
   deleteQuestion, generateQuestions, bulkDeleteQuestions, submitAssignmentTest
 };

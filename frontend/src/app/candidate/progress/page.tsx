@@ -4,7 +4,7 @@ import DashboardLayout from '@/components/shared/DashboardLayout';
 import { practiceAPI, profileAPI, scoringAPI } from '@/lib/api';
 import { ProgressTimeline } from '@/components/candidate/ProgressTimeline';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { Clock, Star, Trophy, BookOpen, CheckCircle, BarChart2, History, Plus, ArrowRight, Briefcase, Ban } from 'lucide-react';
+import { Clock, Star, Trophy, BookOpen, CheckCircle, BarChart2, History, Plus, ArrowRight, Briefcase, Ban, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function ProgressPage() {
@@ -14,6 +14,9 @@ export default function ProgressPage() {
   const [score, setScore] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionHistory, setSessionHistory] = useState<any[]>([]);
+  const [expandedSession, setExpandedSession] = useState<string | null>(null);
+  const [sessionAttempts, setSessionAttempts] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     Promise.all([
@@ -27,10 +30,20 @@ export default function ProgressPage() {
       setScore(scRes.data);
       setProfile(pfRes.data?.profile);
       setHiringStatus(pfRes.data?.hiring_status);
-      console.log('Progress Profile Data:', pfRes.data);
-      console.log('Progress Hiring Status:', pfRes.data?.hiring_status);
     }).catch(() => {}).finally(() => setLoading(false));
+    practiceAPI.getHistory().then(r => setSessionHistory(r.data || [])).catch(() => {});
   }, []);
+
+  const toggleSessionExpand = async (sessionId: string) => {
+    if (expandedSession === sessionId) { setExpandedSession(null); return; }
+    setExpandedSession(sessionId);
+    if (!sessionAttempts[sessionId]) {
+      try {
+        const r = await practiceAPI.getSessionAttempts(sessionId);
+        setSessionAttempts(prev => ({ ...prev, [sessionId]: r.data?.attempts || [] }));
+      } catch { setSessionAttempts(prev => ({ ...prev, [sessionId]: [] })); }
+    }
+  };
 
   const chartData = stats?.by_category?.map((c: any) => ({
     name: c.category, score: Math.round(c.avg_score)
@@ -136,6 +149,59 @@ export default function ProgressPage() {
                     <Bar dataKey="score" fill="#1e1b17" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Session History Table */}
+            {sessionHistory.length > 0 && (
+              <div className="card p-6">
+                <h3 className="section-title mb-6 flex items-center gap-2">
+                  <History size={16} className="text-ink-400" /> Practice Session History
+                </h3>
+                <div className="space-y-2">
+                  {sessionHistory.map((s: any) => (
+                    <div key={s.id}>
+                      <button onClick={() => toggleSessionExpand(s.id)}
+                        className="w-full flex items-center justify-between p-3 rounded-lg border border-ink-100 hover:border-ink-300 hover:bg-ink-50 transition-all text-sm">
+                        <div className="flex items-center gap-3">
+                          {expandedSession === s.id ? <ChevronUp size={14} className="text-ink-400" /> : <ChevronDown size={14} className="text-ink-400" />}
+                          <span className="font-medium text-ink-900 capitalize">{s.category?.replace('_', ' ')}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className={clsx('font-bold font-mono text-sm', s.score_percentage >= 70 ? 'text-green-700' : s.score_percentage >= 40 ? 'text-amber-600' : 'text-red-600')}>
+                            {s.score_percentage ?? 0}%
+                          </span>
+                          <span className="text-ink-500 text-xs">{s.correct_answers ?? 0}/{s.total_questions ?? 0}</span>
+                          <span className="text-ink-400 text-xs">{s.completed_at ? new Date(s.completed_at).toLocaleDateString() : '-'}</span>
+                        </div>
+                      </button>
+                      {expandedSession === s.id && (
+                        <div className="ml-6 mt-1 mb-3 border-l-2 border-ink-200 pl-4 space-y-2 py-2">
+                          {!sessionAttempts[s.id] ? (
+                            <div className="text-ink-400 text-xs py-3 animate-pulse">Loading attempts...</div>
+                          ) : sessionAttempts[s.id].length === 0 ? (
+                            <div className="text-ink-400 text-xs py-3">No detailed attempts recorded for this session.</div>
+                          ) : (
+                            sessionAttempts[s.id].slice(0, 20).map((a: any, i: number) => (
+                              <div key={i} className={clsx('p-3 rounded-lg border text-xs', a.is_correct ? 'bg-green-50/50 border-green-100' : 'bg-red-50/50 border-red-100')}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="font-medium text-ink-800">{a.title || `Question ${i+1}`}</div>
+                                  <div className="shrink-0">
+                                    {a.is_correct ? <CheckCircle size={14} className="text-green-600" /> : <XCircle size={14} className="text-red-500" />}
+                                  </div>
+                                </div>
+                                <div className="mt-1.5 flex gap-4">
+                                  <span className="text-ink-500">Your answer: <span className={clsx('font-mono font-medium', a.is_correct ? 'text-green-700' : 'text-red-600')}>{a.submitted_answer || '-'}</span></span>
+                                  {!a.is_correct && a.correct_answer && <span className="text-ink-500">Correct: <span className="font-mono font-medium text-green-700">{a.correct_answer}</span></span>}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/shared/DashboardLayout';
 import { practiceAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -9,19 +9,46 @@ import clsx from 'clsx';
 
 export default function AssignmentClient({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const assignmentId = (searchParams.get('id') || params.id) as string;
+
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [finalScore, setFinalScore] = useState<{percentage: number, correct: number, total: number} | null>(null);
+
+  const [assignmentName, setAssignmentName] = useState<string>('Assignment');
+  const [pastAttempts, setPastAttempts] = useState<any[]>([]);
+  const [showLanding, setShowLanding] = useState(false);
 
   useEffect(() => {
-    practiceAPI.getAssignmentQuestions(params.id)
-      .then(r => setQuestions(r.data || []))
-      .catch(() => toast.error('Failed to load assignment'))
-      .finally(() => setLoading(false));
-  }, [params.id]);
+    if (!assignmentId) return;
+    Promise.all([
+      practiceAPI.getAssignments(),
+      practiceAPI.getHistory(),
+      practiceAPI.getAssignmentQuestions(assignmentId)
+    ]).then(([assignmentsRes, historyRes, qRes]) => {
+      const allAssignments = assignmentsRes.data?.assignments || [];
+      const currentAssignment = allAssignments.find((a: any) => a.id === assignmentId);
+      const name = currentAssignment ? currentAssignment.name : 'Assignment';
+      setAssignmentName(name);
+
+      const history = historyRes.data || [];
+      const attempts = history.filter((h: any) => h.category === name);
+      setPastAttempts(attempts);
+      
+      setQuestions(qRes.data || []);
+      
+      if (attempts.length > 0) {
+        setShowLanding(true);
+      }
+    })
+    .catch(() => toast.error('Failed to load assignment'))
+    .finally(() => setLoading(false));
+  }, [assignmentId]);
 
   const handleMCQSelect = (qId: string, optId: string) => {
     if (done) return;
@@ -41,7 +68,7 @@ export default function AssignmentClient({ params }: { params: { id: string } })
     setSubmitting(true);
     try {
       const res = await practiceAPI.submitAssignmentTest({
-        assignment_id: params.id,
+        assignment_id: assignmentId,
         answers: answers
       });
       
@@ -50,6 +77,7 @@ export default function AssignmentClient({ params }: { params: { id: string } })
         newResults[r.question_id] = r;
       });
       setResults(newResults);
+      setFinalScore({ percentage: res.percentage, correct: res.correctCount, total: questions.length });
       setDone(true);
       toast.success(`Assignment submitted! Score: ${res.percentage}% (${res.correctCount}/${questions.length})`);
     } catch (err: any) {
@@ -61,6 +89,41 @@ export default function AssignmentClient({ params }: { params: { id: string } })
 
   if (loading) return <DashboardLayout><div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-ink-900 border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
 
+  if (showLanding) {
+    return (
+      <DashboardLayout>
+        <div className="animate-fade-in max-w-2xl mx-auto py-10">
+          <button onClick={() => router.back()} className="flex items-center gap-1 text-ink-500 hover:text-ink-900 mb-6 transition-colors">
+            <ChevronLeft size={16} /> Back to Practice
+          </button>
+          <div className="card p-8 text-center">
+            <h1 className="font-display text-3xl text-ink-900 mb-2">{assignmentName}</h1>
+            <p className="text-ink-500 mb-8">You have previously attempted this assignment {pastAttempts.length} time{pastAttempts.length > 1 ? 's' : ''}.</p>
+            
+            <div className="text-left space-y-3 mb-8">
+              <h3 className="font-semibold text-ink-700">Past Attempts</h3>
+              {pastAttempts.map((a: any) => (
+                <div key={a.id} className="p-4 border rounded-lg flex justify-between items-center bg-ink-25">
+                  <div>
+                    <div className="font-medium text-ink-900">{new Date(a.completed_at).toLocaleString()}</div>
+                    <div className="text-xs text-ink-500">Score: {a.score_percentage}% ({a.correct_answers}/{a.total_questions})</div>
+                  </div>
+                  <div className={clsx("font-bold text-lg", a.score_percentage >= 70 ? 'text-green-600' : 'text-amber-600')}>
+                    {a.score_percentage}%
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={() => setShowLanding(false)} className="btn-primary w-full justify-center py-3 text-lg">
+              Start New Attempt
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="animate-fade-in max-w-4xl mx-auto pb-20">
@@ -69,7 +132,7 @@ export default function AssignmentClient({ params }: { params: { id: string } })
         </button>
 
         <div className="mb-8">
-          <h1 className="font-display text-3xl text-ink-900 mb-2">Assignment Questions</h1>
+          <h1 className="font-display text-3xl text-ink-900 mb-2">{assignmentName}</h1>
           <p className="text-ink-500">Attempt all questions below and submit at once.</p>
         </div>
 
@@ -164,8 +227,23 @@ export default function AssignmentClient({ params }: { params: { id: string } })
         )}
 
         {done && (
-          <div className="mt-12 text-center">
-            <button onClick={() => router.push('/candidate/practice')} className="btn-primary">Return to Practice Dashboard</button>
+          <div className="mt-12 max-w-lg mx-auto text-center py-12 animate-slide-up border-t border-ink-200">
+            <h2 className="font-display text-3xl text-ink-900 mb-2">Assignment Complete!</h2>
+            {finalScore && (
+              <div className="card p-6 my-6 text-left">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center mb-6">
+                  <div><div className="font-display text-3xl text-green-700">{finalScore.correct}</div><div className="text-xs text-ink-500">Correct</div></div>
+                  <div><div className="font-display text-3xl text-red-600">{finalScore.total - finalScore.correct}</div><div className="text-xs text-ink-500">Incorrect</div></div>
+                  <div><div className={clsx('font-display text-3xl', finalScore.percentage >= 70 ? 'text-green-700' : finalScore.percentage >= 40 ? 'text-amber-600' : 'text-red-600')}>{finalScore.percentage}%</div><div className="text-xs text-ink-500">Score</div></div>
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3 justify-center flex-wrap">
+              <button onClick={() => { setAnswers({}); setResults({}); setDone(false); setFinalScore(null); window.scrollTo(0,0); }} className="btn-primary flex items-center gap-2">
+                Re-Test Assignment
+              </button>
+              <button onClick={() => router.push('/candidate/practice')} className="btn-secondary">Return to Practice Dashboard</button>
+            </div>
           </div>
         )}
       </div>

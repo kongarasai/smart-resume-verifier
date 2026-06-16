@@ -38,7 +38,7 @@ export default function LanguageClient({ params }: { params: { language: string 
     const loadQuestions = async () => {
       try {
         const [qRes, sRes] = await Promise.all([
-          practiceAPI.getQuestions({ category: 'coding', tag: language, limit: 50 }),
+          practiceAPI.startSession({ category: 'coding', limit: 50 }),
           practiceAPI.getStarred()
         ]);
         setQuestions(qRes.data.length > 0 ? qRes.data : []);
@@ -145,6 +145,10 @@ export default function LanguageClient({ params }: { params: { language: string 
         setCode('// Write your code here...');
         setOutput('');
       } else {
+        await practiceAPI.endSession({
+          category: 'coding',
+          question_ids: questions.map(q => q.id)
+        });
         isDoneRef.current = true;
         setIsDone(true);
       }

@@ -194,6 +194,8 @@ export const practiceAPI = {
     const formData = fileOrFormData instanceof FormData ? fileOrFormData : (() => { const fd = new FormData(); fd.append('file', fileOrFormData); return fd; })();
     return api.post('practice/parse-pdf-mcqs', formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(unwrap);
   },
+  getHistory: () => api.get('practice/history').then(unwrap),
+  getSessionAttempts: (sessionId: string) => api.get(`practice/history/${sessionId}`).then(unwrap),
 };
 
 // ════════════════════════════════════════════

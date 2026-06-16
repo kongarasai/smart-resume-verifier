@@ -79,6 +79,8 @@ router.get('/practice/starred', authenticate, practiceCtrl.getStarredQuestions);
 router.get('/practice/assignments', authenticate, practiceCtrl.getAssignments);
 router.get('/practice/assignments/:groupId', authenticate, practiceCtrl.getAssignmentQuestions);
 router.post('/practice/submit-assignment', authenticate, practiceCtrl.submitAssignmentTest);
+router.get('/practice/history', authenticate, practiceCtrl.getSessionHistory);
+router.get('/practice/history/:sessionId', authenticate, practiceCtrl.getSessionAttempts);
 router.post('/questions/generate', authenticate, practiceCtrl.generateQuestions);
 
 

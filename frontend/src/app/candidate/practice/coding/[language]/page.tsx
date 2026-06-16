@@ -3,10 +3,29 @@ import LanguageClient from './LanguageClient';
 
 export function generateStaticParams() {
   return [
-    { language: 'python' },
-    { language: 'javascript' },
     { language: 'java' },
-    { language: 'cpp' }
+    { language: 'python' },
+    { language: 'c' },
+    { language: 'c++' },
+    { language: 'javascript' },
+    { language: 'typescript' },
+    { language: 'go' },
+    { language: 'rust' },
+    { language: 'kotlin' },
+    { language: 'swift' },
+    { language: 'php' },
+    { language: 'ruby' },
+    { language: 'c#' },
+    { language: 'dart' },
+    { language: 'r' },
+    { language: 'matlab' },
+    { language: 'sql' },
+    { language: 'bash' },
+    { language: 'scala' },
+    { language: 'objective-c' },
+    { language: 'haskell' },
+    { language: 'perl' },
+    { language: 'julia' },
   ];
 }
 
