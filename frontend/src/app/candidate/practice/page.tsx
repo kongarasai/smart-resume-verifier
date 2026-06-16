@@ -28,6 +28,7 @@ export default function PracticePage() {
   const [progress, setProgress] = useState<any>(null);
   const [data, setData] = useState<{ groups: any[], assignments: any[] }>({ groups: [], assignments: [] });
   const [loading, setLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
 
   const [showLangSelect, setShowLangSelect] = useState(false);
@@ -45,7 +46,10 @@ export default function PracticePage() {
     practiceAPI.getHistory().then(r => setSessionHistory(r.data || [])).catch(() => {});
   };
 
-  useEffect(() => { loadInitialData(); }, []);
+  useEffect(() => { 
+    setIsMounted(true);
+    loadInitialData(); 
+  }, []);
 
 
   useEffect(() => {
@@ -157,6 +161,8 @@ export default function PracticePage() {
   const chartData = progress?.by_category?.map((c: any) => ({
     name: c.category, score: Math.round(c.avg_score)
   })) || [];
+
+  if (!isMounted) return <DashboardLayout><div className="animate-pulse p-8">Loading...</div></DashboardLayout>;
 
   return (
     <DashboardLayout>
