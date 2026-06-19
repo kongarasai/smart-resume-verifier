@@ -1,0 +1,65 @@
+name: Smart Resume Verifier CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Setup Node.js environment
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x' # Adjust this to your project's Node version
+
+    # 3. Install Backend Dependencies
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: npm install
+
+    # 4. Install Frontend Dependencies
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm install
+
+    # 5. Build Frontend (Next.js)
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: npm run build
+
+    # 6. Install QA Testing Dependencies
+    - name: Install QA Testing Dependencies
+      working-directory: ./qa-testing
+      run: npm install
+
+    # 7. Start Services for E2E Testing
+    # We use a background process for the backend and frontend
+    - name: Start Backend and Frontend Servers
+      run: |
+        cd backend && npm start &
+        cd frontend && npm start &
+        # Wait for the servers to boot up (adjust port/time as needed)
+        sleep 10
+        
+    # 8. Run QA Selenium Tests
+    # Note: On GitHub Actions, Selenium tests should ideally run in Headless mode.
+    # If test_runner.js requires a GUI, xvfb-run can simulate a display.
+    - name: Run Selenium E2E Tests
+      working-directory: ./qa-testing
+      run: xvfb-run --auto-servernum npm run test
+
+    # 9. Upload Test Report Artifact
+    - name: Upload Excel Test Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-report
+        path: ./qa-testing/*.xlsx
