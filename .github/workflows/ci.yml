@@ -13,11 +13,11 @@ jobs:
     steps:
     # 1. Checkout the repository
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # 2. Setup Node.js environment
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18.x' # Adjust this to your project's Node version
 
@@ -59,7 +59,7 @@ jobs:
 
     # 9. Upload Test Report Artifact
     - name: Upload Excel Test Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: e2e-test-report
         path: ./qa-testing/*.xlsx
