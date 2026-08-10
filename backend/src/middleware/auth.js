@@ -1,4 +1,5 @@
-const { admin, db } = require('../config/firebase');
+const { db } = require('../config/firebase');
+const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 const { get, setWithExpiry } = require('../utils/redis');
 
@@ -30,9 +31,8 @@ const setCached = (token, user) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Enterprise Auth Middleware.
- * Requires a valid Firebase ID token — NO mock_token fallback in any environment.
- * Supports Redis-based session caching for performance.
+ * Auth Middleware — verifies JWT issued by our authController on login/register.
+ * Supports in-process session caching for performance.
  */
 const authenticate = async (req, res, next) => {
   const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
@@ -41,13 +41,13 @@ const authenticate = async (req, res, next) => {
     return res.status(401).json({ error: 'Authentication required' });
   }
 
-  // Explicitly reject predictable mock tokens
+  // Reject legacy mock tokens
   if (token.startsWith('mock_token_')) {
     logger.warn(`Rejected mock token attempt from ${req.ip}`);
     return res.status(401).json({ error: 'Invalid authentication token' });
   }
 
-  // 1. Check fast in-process cache (avoids Firebase round-trip)
+  // 1. Check fast in-process cache
   const cachedUser = getCached(token);
   if (cachedUser) {
     req.user = cachedUser;
@@ -55,16 +55,17 @@ const authenticate = async (req, res, next) => {
   }
 
   try {
-    // 2. Verify Firebase ID token — this validates signature, expiry, audience
-    const decoded = await admin.auth().verifyIdToken(token);
+    // 2. Verify our JWT
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3. Check Redis cache to avoid Firestore DB hit
-    const cacheKey = `user_session:${decoded.uid}`;
+    // 3. Check Redis cache
+    const cacheKey = `user_session:${decoded.id}`;
     let user = await get(cacheKey);
 
     if (!user) {
-      // 4. Fetch user from Firestore
-      const userDoc = await db.collection('users').doc(decoded.uid).get();
+      // 4. Fetch fresh user from Firestore
+      const userDoc = await db.collection('users').doc(decoded.id).get();
 
       if (!userDoc.exists) {
         return res.status(401).json({ error: 'Account not found' });
@@ -76,11 +77,10 @@ const authenticate = async (req, res, next) => {
         return res.status(401).json({ error: 'Account inactive' });
       }
 
-      // Cache in Redis (5 min)
       await setWithExpiry(cacheKey, user, 300);
     }
 
-    // 5. Store in fast in-process cache for subsequent requests
+    // 5. Cache in-process
     setCached(token, user);
 
     req.user = user;

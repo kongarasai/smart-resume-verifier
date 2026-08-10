@@ -24,7 +24,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     loadAll();
-    const SOCKET_URL = 'https://smart-resume-backend-7jeu.onrender.com';
+    const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
     socketRef.current = io(SOCKET_URL, { 
       auth: { token },
       transports: ['websocket', 'polling'], // Support both

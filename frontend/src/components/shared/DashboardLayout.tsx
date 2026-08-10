@@ -25,7 +25,7 @@ export default function DashboardLayout({ children, requiredRole }: { children: 
 
   useEffect(() => { 
     initFromStorage();
-    const timer = setTimeout(() => setSafetyLoading(false), 1500);
+    const timer = setTimeout(() => setSafetyLoading(false), 100);
     
     // Global navigation interceptor for debugging mobile redirects
     const originalPushState = window.history.pushState;
@@ -85,7 +85,7 @@ export default function DashboardLayout({ children, requiredRole }: { children: 
             sendDebugLog('No user found after delay, redirecting to login', 'warn');
             router.replace('/auth/login'); 
           }
-        }, 1200);
+        }, 200);
         return () => clearTimeout(timer);
       }
       
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children, requiredRole }: { children: 
     }
   }, [user, isLoading, requiredRole, pathname, safetyLoading]);
 
-  console.log('[DashboardLayout] Render:', { isLoading, safetyLoading, user: !!user, pathname });
+  // console.log('[DashboardLayout] Render:', { isLoading, safetyLoading, user: !!user, pathname });
 
   /*
   if (isLoading && safetyLoading) return (

@@ -13,6 +13,13 @@ const csrfProtection = (req, res, next) => {
     return next();
   }
 
+  // Skip CSRF for auth endpoints — they are rate-limited and CSRF-safe by design
+  // (an attacker forcing a victim to log in as someone else gives no meaningful benefit)
+  const AUTH_EXEMPT = ['/auth/login', '/auth/register', '/auth/refresh'];
+  if (AUTH_EXEMPT.some(path => req.path.startsWith(path))) {
+    return next();
+  }
+
   // Allow trusted frontend origins that use Authorization header bearer tokens
   // (Bearer-token based auth is CSRF-safe by design — no auto-sent credentials)
   const authHeader = req.headers.authorization;

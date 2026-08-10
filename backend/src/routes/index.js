@@ -225,6 +225,6 @@ router.get('/debug/firebase', authenticate, requireRole('admin'), async (req, re
     res.status(500).json({ error: e.message, stack: e.stack, has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT });
   }
 });
-router.post('/debug/log', authenticate, requireRole('admin'), debugCtrl.log);
+router.post('/debug/log', authenticate, debugCtrl.log);
 
 module.exports = router;

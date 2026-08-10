@@ -22,6 +22,7 @@
     "axios": "^1.6.2",
     "clsx": "^2.1.0",
     "date-fns": "^3.2.0",
+    "firebase": "^12.17.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.309.0",
     "next": "14.1.0",

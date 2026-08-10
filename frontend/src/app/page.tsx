@@ -23,11 +23,11 @@ export default function Home() {
       }
       if (!user) {
         router.replace('/auth/login');
-        setTimeout(() => { if (window.location.pathname === '/') window.location.href = '/auth/login'; }, 500);
+        setTimeout(() => { if (window.location.pathname === '/') window.location.href = '/auth/login'; }, 50);
       } else {
         const target = REDIRECTS[user.role] || '/admin/dashboard';
         router.replace(target);
-        setTimeout(() => { if (window.location.pathname === '/') window.location.href = target; }, 500);
+        setTimeout(() => { if (window.location.pathname === '/') window.location.href = target; }, 50);
       }
     }
   }, [user, isLoading]);

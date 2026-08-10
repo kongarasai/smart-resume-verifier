@@ -2,8 +2,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
-const rawApiUrl = 'https://smart-resume-backend-7jeu.onrender.com/api';
-const API_URL = 'https://smart-resume-backend-7jeu.onrender.com/api/';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
+
 
 const api = axios.create({
   baseURL: API_URL,
@@ -19,8 +20,12 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`);
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) config.headers['Authorization'] = `Bearer ${token}`;
+    // Only attach stored token if the caller didn't explicitly set one
+    // (e.g. loginWithToken passes a Firebase ID token — must not be overwritten)
+    if (!config.headers['Authorization']) {
+      const token = localStorage.getItem('token');
+      if (token) config.headers['Authorization'] = `Bearer ${token}`;
+    }
   }
   if (typeof document !== 'undefined') {
     const csrfToken = document.cookie
@@ -51,7 +56,9 @@ api.interceptors.response.use(
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
     
     // Handle Network Timeouts & Server Drops
-    if (err.code === 'ECONNABORTED' || err.message.includes('timeout') || err.message === 'Network Error') {
+    // Suppress toasts for background/diagnostic calls (e.g. /debug/log) — silent failure is fine
+    const isSilentEndpoint = err.config?.url?.includes('/debug/');
+    if (!isSilentEndpoint && (err.code === 'ECONNABORTED' || err.message.includes('timeout') || err.message === 'Network Error')) {
       if (typeof window !== 'undefined') toast.error('Connection to server lost. Please check your network.');
     } else if (err.response?.status >= 500) {
       if (typeof window !== 'undefined') toast.error(err.response.data?.error || 'The server encountered an error.');
@@ -78,6 +85,14 @@ export const authAPI = {
   login: (data: any) => api.post('auth/login', data),
   logout: () => api.post('auth/logout'),
   me: () => api.get('auth/me').then(unwrap),
+
+  /** Login using a Firebase ID token (Google Sign-In or email/password) */
+  loginWithToken: (idToken: string) =>
+    api.post('auth/login', {}, { headers: { Authorization: `Bearer ${idToken}` } }),
+
+  /** Register using a Firebase ID token + profile data */
+  registerWithToken: (idToken: string, data: any) =>
+    api.post('auth/register', data, { headers: { Authorization: `Bearer ${idToken}` } }),
 };
 
 // ════════════════════════════════════════════

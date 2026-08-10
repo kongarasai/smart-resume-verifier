@@ -71,7 +71,7 @@ export function ConfidenceMeter({ score, compact }: ScoreProps) {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse block"></span>
                 AI Fraud Detection
               </div>
-              <div className="text-white font-medium text-sm">Model: Random Forest</div>
+
             </div>
             <div className="text-right">
               <div className={clsx('text-2xl font-display mt-1',

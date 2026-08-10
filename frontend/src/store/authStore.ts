@@ -17,7 +17,18 @@ interface AuthStore {
   initFromStorage: () => void;
 }
 
-const getInitialState = () => ({ user: null, token: null, isLoading: true });
+// Eagerly read from localStorage at module load time (runs only on client)
+const getInitialState = () => {
+  if (typeof window === 'undefined') return { user: null, token: null, isLoading: true };
+  try {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      return { user: JSON.parse(userStr) as User, token, isLoading: false };
+    }
+  } catch {}
+  return { user: null, token: null, isLoading: false };
+};
 
 export const useAuthStore = create<AuthStore>((set) => ({
   ...getInitialState(),
@@ -36,6 +47,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       window.location.href = '/auth/login';
     }
   },
+  // Keep for backwards compat but it's now a no-op if store already initialized
   initFromStorage: () => {
     if (typeof window === 'undefined') return;
     try {
@@ -49,3 +61,4 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ user: null, token: null, isLoading: false });
   },
 }));
+

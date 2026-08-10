@@ -41,6 +41,12 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow server-to-server (no origin header) e.g. mobile native or curl
     if (!origin) return callback(null, true);
+    
+    // In development, allow any local origin (localhost, 127.0.0.1, or local IP)
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
     if (ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
@@ -49,7 +55,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'ngrok-skip-browser-warning'],
   exposedHeaders: ['x-csrf-token']
 }));
 

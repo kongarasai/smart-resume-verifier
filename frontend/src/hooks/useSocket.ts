@@ -10,7 +10,7 @@ export const useSocket = () => {
   useEffect(() => {
     if (!token || !user) return;
 
-    const SOCKET_URL = 'https://smart-resume-backend-7jeu.onrender.com';
+    const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
     
     // Connect with userId in query for targeted notifications
     socketRef.current = io(SOCKET_URL, {
