@@ -40,10 +40,10 @@ export default function PracticePage() {
   const [sessionHistory, setSessionHistory] = useState<any[]>([]);
 
   const loadInitialData = () => {
-    practiceAPI.getProgress().then(r => setProgress(r.data)).catch(() => {});
-    practiceAPI.getAssignments().then(r => setData(r.data || { groups: [], assignments: [] })).catch(() => {});
-    practiceAPI.getStarred().then(r => setStarred(new Set((r.data || []).map((q: any) => q.id)))).catch(() => {});
-    practiceAPI.getHistory().then(r => setSessionHistory(r.data || [])).catch(() => {});
+    practiceAPI.getProgress().then((r: any) => setProgress(r.data)).catch(() => {});
+    practiceAPI.getAssignments().then((r: any) => setData(r.data || { groups: [], assignments: [] })).catch(() => {});
+    practiceAPI.getStarred().then((r: any) => setStarred(new Set((r.data || []).map((q: any) => q.id)))).catch(() => {});
+    practiceAPI.getHistory().then((r: any) => setSessionHistory(r.data || [])).catch(() => {});
   };
 
   useEffect(() => { 

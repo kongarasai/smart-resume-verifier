@@ -13,7 +13,7 @@ export default function AnnouncementsPage() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    groupAPI.getGroups().then(r => setGroups(r.data || [])).catch(() => {});
+    groupAPI.getGroups().then((r: any) => setGroups(r.data || [])).catch(() => {});
   }, []);
 
   const loadAnnouncements = async (gid: string) => {

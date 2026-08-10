@@ -55,11 +55,11 @@ export default function CandidateClient() {
       sendDebugLog(`CandidateClient: Fetching profile data for ${id}...`);
       const [profileRes, scoreRes, verifRes] = await Promise.all([
         profileAPI.get(id),
-        scoringAPI.get(id).catch((e) => { 
+        scoringAPI.get(id).catch((e: any) => { 
           sendDebugLog(`Score fetch failed: ${e.message}`, 'warn');
           return null; 
         }),
-        verificationAPI.getSummary(id).catch((e) => { 
+        verificationAPI.getSummary(id).catch((e: any) => { 
           sendDebugLog(`Verif fetch failed: ${e.message}`, 'warn');
           return null; 
         }),

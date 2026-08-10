@@ -14,7 +14,7 @@ export default function PrivacyPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    profileAPI.get().then(r => {
+    profileAPI.get().then((r: any) => {
       if (r.data.privacy) setSettings(s => ({ ...s, ...r.data.privacy }));
     }).catch(() => {
       // Profile may not exist yet - that's fine, use defaults

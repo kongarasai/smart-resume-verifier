@@ -23,7 +23,7 @@ const VERIFICATION_LEVELS: Record<string, { label: string; color: string; bg: st
 function SkillEvidenceModal({ skill, userId, onClose }: { skill: string; userId: string; onClose: () => void }) {
   const [evidence, setEvidence] = useState<any>(null);
   useEffect(() => {
-    verificationAPI.getSkillEvidence(skill).then(r => setEvidence(r)).catch(() => {});
+    verificationAPI.getSkillEvidence(skill).then((r: any) => setEvidence(r)).catch(() => {});
   }, [skill]);
 
   return (

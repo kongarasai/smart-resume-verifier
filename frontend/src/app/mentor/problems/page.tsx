@@ -86,7 +86,7 @@ export default function MentorProblemsPage() {
       toast.success(`Deleted ${selectedIds.size} questions`);
       setSelectedIds(new Set());
       if (form.group_id) {
-        mentorAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || { active: [], previous: [] }));
+        mentorAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || { active: [], previous: [] }));
       }
     } catch {
       toast.error('Bulk deletion failed');
@@ -124,7 +124,7 @@ export default function MentorProblemsPage() {
 
   // Fix: useEffect instead of useState for loading groups
   useEffect(() => {
-    groupAPI.getGroups().then(r => {
+    groupAPI.getGroups().then((r: any) => {
       const data = r.data || [];
       setGroups(data);
       // Auto-select first group
@@ -139,7 +139,7 @@ export default function MentorProblemsPage() {
     if (form.group_id) {
       setLoadingQuestions(true);
       mentorAPI.getGroupQuestions(form.group_id)
-        .then(r => setGroupQuestions(r.data || []))
+        .then((r: any) => setGroupQuestions(r.data || []))
         .catch(() => setGroupQuestions([]))
         .finally(() => setLoadingQuestions(false));
     }
@@ -213,7 +213,7 @@ export default function MentorProblemsPage() {
         setGenForm({ topic: '', count: 10, heading: '', difficulty: 'medium', expires_at: '' });
       }
       // Refresh group questions
-      mentorAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || []));
+      mentorAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
     } catch {
       toast.error('Saving failed');
     } finally {
@@ -243,7 +243,7 @@ export default function MentorProblemsPage() {
       // Refresh group questions
       if (form.group_id) {
         mentorAPI.getGroupQuestions(form.group_id)
-          .then(r => setGroupQuestions(r.data || []))
+          .then((r: any) => setGroupQuestions(r.data || []))
           .catch(() => {});
       }
     } catch (err: any) { toast.error(err.response?.data?.error || 'Failed to create question'); }
@@ -257,7 +257,7 @@ export default function MentorProblemsPage() {
       toast.success('Question deleted');
       // Refresh list
       if (form.group_id) {
-        mentorAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || { active: [], previous: [] }));
+        mentorAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || { active: [], previous: [] }));
       }
       setRecentlyCreated(prev => prev.filter(q => q.id !== id));
     } catch {

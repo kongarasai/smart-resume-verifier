@@ -1,23 +1,34 @@
-import axios from 'axios';
+import rawAxios from 'axios';
 import toast from 'react-hot-toast';
+
+// Handle CJS/ESM default export wrapper variations in production Next.js builds
+const axios: any = (rawAxios as any)?.default?.create ? (rawAxios as any).default : (rawAxios || {});
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  timeout: 60000, // Increased timeout for AI Generation requests
-  headers: { 
-    'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true'
-  }
-});
+const api = typeof axios.create === 'function'
+  ? axios.create({
+      baseURL: API_URL,
+      withCredentials: true,
+      timeout: 60000, // Increased timeout for AI Generation requests
+      headers: { 
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
+  : ({
+      get: () => Promise.reject(new Error('API client not initialized')),
+      post: () => Promise.reject(new Error('API client not initialized')),
+      put: () => Promise.reject(new Error('API client not initialized')),
+      delete: () => Promise.reject(new Error('API client not initialized')),
+      patch: () => Promise.reject(new Error('API client not initialized')),
+      interceptors: { request: { use: () => {} }, response: { use: () => {} } }
+    } as any);
 
 // ── Request Interceptor: attach localStorage token + CSRF ──
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: any) => {
   console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`);
   if (typeof window !== 'undefined') {
     // Only attach stored token if the caller didn't explicitly set one
@@ -48,11 +59,11 @@ const unwrap = (r: any) => {
 
 // ── Response Interceptor: global 401 redirect & Error Toasts ──
 api.interceptors.response.use(
-  (res) => {
+  (res: any) => {
     console.log(`[API SUCCESS] ${res.config.method?.toUpperCase()} ${res.config.url}`);
     return res;
   },
-  (err) => {
+  (err: any) => {
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
     
     // Handle Network Timeouts & Server Drops

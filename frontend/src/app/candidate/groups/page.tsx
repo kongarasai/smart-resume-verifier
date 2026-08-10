@@ -31,7 +31,7 @@ export default function CandidateGroupsPage() {
 
   useEffect(() => {
     candidateGroupAPI.getMyGroups()
-      .then(r => { setGroups(r.data || []); if (r.data?.[0]) selectGroup(r.data[0]); })
+      .then((r: any) => { setGroups(r.data || []); if (r.data?.[0]) selectGroup(r.data[0]); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

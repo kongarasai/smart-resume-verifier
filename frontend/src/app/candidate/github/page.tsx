@@ -12,7 +12,7 @@ export default function GitHubPage() {
   const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    githubAPI.getData().then(r => setData(r.data)).catch(() => {}).finally(() => setLoading(false));
+    githubAPI.getData().then((r: any) => setData(r.data)).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const verify = async () => {

@@ -18,7 +18,7 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     teacherAPI.getGroups()
-      .then(r => {
+      .then((r: any) => {
         setGroups(r.data || []);
         if (r.data?.[0]) loadGroup(r.data[0]);
       })

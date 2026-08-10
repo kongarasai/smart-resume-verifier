@@ -165,7 +165,7 @@ export default function TeacherProblemsPage() {
       toast.success(`Deleted ${selectedIds.size} questions`);
       setSelectedIds(new Set());
       if (form.group_id) {
-        teacherAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || []));
+        teacherAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
       }
     } catch {
       toast.error('Bulk deletion failed');
@@ -201,7 +201,7 @@ export default function TeacherProblemsPage() {
 
 
   useEffect(() => {
-    teacherAPI.getGroups().then(r => {
+    teacherAPI.getGroups().then((r: any) => {
       const data = r.data || [];
       setGroups(data);
       if (data.length > 0 && !form.group_id) {
@@ -215,7 +215,7 @@ export default function TeacherProblemsPage() {
     if (form.group_id) {
       setLoadingQuestions(true);
       teacherAPI.getGroupQuestions(form.group_id)
-        .then(r => setGroupQuestions(r.data || []))
+        .then((r: any) => setGroupQuestions(r.data || []))
         .catch(() => setGroupQuestions([]))
         .finally(() => setLoadingQuestions(false));
     }
@@ -288,7 +288,7 @@ export default function TeacherProblemsPage() {
         setGenQuestions([]);
         setGenForm({ topic: '', count: 10, heading: '', difficulty: 'medium', expires_at: '' });
       }
-      teacherAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || []));
+      teacherAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
     } catch {
       toast.error('Saving failed');
     } finally {
@@ -312,7 +312,7 @@ export default function TeacherProblemsPage() {
       setRecentlyCreated(prev => [res.data, ...prev].slice(0, 5));
       setForm(f => ({ ...f, title: '', description: '', tags: '', correct_answer: '', attachment_url: '' }));
       if (form.group_id) {
-        teacherAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || []));
+        teacherAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
       }
     } catch (err: any) { toast.error(err.response?.data?.error || 'Failed'); }
     finally { setSaving(false); }
@@ -324,7 +324,7 @@ export default function TeacherProblemsPage() {
       await practiceAPI.deleteQuestion(id);
       toast.success('Question deleted');
       if (form.group_id) {
-        teacherAPI.getGroupQuestions(form.group_id).then(r => setGroupQuestions(r.data || []));
+        teacherAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
       }
       setRecentlyCreated(prev => prev.filter(q => q.id !== id));
     } catch {

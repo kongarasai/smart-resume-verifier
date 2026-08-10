@@ -10,7 +10,7 @@ export default function HRProfilePage() {
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
-    hrProfileAPI.get().then(r => reset({ ...r.hr_profile, full_name: r.user?.full_name })).finally(() => setLoading(false));
+    hrProfileAPI.get().then((r: any) => reset({ ...r.hr_profile, full_name: r.user?.full_name })).finally(() => setLoading(false));
   }, []);
 
   const onSubmit = async (data: any) => {

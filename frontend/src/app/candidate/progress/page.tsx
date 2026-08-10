@@ -31,7 +31,7 @@ export default function ProgressPage() {
       setProfile(pfRes.data?.profile);
       setHiringStatus(pfRes.data?.hiring_status);
     }).catch(() => {}).finally(() => setLoading(false));
-    practiceAPI.getHistory().then(r => setSessionHistory(r.data || [])).catch(() => {});
+    practiceAPI.getHistory().then((r: any) => setSessionHistory(r.data || [])).catch(() => {});
   }, []);
 
   const toggleSessionExpand = async (sessionId: string) => {

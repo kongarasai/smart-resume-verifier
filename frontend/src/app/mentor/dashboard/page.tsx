@@ -11,7 +11,7 @@ export default function MentorDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    groupAPI.getGroups().then(r => setGroups(r.data || [])).catch(() => {}).finally(() => setLoading(false));
+    groupAPI.getGroups().then((r: any) => setGroups(r.data || [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const totalMembers = groups.reduce((s, g) => s + (parseInt(g.member_count) || 0), 0);
