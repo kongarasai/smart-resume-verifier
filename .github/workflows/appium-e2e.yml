@@ -1,0 +1,44 @@
+name: Appium Mobile E2E Tests & Excel Report Generator
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  appium-mobile-testing:
+    name: Run Appium Mobile E2E Tests & Generate Excel Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Appium Dependencies
+        working-directory: ./appium-tests
+        run: npm install
+
+      - name: Run Appium Mobile Tests
+        continue-on-error: true
+        working-directory: ./appium-tests
+        run: npm test
+
+      - name: Generate Excel Mobile Summary & Details Report
+        if: always()
+        working-directory: ./appium-tests
+        run: node generate-report.js
+
+      - name: Upload Appium Excel Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Appium_Mobile_E2E_Test_Report
+          path: ./appium-tests/Appium_Mobile_E2E_Test_Report.xlsx
+          retention-days: 30
