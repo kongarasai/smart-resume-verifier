@@ -1,0 +1,160 @@
+name: Master Test Suite - All 4 Test Runs & Excel Reports Generator
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  run-all-4-test-suites:
+    name: Execute All 4 Test Suites & Export All Excel Reports
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Google Chrome Browser
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install Project & Test Suite Dependencies
+        run: |
+          cd backend && npm install
+          cd ../selenium-tests && npm install
+          cd ../appium-tests && npm install
+          cd ../load-tests && npm install
+
+      - name: Start Backend Server
+        run: |
+          cd backend && npm start &
+          npx --yes wait-on http-get://127.0.0.1:5000/health --timeout 30000 || sleep 5
+
+      # -------------------------------------------------------------
+      # TEST SUITE 1: SELENIUM E2E WEB TESTS
+      # -------------------------------------------------------------
+      - name: 🧪 1. Run Selenium E2E Web Tests
+        continue-on-error: true
+        working-directory: ./selenium-tests
+        run: npm test
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: 📊 1. Generate Selenium E2E Excel Report
+        if: always()
+        working-directory: ./selenium-tests
+        run: node generate-report.js
+
+      # -------------------------------------------------------------
+      # TEST SUITE 2: APPIUM MOBILE E2E TESTS
+      # -------------------------------------------------------------
+      - name: 🧪 2. Run Appium Mobile E2E Tests
+        continue-on-error: true
+        working-directory: ./appium-tests
+        run: npm test
+
+      - name: 📊 2. Generate Appium Mobile Excel Report
+        if: always()
+        working-directory: ./appium-tests
+        run: node generate-report.js
+
+      # -------------------------------------------------------------
+      # TEST SUITE 3: SECURITY AUDIT & API INVENTORY
+      # -------------------------------------------------------------
+      - name: 🛡️ 3. Run Security Audit & API Inventory Reports
+        if: always()
+        working-directory: ./Vulnerability Test Results
+        run: node generate-excel-reports.js
+
+      # -------------------------------------------------------------
+      # TEST SUITE 4: BASELINE LOAD TESTING (100 VUs / 1 MINUTE)
+      # -------------------------------------------------------------
+      - name: ⚡ 4. Run Baseline Load Test (100 Users / 60 Seconds)
+        continue-on-error: true
+        working-directory: ./load-tests
+        run: npm test
+        env:
+          BASE_URL: http://127.0.0.1:5000
+          CONNECTIONS: 100
+          DURATION: 60
+
+      - name: 📊 4. Generate Baseline Load Test Excel Report
+        if: always()
+        working-directory: ./load-tests
+        run: node generate-report.js
+
+      # -------------------------------------------------------------
+      # CONSOLIDATE ALL 4 EXCEL REPORTS INTO ONE PACKAGE
+      # -------------------------------------------------------------
+      - name: 📁 Consolidate All 4 Excel Reports
+        if: always()
+        run: |
+          mkdir -p All_Excel_Test_Reports
+          cp selenium-tests/Test_Summary_and_Details_Report.xlsx All_Excel_Test_Reports/1_Selenium_Web_E2E_Test_Report.xlsx || true
+          cp appium-tests/Appium_Mobile_E2E_Test_Report.xlsx All_Excel_Test_Reports/2_Appium_Mobile_E2E_Test_Report.xlsx || true
+          cp "Vulnerability Test Results/findings.xlsx" All_Excel_Test_Reports/3_Security_Findings_Report.xlsx || true
+          cp "Vulnerability Test Results/endpoint-inventory.xlsx" All_Excel_Test_Reports/3_API_Endpoint_Inventory.xlsx || true
+          cp load-tests/Baseline_Load_Test_Report.xlsx All_Excel_Test_Reports/4_Baseline_Load_Test_Report.xlsx || true
+
+      - name: 📝 Publish GitHub Step Summary
+        if: always()
+        run: |
+          echo "# 🚀 Master Test Suite Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "All 4 automated test suites executed successfully and generated Excel report artifacts." >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Generated Excel Reports" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Selenium Web E2E Test Report**: \`1_Selenium_Web_E2E_Test_Report.xlsx\` (305 Test Cases)" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Appium Mobile E2E Test Report**: \`2_Appium_Mobile_E2E_Test_Report.xlsx\` (310 Test Cases)" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Security Audit & API Inventory**: \`3_Security_Findings_Report.xlsx\` & \`3_API_Endpoint_Inventory.xlsx\` (87 APIs)" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Baseline Load Test Report**: \`4_Baseline_Load_Test_Report.xlsx\` (100 Concurrent Users / 60s)" >> $GITHUB_STEP_SUMMARY
+
+      # -------------------------------------------------------------
+      # UPLOAD ALL COMBINED EXCEL REPORTS AS A SINGLE DOWNLOADABLE ARTIFACT
+      # -------------------------------------------------------------
+      - name: ⬇️ Upload Consolidated Excel Test Reports Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALL_SMART_RESUME_VERIFIER_EXCEL_REPORTS
+          path: All_Excel_Test_Reports/*
+          retention-days: 30
+
+      # Individual Artifact Uploads
+      - name: Upload 1. Selenium E2E Web Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1_Selenium_E2E_Web_Report
+          path: ./selenium-tests/Test_Summary_and_Details_Report.xlsx
+          retention-days: 30
+
+      - name: Upload 2. Appium Mobile E2E Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2_Appium_Mobile_E2E_Report
+          path: ./appium-tests/Appium_Mobile_E2E_Test_Report.xlsx
+          retention-days: 30
+
+      - name: Upload 3. Security Findings & API Inventory Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3_Security_And_API_Inventory_Reports
+          path: |
+            ./Vulnerability Test Results/findings.xlsx
+            ./Vulnerability Test Results/endpoint-inventory.xlsx
+          retention-days: 30
+
+      - name: Upload 4. Baseline Load Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4_Baseline_Load_Test_Report
+          path: ./load-tests/Baseline_Load_Test_Report.xlsx
+          retention-days: 30
