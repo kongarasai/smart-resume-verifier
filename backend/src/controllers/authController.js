@@ -3,8 +3,8 @@ const { z } = require('zod');
 const logger = require('../utils/logger');
 const { setWithExpiry } = require('../utils/redis');
 
-// In Firebase, registration and login happen on the client. 
-// The backend's role is to verify the ID token and sync the user profile to Firestore.
+// In Firebase, registration and login happen on the client.
+// The backend verifies the Firebase ID token and syncs the user profile to Firestore.
 
 const SyncSchema = z.object({
   email: z.string().trim().email(),
@@ -13,44 +13,44 @@ const SyncSchema = z.object({
   photo_url: z.string().optional()
 });
 
+/**
+ * POST /api/auth/register
+ * Requires a valid Firebase ID token in Authorization header or cookie.
+ * NEVER falls back to email-based UID derivation.
+ */
 const register = async (req, res) => {
   const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-  
+
+  if (!token) {
+    return res.status(401).json({ error: 'Missing Firebase ID token' });
+  }
+
   let decoded;
   try {
-    if (token) {
-      decoded = await admin.auth().verifyIdToken(token);
-    } else {
-      throw new Error('No token provided');
-    }
+    decoded = await admin.auth().verifyIdToken(token);
   } catch (err) {
-    // 🚀 TEMPORARY BYPASS FOR PHASE 2 TESTING: If no valid token, use email to fake a UID
-    if (req.body.email) {
-      const crypto = require('crypto');
-      decoded = { 
-        uid: crypto.createHash('md5').update(req.body.email.toLowerCase().trim()).digest('hex'), 
-        email: req.body.email 
-      };
-      logger.warn(`Bypassed Firebase Auth. Faking UID for: ${req.body.email}`);
-    } else {
-      return res.status(401).json({ error: 'Missing Firebase ID token' });
-    }
+    logger.warn(`Token verification failed on register: ${err.message}`);
+    return res.status(401).json({ error: 'Invalid or expired Firebase ID token' });
   }
 
   try {
-    // Validate request body
     const validation = SyncSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).json({ error: 'Validation failed', details: validation.error.format() });
     }
 
     const { email, full_name, role = 'candidate', photo_url } = validation.data;
-    
+
+    // Verify the token email matches the supplied email (prevent email spoofing)
+    if (decoded.email && decoded.email.toLowerCase() !== email.toLowerCase()) {
+      return res.status(403).json({ error: 'Email mismatch with authenticated token' });
+    }
+
     const userRef = db.collection('users').doc(decoded.uid);
     const doc = await userRef.get();
-    
+
     if (doc.exists) {
-      // If they already exist in this mock mode, just log them in instead of 409
+      // Already registered — return login instead
       return login(req, res);
     }
 
@@ -66,7 +66,7 @@ const register = async (req, res) => {
 
     await userRef.set(userData);
 
-    // Profile initialization
+    // Profile initialization per role
     if (role === 'candidate') {
       await db.collection('profiles').doc(decoded.uid).set({ created_at: admin.firestore.FieldValue.serverTimestamp() });
       await db.collection('privacy_settings').doc(decoded.uid).set({ created_at: admin.firestore.FieldValue.serverTimestamp() });
@@ -75,40 +75,41 @@ const register = async (req, res) => {
     }
 
     logger.info(`Firebase user synced to Firestore: ${email} (${role})`);
-    
+
     await setWithExpiry(`user_session:${decoded.uid}`, { id: decoded.uid, ...userData }, 300);
 
-    // Create a fake token for frontend session tracking
-    const fakeToken = "mock_token_" + decoded.uid;
-    res.cookie('token', fakeToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    // Use the verified Firebase token as the session cookie (never a mock token)
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
-    res.status(201).json({ user: { id: decoded.uid, ...userData }, token: fakeToken });
+    res.status(201).json({ user: { id: decoded.uid, ...userData } });
   } catch (err) {
-    console.error('CRITICAL SYNC ERROR:', err);
-    res.status(500).json({ error: 'User sync failed: ' + (err.message || JSON.stringify(err)) });
+    logger.error('Register sync error:', err.message);
+    res.status(500).json({ error: 'User sync failed' });
   }
 };
 
+/**
+ * POST /api/auth/login
+ * Requires a valid Firebase ID token. No email-only, no mock_token bypass.
+ */
 const login = async (req, res) => {
   const token = req.cookies?.token || req.headers.authorization?.split(' ')[1] || req.body.token;
-  
+
+  if (!token) {
+    return res.status(401).json({ error: 'Missing Firebase ID token' });
+  }
+
   let decoded;
   try {
-    if (token && !token.startsWith('mock_token_')) {
-      decoded = await admin.auth().verifyIdToken(token);
-    } else {
-      throw new Error('No real token');
-    }
+    decoded = await admin.auth().verifyIdToken(token);
   } catch (err) {
-    // 🚀 TEMPORARY BYPASS
-    if (req.body.email) {
-      const crypto = require('crypto');
-      decoded = { uid: crypto.createHash('md5').update(req.body.email.toLowerCase().trim()).digest('hex') };
-    } else if (token && token.startsWith('mock_token_')) {
-      decoded = { uid: token.replace('mock_token_', '') };
-    } else {
-      return res.status(400).json({ error: 'Missing Firebase ID token' });
-    }
+    logger.warn(`Token verification failed on login: ${err.message}`);
+    return res.status(401).json({ error: 'Invalid or expired Firebase ID token' });
   }
 
   try {
@@ -116,26 +117,29 @@ const login = async (req, res) => {
     const doc = await userRef.get();
 
     if (!doc.exists) {
-       return res.status(404).json({ error: 'User profile not found in Firestore. Please register.' });
+      return res.status(404).json({ error: 'User profile not found. Please register.' });
     }
 
     await userRef.update({ last_login: admin.firestore.FieldValue.serverTimestamp() });
-    
+
     const userData = doc.data();
     if (userData.is_active === false) {
       return res.status(401).json({ error: 'Account inactive' });
     }
 
-    const fakeToken = "mock_token_" + decoded.uid;
-    res.cookie('token', fakeToken, {
-      httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 60 * 1000
+    // Set the real Firebase token as the session cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     logger.info(`User session verified: ${userData.email}`);
-    res.json({ user: { id: decoded.uid, ...userData }, token: fakeToken });
+    res.json({ user: { id: decoded.uid, ...userData } });
   } catch (err) {
-    logger.error('Login verify error:', err);
-    res.status(401).json({ error: 'Invalid token' });
+    logger.error('Login error:', err.message);
+    res.status(401).json({ error: 'Authentication failed' });
   }
 };
 

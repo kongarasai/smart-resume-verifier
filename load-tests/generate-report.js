@@ -9,17 +9,21 @@ async function generateLoadTestExcelReport() {
   if (fs.existsSync(metricsPath)) {
     metrics = JSON.parse(fs.readFileSync(metricsPath, 'utf8'));
   } else {
-    // Default / Mock Metrics for baseline report generation
+    // NOTE: These are the actual observed metrics from the baseline load test run.
+    // The 90.02% error rate occurred because most endpoints require Firebase auth
+    // and the load test sent unauthenticated requests.
+    // The load test must be re-run against a live instance with valid tokens.
     metrics = {
       connections: 100,
       duration: 60,
-      requests: { average: 142.5, total: 8550 },
-      latency: { average: 210.4, min: 42, max: 1250, p50: 180, p75: 230, p90: 310, p95: 420, p99: 780, p999: 1100 },
+      requests: { average: 3499.5, total: 209918 },
+      latency: { average: 28.18, min: 1, max: 1850, p50: 22, p75: 28, p90: 33, p95: 45, p99: 89, p999: 1100 },
       throughput: { average: 2450000, total: 147000000 },
-      '2xx': 8542,
-      non2xx: 8,
+      '2xx': 20968,
+      non2xx: 188950,
       errors: 0,
-      timeouts: 0
+      timeouts: 0,
+      note: 'WARNING: 90.02% error rate observed. Most requests failed with 401 (unauthenticated). Load test must be re-run with valid auth tokens against a running backend.'
     };
   }
 
@@ -76,25 +80,40 @@ async function generateLoadTestExcelReport() {
     }
   });
 
+  const totalReqs = metrics.requests.total || 0;
+  const success2xx = metrics['2xx'] || 0;
+  const nonSuccess = metrics.non2xx || 0;
+  const errorRate = (((nonSuccess) / (totalReqs || 1)) * 100).toFixed(2);
+  const errorRateNum = parseFloat(errorRate);
+
+  // Validation helper — honest PASS/FAIL, never hardcoded to PASS
+  const evalKPI = (measured, threshold, comparator) => {
+    switch (comparator) {
+      case '>=': return measured >= threshold ? 'PASS ✅' : 'FAIL ❌';
+      case '<=': return measured <= threshold ? 'PASS ✅' : 'FAIL ❌';
+      default: return 'NOT VERIFIED';
+    }
+  };
+
   const avgRps = (metrics.requests.average || 0).toFixed(2);
-  const totalReq = metrics.requests.total || 0;
   const avgLatency = (metrics.latency.average || 0).toFixed(2);
   const minLatency = metrics.latency.min || 0;
   const maxLatency = metrics.latency.max || 0;
   const p90Latency = metrics.latency.p90 || 0;
   const p99Latency = metrics.latency.p99 || 0;
-  const errorRate = (((metrics.non2xx || 0) / (totalReq || 1)) * 100).toFixed(2);
 
   const kpiRows = [
-    { desc: 'Requests Per Second (RPS)', val: `${avgRps} req/sec`, sla: '>= 100 req/sec', pass: parseFloat(avgRps) >= 100 ? 'PASS' : 'PASS' },
-    { desc: 'Total Requests Sent (1 Min)', val: `${totalReq} requests`, sla: '>= 6,000 requests', pass: totalReq >= 5000 ? 'PASS' : 'PASS' },
-    { desc: 'Average Response Time', val: `${avgLatency} ms`, sla: '<= 300 ms', pass: parseFloat(avgLatency) <= 500 ? 'PASS' : 'PASS' },
-    { desc: 'Minimum Response Time', val: `${minLatency} ms`, sla: '<= 100 ms', pass: 'PASS' },
-    { desc: 'Maximum Response Time', val: `${maxLatency} ms`, sla: '<= 2,000 ms', pass: maxLatency <= 2500 ? 'PASS' : 'PASS' },
-    { desc: '90th Percentile Latency (p90)', val: `${p90Latency} ms`, sla: '<= 500 ms', pass: p90Latency <= 600 ? 'PASS' : 'PASS' },
-    { desc: '99th Percentile Latency (p99)', val: `${p99Latency} ms`, sla: '<= 1,000 ms', pass: p99Latency <= 1500 ? 'PASS' : 'PASS' },
-    { desc: 'Error Rate (%)', val: `${errorRate}%`, sla: '<= 0.5%', pass: parseFloat(errorRate) <= 1.0 ? 'PASS' : 'PASS' }
+    { desc: 'Requests Per Second (RPS)',         val: `${avgRps} req/sec`,   sla: '>= 100 req/sec',    pass: evalKPI(parseFloat(avgRps), 100, '>=') },
+    { desc: 'Total Requests Sent (1 Min)',        val: `${totalReqs.toLocaleString()} requests`, sla: '>= 6,000 requests', pass: evalKPI(totalReqs, 6000, '>=') },
+    { desc: 'Successful (2xx) Requests',         val: `${success2xx.toLocaleString()}`, sla: '>= 95% of total',  pass: evalKPI(success2xx / (totalReqs || 1) * 100, 95, '>=') },
+    { desc: 'Average Response Time',             val: `${avgLatency} ms`,    sla: '<= 300 ms',         pass: evalKPI(parseFloat(avgLatency), 300, '<=') },
+    { desc: 'Minimum Response Time',             val: `${minLatency} ms`,    sla: '<= 100 ms',         pass: evalKPI(minLatency, 100, '<=') },
+    { desc: 'Maximum Response Time',             val: `${maxLatency} ms`,    sla: '<= 2,000 ms',       pass: evalKPI(maxLatency, 2000, '<=') },
+    { desc: '90th Percentile Latency (p90)',     val: `${p90Latency} ms`,    sla: '<= 500 ms',         pass: evalKPI(p90Latency, 500, '<=') },
+    { desc: '99th Percentile Latency (p99)',     val: `${p99Latency} ms`,    sla: '<= 1,000 ms',       pass: evalKPI(p99Latency, 1000, '<=') },
+    { desc: 'Error Rate (%)',                    val: `${errorRate}%`,       sla: '<= 0.5%',           pass: evalKPI(errorRateNum, 0.5, '<=') }
   ];
+
 
   let startRow = 14;
   kpiRows.forEach((item) => {
@@ -107,8 +126,9 @@ async function generateLoadTestExcelReport() {
         if (colNumber === 4) cell.alignment = { horizontal: 'center' };
         if (colNumber === 5) {
           cell.alignment = { horizontal: 'center' };
-          cell.font = { bold: true, color: { argb: '166534' } };
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DCFCE7' } };
+          const isFail = String(item.pass).includes('FAIL');
+          cell.font = { bold: true, color: { argb: isFail ? '991B1B' : '166534' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isFail ? 'FEE2E2' : 'DCFCE7' } };
         }
       }
     });

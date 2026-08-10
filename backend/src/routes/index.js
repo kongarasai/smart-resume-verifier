@@ -173,7 +173,6 @@ router.get('/interview-contacts', authenticate, interviewCtrl.getMyInterviewCont
 router.post('/messages', authenticate, interviewCtrl.sendMessage);
 router.get('/messages/conversations', authenticate, interviewCtrl.getMyConversations);
 router.get('/messages/:userId', authenticate, interviewCtrl.getConversation);
-router.get('/messages/:userId', authenticate, interviewCtrl.getConversation);
 
 // Generic Attachment Upload for Mentor/Teacher (announcements, questions)
 const { uploadAttachment } = require('../middleware/upload');
@@ -203,8 +202,8 @@ router.patch('/notifications/:id/read', authenticate, notificationController.mar
 router.patch('/notifications/read-all', authenticate, notificationController.markAllRead);
 
 const debugCtrl = require('../controllers/debugController');
-router.get('/debug/db', debugCtrl.dbCheck);
-router.get('/debug/firebase', async (req, res) => {
+router.get('/debug/db', authenticate, requireRole('admin'), debugCtrl.dbCheck);
+router.get('/debug/firebase', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { db } = require('../config/firebase');
     const admin = require('firebase-admin');
@@ -225,8 +224,6 @@ router.get('/debug/firebase', async (req, res) => {
     res.status(500).json({ error: e.message, stack: e.stack, has_sa: !!process.env.FIREBASE_SERVICE_ACCOUNT });
   }
 });
-router.post('/debug/log', (req, res, next) => {
-  next();
-}, debugCtrl.log);
+router.post('/debug/log', authenticate, requireRole('admin'), debugCtrl.log);
 
 module.exports = router;

@@ -2,36 +2,52 @@ const crypto = require('crypto');
 const logger = require('../utils/logger');
 
 /**
- * Enterprise Security Middleware.
- * Implements Double Submit Cookie pattern for CSRF protection.
+ * Enterprise CSRF Protection Middleware.
+ * Implements Double Submit Cookie pattern.
+ * ENABLED in development, staging, AND production.
+ * Do NOT disable in non-production environments.
  */
 const csrfProtection = (req, res, next) => {
-  // Skip CSRF in development
-  if (process.env.NODE_ENV !== 'production') return next();
-  
   // Skip CSRF for safe methods
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     return next();
   }
 
-  // Allow trusted frontend origins to bypass strict CSRF check
+  // Allow trusted frontend origins that use Authorization header bearer tokens
+  // (Bearer-token based auth is CSRF-safe by design — no auto-sent credentials)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
   const origin = req.headers.origin;
   const trustedFrontends = [
-    'https://smart-resume-verifier.vercel.app',
     process.env.FRONTEND_URL,
-    process.env.CLIENT_URL
+    process.env.CLIENT_URL,
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'capacitor://localhost'
   ].filter(Boolean);
 
   if (origin) {
-    const isVercel = origin.endsWith('.vercel.app');
-    const isTrusted = trustedFrontends.some(url => origin.startsWith(url) || url.startsWith(origin));
-    const isLocalhost = origin.startsWith('http://localhost') || origin.startsWith('capacitor://localhost');
-    
-    if (isVercel || isTrusted || isLocalhost) {
+    const isTrusted = trustedFrontends.some(url => origin === url || origin.startsWith(url));
+    const isLocalhost = origin.startsWith('http://localhost');
+    const isCapacitor = origin === 'capacitor://localhost';
+
+    if (isTrusted || isLocalhost || isCapacitor) {
+      // Still validate CSRF token for cookie-based requests from trusted origins
+      const csrfToken = req.headers['x-csrf-token'];
+      const csrfCookie = req.cookies['csrf-token'];
+
+      if (!csrfToken || !csrfCookie || csrfToken !== csrfCookie) {
+        logger.warn(`CSRF validation failed for ${req.path} from ${req.ip} (trusted origin: ${origin})`);
+        return res.status(403).json({ error: 'Invalid CSRF token' });
+      }
       return next();
     }
   }
 
+  // Unknown origin — strict CSRF check
   const csrfToken = req.headers['x-csrf-token'];
   const csrfCookie = req.cookies['csrf-token'];
 
@@ -48,9 +64,8 @@ const generateCsrfToken = (req, res, next) => {
     const token = crypto.randomBytes(32).toString('hex');
     res.cookie('csrf-token', token, {
       httpOnly: false,
-      secure: true,
-      sameSite: 'none',
-      partitioned: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000
     });
   }
