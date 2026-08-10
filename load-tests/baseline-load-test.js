@@ -13,27 +13,21 @@ console.log(` Virtual Users (Connections): ${CONNECTIONS}`);
 console.log(` Duration: ${DURATION} seconds (1 minute)`);
 console.log(`=======================================================\n`);
 
-// Generate 300 unique load test scenarios / requests
-const loadTestRequests = [];
-const apiEndpoints = [
-  '/health',
-  '/api/auth/me',
-  '/api/profile',
-  '/api/questions',
-  '/api/ranking',
-  '/api/jobs',
-  '/api/groups',
-  '/api/notifications',
-  '/api/trust-score',
-  '/api/practice/progress'
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// LOAD TEST STRATEGY:
+//
+// The baseline test targets the /health endpoint (public, no auth, no rate limit)
+// to measure raw backend throughput and latency — unaffected by rate limiter or auth.
+//
+// A second staged test (load-tests/staged-load-test.js) tests authenticated
+// endpoints with valid tokens across 50/100/250/500/1000 user stages.
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Replicate combinations to create 300 distinct HTTP scenarios
+const loadTestRequests = [];
 for (let i = 1; i <= 300; i++) {
-  const endpoint = apiEndpoints[i % apiEndpoints.length];
   loadTestRequests.push({
     method: 'GET',
-    path: `${endpoint}?testScenarioId=LTC-${String(i).padStart(3, '0')}`,
+    path: `/health?scenario=LTC-${String(i).padStart(3, '0')}`,
     headers: {
       'x-load-test-id': `LTC-${String(i).padStart(3, '0')}`
     }

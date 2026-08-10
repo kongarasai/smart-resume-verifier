@@ -93,6 +93,7 @@ const calculateConfidenceScore = async (req, res) => {
     return res.status(403).json({ error: 'Access denied: you can only calculate your own confidence score' });
   }
 
+  try {
     const [skillScore, testScore, githubScore] = await Promise.all([
       computeSkillVerificationScore(userId),
       computePracticeScore(userId),
