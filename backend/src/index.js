@@ -147,8 +147,20 @@ app.get('/uploads/resumes/:filename', authenticate, (req, res) => {
 });
 
 // Other upload types (photos, attachments) — still require auth, less strict ownership
-app.use('/uploads/photos', authenticate, express.static(path.join(UPLOADS_DIR, 'photos'), { maxAge: '1d' }));
-app.use('/uploads/attachments', authenticate, express.static(path.join(UPLOADS_DIR, 'attachments'), { maxAge: '1d' }));
+app.use('/uploads/photos', authenticate, express.static(path.join(UPLOADS_DIR, 'photos'), {
+  maxAge: '1d',
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+}));
+app.use('/uploads/attachments', authenticate, express.static(path.join(UPLOADS_DIR, 'attachments'), {
+  maxAge: '1d',
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+}));
 
 app.get('/health', (req, res) => res.json({
   status: 'UP',
