@@ -14,6 +14,7 @@
  */
 const { db, admin } = require('../config/firebase');
 const axios = require('axios');
+const { canReadUser } = require('../middleware/authorize');
 
 const MAX_SKILL_SCORE = 100;
 
@@ -86,7 +87,12 @@ async function getFraudProbability(userId, overallScore, testScore, githubScore,
 
 const calculateConfidenceScore = async (req, res) => {
   const userId = req.params.userId || req.user.id;
-  try {
+
+  // IDOR guard: only the owner or privileged roles can trigger score calculation
+  if (!canReadUser(req, userId)) {
+    return res.status(403).json({ error: 'Access denied: you can only calculate your own confidence score' });
+  }
+
     const [skillScore, testScore, githubScore] = await Promise.all([
       computeSkillVerificationScore(userId),
       computePracticeScore(userId),
@@ -165,6 +171,12 @@ const calculateConfidenceScore = async (req, res) => {
 
 const getConfidenceScore = async (req, res) => {
   const userId = req.params.userId || req.user.id;
+
+  // IDOR guard: only the owner or privileged roles can view another user's score
+  if (!canReadUser(req, userId)) {
+    return res.status(403).json({ error: 'Access denied: you can only view your own confidence score' });
+  }
+
   const doc = await db.collection('confidence_scores').doc(userId).get();
 
   let respData = doc.exists ? doc.data() : null;
@@ -190,6 +202,12 @@ const getConfidenceScore = async (req, res) => {
 
 const predictRisk = async (req, res) => {
   const userId = req.params.userId || req.user.id;
+
+  // IDOR guard: only the owner or privileged roles can view risk prediction
+  if (!canReadUser(req, userId)) {
+    return res.status(403).json({ error: 'Access denied: you can only view your own risk profile' });
+  }
+
   const doc = await db.collection('confidence_scores').doc(userId).get();
   const cs = doc.exists ? doc.data() : null;
   if (!cs) return res.json({ risk: 'unknown', reason: 'No score. Run verification first.' });

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, requireRole } = require('../middleware/auth');
+const { requireOwnerOrPrivileged } = require('../middleware/authorize');
 const { uploadResume: uploadResumeMiddleware, uploadPhoto: uploadPhotoMiddleware, handleUploadError } = require('../middleware/upload');
 
 const { register, login, logout, me } = require('../controllers/authController');
@@ -16,12 +17,12 @@ router.put('/profile', authenticate, profileCtrl.updateProfile);
 router.post('/profile/photo', authenticate, uploadPhotoMiddleware.single('photo'), handleUploadError, profileCtrl.uploadPhoto);
 router.post('/profile/resume', authenticate, requireRole('candidate'), uploadResumeMiddleware.single('resume'), handleUploadError, profileCtrl.uploadResume);
 router.get('/profile/timeline', authenticate, profileCtrl.getTimeline);
-router.get('/profile/timeline/:userId', authenticate, profileCtrl.getTimeline);
+router.get('/profile/timeline/:userId', authenticate, requireOwnerOrPrivileged(), profileCtrl.getTimeline);
 router.put('/profile/privacy', authenticate, requireRole('candidate'), profileCtrl.updatePrivacy);
 router.put('/profile/availability', authenticate, requireRole('candidate'), profileCtrl.updateAvailability);
 // Parametric routes MUST be last in their respective namespaces
 router.get('/profile/resume-feedback', authenticate, requireRole('candidate'), resumeFeedbackCtrl.getResumeFeedback);
-router.get('/profile/:userId', authenticate, profileCtrl.getProfile);
+router.get('/profile/:userId', authenticate, requireOwnerOrPrivileged(), profileCtrl.getProfile);
 router.get('/hr-profile', authenticate, requireRole('hr'), profileCtrl.getHRProfile);
 router.put('/hr-profile', authenticate, requireRole('hr'), profileCtrl.updateHRProfile);
 
@@ -40,25 +41,25 @@ router.post('/platforms', authenticate, profileCtrl.addPlatform);
 const { parseResume, getParseResult } = require('../services/resumeParser');
 router.post('/resume/parse', authenticate, requireRole('candidate'), parseResume);
 router.get('/resume/parse', authenticate, getParseResult);
-router.get('/resume/parse/:userId', authenticate, getParseResult);
+router.get('/resume/parse/:userId', authenticate, requireOwnerOrPrivileged(), getParseResult);
 
 const skillVerif = require('../services/skillVerificationEngine');
 router.post('/verification/run', authenticate, skillVerif.triggerVerification);
-router.post('/verification/run/:userId', authenticate, skillVerif.triggerVerification);
+router.post('/verification/run/:userId', authenticate, requireOwnerOrPrivileged(), skillVerif.triggerVerification);
 router.get('/verification/summary', authenticate, skillVerif.getVerificationSummary);
-router.get('/verification/summary/:userId', authenticate, skillVerif.getVerificationSummary);
-router.get('/verification/skill/:userId/:skillName', authenticate, skillVerif.getSkillEvidence);
+router.get('/verification/summary/:userId', authenticate, requireOwnerOrPrivileged(), skillVerif.getVerificationSummary);
+router.get('/verification/skill/:userId/:skillName', authenticate, requireOwnerOrPrivileged(), skillVerif.getSkillEvidence);
 router.get('/verification/skill/:skillName', authenticate, skillVerif.getSkillEvidence);
 
 const { fetchGitHubData, getGitHubData } = require('../services/githubService');
 router.post('/github/verify', authenticate, fetchGitHubData);
 router.get('/github/data', authenticate, getGitHubData);
-router.get('/github/data/:userId', authenticate, getGitHubData);
+router.get('/github/data/:userId', authenticate, requireOwnerOrPrivileged(), getGitHubData);
 
 const { verifyLeetCode, getLeetCodeData } = require('../services/leetcodeService');
 router.post('/leetcode/verify', authenticate, requireRole('candidate'), verifyLeetCode);
 router.get('/leetcode/data', authenticate, getLeetCodeData);
-router.get('/leetcode/data/:userId', authenticate, getLeetCodeData);
+router.get('/leetcode/data/:userId', authenticate, requireOwnerOrPrivileged(), getLeetCodeData);
 
 const practiceCtrl = require('../controllers/practiceController');
 router.get('/questions', authenticate, practiceCtrl.getQuestions);
@@ -88,9 +89,9 @@ router.post('/questions/generate', authenticate, practiceCtrl.generateQuestions)
 const scoringService = require('../services/scoringService');
 router.post('/score/calculate', authenticate, scoringService.calculateConfidenceScore);
 router.get('/score', authenticate, scoringService.getConfidenceScore);
-router.get('/score/:userId', authenticate, scoringService.getConfidenceScore);
-router.get('/score/:userId/risk', authenticate, scoringService.predictRisk);
-router.get('/suggestions/:candidateId', authenticate, scoringService.generateInterviewSuggestions);
+router.get('/score/:userId', authenticate, requireOwnerOrPrivileged(), scoringService.getConfidenceScore);
+router.get('/score/:userId/risk', authenticate, requireOwnerOrPrivileged(), scoringService.predictRisk);
+router.get('/suggestions/:candidateId', authenticate, requireRole('hr'), scoringService.generateInterviewSuggestions);
 
 const rankingService = require('../services/rankingService');
 router.get('/ranking', authenticate, rankingService.getRanking);
@@ -163,7 +164,7 @@ router.get('/mock-interview/history', authenticate, requireRole('candidate'), mo
 const scoringCtrl = require('../controllers/scoringController');
 router.post('/trust-score/calculate', authenticate, requireRole('candidate'), scoringCtrl.calculateTrustIndex);
 router.get('/trust-score', authenticate, scoringCtrl.getTrustScore);
-router.get('/trust-score/:userId', authenticate, scoringCtrl.getTrustScore);
+router.get('/trust-score/:userId', authenticate, requireOwnerOrPrivileged(), scoringCtrl.getTrustScore);
 
 const interviewCtrl = require('../controllers/interviewController');
 router.post('/interviews', authenticate, requireRole('hr'), interviewCtrl.scheduleInterview);

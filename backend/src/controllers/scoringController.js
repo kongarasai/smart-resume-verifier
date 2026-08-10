@@ -1,6 +1,7 @@
 const { db, admin } = require('../config/firebase');
 const { githubVerification, leetcodeVerification } = require('../utils/externalVerifications');
 const logger = require('../utils/logger');
+const { canReadUser } = require('../middleware/authorize');
 
 const scoringController = {
   calculateTrustIndex: async (req, res) => {
@@ -90,6 +91,12 @@ const scoringController = {
   getTrustScore: async (req, res) => {
     try {
       const targetId = req.params.userId || req.user.id;
+
+      // IDOR guard: candidates can only view their own trust score
+      if (!canReadUser(req, targetId)) {
+        return res.status(403).json({ error: 'Access denied: you can only view your own trust score' });
+      }
+
       const doc = await db.collection('confidence_scores').doc(targetId).get();
       if (!doc.exists) return res.status(404).json({ error: 'Score not found' });
       res.json({ id: doc.id, ...doc.data() });
