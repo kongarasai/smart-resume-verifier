@@ -1,0 +1,57 @@
+name: Baseline Load Testing (100 Users / 1 Minute)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  baseline-load-test:
+    name: Run 100 Virtual Users Baseline Load Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Start Backend Server
+        run: |
+          cd backend && npm start &
+          npx --yes wait-on http-get://127.0.0.1:5000/health --timeout 30000 || sleep 5
+
+      - name: Install Load Test Dependencies
+        working-directory: ./load-tests
+        run: npm install
+
+      - name: Run Baseline Load Test (100 Concurrent Users / 60s)
+        continue-on-error: true
+        working-directory: ./load-tests
+        run: npm test
+        env:
+          BASE_URL: http://127.0.0.1:5000
+          CONNECTIONS: 100
+          DURATION: 60
+
+      - name: Generate Excel Load Test Report
+        if: always()
+        working-directory: ./load-tests
+        run: node generate-report.js
+
+      - name: Upload Baseline Load Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Baseline_Load_Test_Report
+          path: ./load-tests/Baseline_Load_Test_Report.xlsx
+          retention-days: 30
