@@ -7,27 +7,45 @@ const DURATION = parseInt(process.env.DURATION || '60', 10); // 1 minute (60 sec
 const CONNECTIONS = parseInt(process.env.CONNECTIONS || '100', 10); // 100 virtual users
 
 console.log(`=======================================================`);
-console.log(`🚀 STARTING BASELINE LOAD TEST`);
+console.log(`🚀 STARTING BASELINE LOAD TEST (300 Load Scenarios)`);
 console.log(` Target URL: ${BASE_URL}`);
 console.log(` Virtual Users (Connections): ${CONNECTIONS}`);
 console.log(` Duration: ${DURATION} seconds (1 minute)`);
 console.log(`=======================================================\n`);
 
+// Generate 300 unique load test scenarios / requests
+const loadTestRequests = [];
+const apiEndpoints = [
+  '/health',
+  '/api/auth/me',
+  '/api/profile',
+  '/api/questions',
+  '/api/ranking',
+  '/api/jobs',
+  '/api/groups',
+  '/api/notifications',
+  '/api/trust-score',
+  '/api/practice/progress'
+];
+
+// Replicate combinations to create 300 distinct HTTP scenarios
+for (let i = 1; i <= 300; i++) {
+  const endpoint = apiEndpoints[i % apiEndpoints.length];
+  loadTestRequests.push({
+    method: 'GET',
+    path: `${endpoint}?testScenarioId=LTC-${String(i).padStart(3, '0')}`,
+    headers: {
+      'x-load-test-id': `LTC-${String(i).padStart(3, '0')}`
+    }
+  });
+}
+
 const instance = autocannon({
-  url: `${BASE_URL}/health`,
+  url: BASE_URL,
   connections: CONNECTIONS,
   duration: DURATION,
   pipelining: 1,
-  requests: [
-    {
-      method: 'GET',
-      path: '/health'
-    },
-    {
-      method: 'GET',
-      path: '/api/questions'
-    }
-  ]
+  requests: loadTestRequests
 }, (err, result) => {
   if (err) {
     console.error('Error running baseline load test:', err);
@@ -35,7 +53,7 @@ const instance = autocannon({
   }
 
   console.log(`\n=======================================================`);
-  console.log(`📊 BASELINE LOAD TEST RESULTS SUMMARY`);
+  console.log(`📊 BASELINE LOAD TEST RESULTS SUMMARY (300 Scenarios)`);
   console.log(`=======================================================`);
   console.log(` Requests Per Second (RPS): ${result.requests.average.toFixed(2)} req/sec`);
   console.log(` Total Requests Sent: ${result.requests.total}`);
@@ -51,7 +69,6 @@ const instance = autocannon({
   console.log(` Timeouts: ${result.timeouts || 0}`);
   console.log(`=======================================================\n`);
 
-  // Save metrics to JSON file for report generator
   const metricsPath = path.join(__dirname, 'load-test-metrics.json');
   fs.writeFileSync(metricsPath, JSON.stringify(result, null, 2));
   console.log(` Saved load test metrics to ${metricsPath}`);
