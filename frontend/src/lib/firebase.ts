@@ -10,12 +10,19 @@ const firebaseConfig = {
   appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Prevent duplicate initialization during Next.js hot-reload
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Check if we have a valid configuration (non-empty and not 'undefined')
+const isConfigValid = firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined' && firebaseConfig.apiKey.trim() !== '';
 
-export const auth = getAuth(app);
+// Initialize Firebase only if config is valid
+const app = isConfigValid
+  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
+  : null;
+
+export const auth = app ? getAuth(app) : ({} as any);
 export const googleProvider = new GoogleAuthProvider();
 
-// Ask Google for email + profile info
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
+if (app) {
+  // Ask Google for email + profile info
+  googleProvider.addScope('email');
+  googleProvider.addScope('profile');
+}
