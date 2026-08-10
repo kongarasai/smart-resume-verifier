@@ -71,7 +71,7 @@ app.use('/api', csrfProtection);
 // Strict limits for auth endpoints — brute-force protection
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_AUTH || '20', 10), // 20 attempts/15min in production
+  max: process.env.NODE_ENV === 'development' ? 10000 : parseInt(process.env.RATE_LIMIT_AUTH || '20', 10), // 20 attempts/15min in production
   message: { error: 'Too many authentication attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
@@ -80,7 +80,7 @@ const authLimiter = rateLimit({
 // Moderate limit for general API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_API || '200', 10),
+  max: process.env.NODE_ENV === 'development' ? 10000 : parseInt(process.env.RATE_LIMIT_API || '200', 10),
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
