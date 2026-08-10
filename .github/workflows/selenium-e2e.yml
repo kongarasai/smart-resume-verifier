@@ -1,0 +1,68 @@
+name: Selenium E2E Tests & Excel Report Generator
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  selenium-e2e-testing:
+    name: Run Selenium E2E Tests & Generate Excel Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chrome Browser
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000/api
+
+      - name: Start Backend and Frontend Servers
+        run: |
+          cd backend && npm start &
+          cd frontend && npm start &
+          npx wait-on http://localhost:3000 -t 60000 || sleep 15
+
+      - name: Install Selenium Test Suite Dependencies
+        working-directory: ./selenium-tests
+        run: npm install
+
+      - name: Run Selenium E2E Tests
+        working-directory: ./selenium-tests
+        run: npm test
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: Generate Excel Test Summary & Details Report
+        if: always()
+        working-directory: ./selenium-tests
+        run: node generate-report.js
+
+      - name: Upload Excel Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Selenium_E2E_Test_Report
+          path: ./selenium-tests/Test_Summary_and_Details_Report.xlsx
+          retention-days: 30
