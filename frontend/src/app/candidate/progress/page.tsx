@@ -172,7 +172,9 @@ export default function ProgressPage() {
                             {s.score_percentage ?? 0}%
                           </span>
                           <span className="text-ink-500 text-xs">{s.correct_answers ?? 0}/{s.total_questions ?? 0}</span>
-                          <span className="text-ink-400 text-xs">{s.completed_at ? new Date(s.completed_at).toLocaleDateString() : '-'}</span>
+                          <span className="text-ink-400 text-xs">
+                            {s.completed_at && !isNaN(new Date(s.completed_at).getTime()) ? new Date(s.completed_at).toLocaleDateString() : '—'}
+                          </span>
                         </div>
                       </button>
                       {expandedSession === s.id && (

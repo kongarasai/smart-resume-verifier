@@ -133,7 +133,9 @@ export default function MockInterviewPage() {
               history.map(h => (
                 <div key={h.id} className="card p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-ink-900">Session on {new Date(h.completed_at).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-ink-900">
+                      Session on {h.completed_at && !isNaN(new Date(h.completed_at).getTime()) ? new Date(h.completed_at).toLocaleDateString() : 'Recent'}
+                    </p>
                     <p className="text-xs text-ink-500">{h.questions_count} questions answered</p>
                   </div>
                   <div className={clsx(
