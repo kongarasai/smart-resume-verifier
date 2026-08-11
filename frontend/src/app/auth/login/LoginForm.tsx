@@ -111,6 +111,10 @@ export default function LoginForm() {
         toast.error('Domain not authorized in Firebase Console. Add smart-resume-verifier.vercel.app to Firebase Auth > Settings > Authorized domains.', { duration: 8000 });
         return;
       }
+      if (err.code === 'auth/operation-not-allowed' || err.message?.includes('operation-not-allowed')) {
+        toast.error('Google Sign-In is not enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method and enable Google.', { duration: 8000 });
+        return;
+      }
       const msg = err.response?.data?.error || err.message || 'Google sign-in failed';
       toast.error(msg);
     } finally {
