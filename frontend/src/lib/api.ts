@@ -87,19 +87,32 @@ api.interceptors.response.use(
   async (err: any) => {
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
     
-    // Auto-retry once on Network Error / Cold-start connection drop
+    // Auto-retry up to 3 times on Network Error / Cold-start connection drop
     const config = err.config;
-    if (config && !config._retry && (err.message === 'Network Error' || err.code === 'ECONNABORTED')) {
-      config._retry = true;
-      console.log('[API RETRY] Retrying request after connection drop / cold start...');
-      await new Promise(r => setTimeout(r, 2500)); // wait 2.5s for backend container spin-up
-      return api(config);
+    if (config && (err.message === 'Network Error' || err.code === 'ECONNABORTED')) {
+      config._retryCount = (config._retryCount || 0) + 1;
+      if (config._retryCount <= 3) {
+        console.log(`[API RETRY] Attempt ${config._retryCount}/3 after connection drop / cold start...`);
+        if (typeof window !== 'undefined' && config._retryCount === 1) {
+          toast.loading('Waking up secure server, please hold on...', { id: 'server-warmup' });
+        }
+        await new Promise(r => setTimeout(r, config._retryCount * 3000)); // 3s, 6s, 9s backoff
+        try {
+          const res = await api(config);
+          if (typeof window !== 'undefined') toast.dismiss('server-warmup');
+          return res;
+        } catch (retryErr) {
+          return Promise.reject(retryErr);
+        }
+      }
     }
+
+    if (typeof window !== 'undefined') toast.dismiss('server-warmup');
 
     // Suppress toasts for background/diagnostic calls (e.g. /debug/log) — silent failure is fine
     const isSilentEndpoint = err.config?.url?.includes('/debug/');
-    if (!isSilentEndpoint && (err.code === 'ECONNABORTED' || err.message.includes('timeout') || err.message === 'Network Error')) {
-      if (typeof window !== 'undefined') toast.error('Server is starting up... Please try signing in again in a moment.', { id: 'network-err' });
+    if (!isSilentEndpoint && (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.message === 'Network Error')) {
+      if (typeof window !== 'undefined') toast.error('Server connection attempt finished. Please try again.', { id: 'network-err' });
     } else if (err.response?.status >= 500) {
       if (typeof window !== 'undefined') toast.error(err.response.data?.error || 'The server encountered an error.');
     }
