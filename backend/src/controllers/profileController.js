@@ -139,10 +139,16 @@ const uploadPhoto = async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No photo uploaded' });
   const photoUrl = `/uploads/photos/${req.file.filename}`;
   try {
-    await db.collection('users').doc(req.user.id).update({
-      photo_url: photoUrl,
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
-    });
+    await Promise.all([
+      db.collection('users').doc(req.user.id).set({
+        photo_url: photoUrl,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }),
+      db.collection('profiles').doc(req.user.id).set({
+        photo_url: photoUrl,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true })
+    ]);
     res.json({ message: 'Photo uploaded', photoUrl });
   } catch (err) {
     res.status(500).json({ error: 'Failed to save photo' });

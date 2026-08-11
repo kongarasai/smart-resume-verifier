@@ -276,7 +276,11 @@ export default function ProfilePage() {
             <label className="relative cursor-pointer group">
               <div className="w-14 h-14 rounded-full bg-ink-200 overflow-hidden flex items-center justify-center text-ink-600 text-xl font-semibold">
                 {profile?.photo_url
-                  ? <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api','')}${profile.photo_url}`} className="w-full h-full object-cover" alt="" />
+                  ? <img 
+                      src={profile.photo_url.startsWith('http') ? profile.photo_url : `https://smart-resume-backend-7jeu.onrender.com${profile.photo_url}`} 
+                      className="w-full h-full object-cover" 
+                      alt="" 
+                    />
                   : profile?.full_name?.[0]?.toUpperCase()}
               </div>
               <div className="absolute inset-0 rounded-full bg-black/30 hidden group-hover:flex items-center justify-center">
