@@ -8,21 +8,31 @@ let app;
 if (getApps().length === 0) {
   try {
     let credential;
-    let projectId;
+    let projectId = process.env.GOOGLE_CLOUD_PROJECT || 'resumeverify-79302';
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      if (serviceAccount.private_key) {
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+        credential = cert(serviceAccount);
+        if (serviceAccount.project_id) projectId = serviceAccount.project_id;
+      } catch (e) {
+        console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT, using default credentials');
       }
-      credential = cert(serviceAccount);
-      projectId = serviceAccount.project_id;
-    } else {
+    }
+    if (!credential) {
       credential = applicationDefault();
     }
     app = initializeApp({ credential, projectId });
-    console.log('Firebase Admin initialized successfully');
+    console.log(`Firebase Admin initialized successfully (projectId: ${projectId})`);
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
+    try {
+      app = initializeApp({ projectId: 'resumeverify-79302' });
+    } catch (e) {
+      console.error('Firebase Admin fallback initialization error:', e);
+    }
   }
 } else {
   app = getApps()[0];
