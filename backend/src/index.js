@@ -47,7 +47,7 @@ app.use(cors({
       return callback(null, true);
     }
     
-    if (ALLOWED_ORIGINS.includes(origin)) {
+    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('vercel.app')) {
       return callback(null, true);
     }
     logger.warn(`CORS rejected origin: ${origin}`);
