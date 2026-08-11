@@ -84,14 +84,22 @@ api.interceptors.response.use(
     console.log(`[API SUCCESS] ${res.config.method?.toUpperCase()} ${res.config.url}`);
     return res;
   },
-  (err: any) => {
+  async (err: any) => {
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
     
-    // Handle Network Timeouts & Server Drops
+    // Auto-retry once on Network Error / Cold-start connection drop
+    const config = err.config;
+    if (config && !config._retry && (err.message === 'Network Error' || err.code === 'ECONNABORTED')) {
+      config._retry = true;
+      console.log('[API RETRY] Retrying request after connection drop / cold start...');
+      await new Promise(r => setTimeout(r, 2500)); // wait 2.5s for backend container spin-up
+      return api(config);
+    }
+
     // Suppress toasts for background/diagnostic calls (e.g. /debug/log) — silent failure is fine
     const isSilentEndpoint = err.config?.url?.includes('/debug/');
     if (!isSilentEndpoint && (err.code === 'ECONNABORTED' || err.message.includes('timeout') || err.message === 'Network Error')) {
-      if (typeof window !== 'undefined') toast.error('Connection to server lost. Please check your network.');
+      if (typeof window !== 'undefined') toast.error('Server is starting up... Please try signing in again in a moment.', { id: 'network-err' });
     } else if (err.response?.status >= 500) {
       if (typeof window !== 'undefined') toast.error(err.response.data?.error || 'The server encountered an error.');
     }
