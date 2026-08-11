@@ -1,3 +1,4 @@
+const { generateWithHuggingFacePublic } = require('./huggingfacePublicService');
 const { generateWithOllama } = require('./ollamaService');
 const { withRetry } = require('./retryHelper');
 const { parseAIResponse } = require('./jsonParser');
@@ -216,7 +217,8 @@ const generateDynamicRuleResponse = (promptStr) => {
  */
 const getAIResponse = async (prompt) => {
   const providers = [
-    { name: 'Ollama', fn: generateWithOllama },
+    { name: 'HuggingFacePublic', fn: generateWithHuggingFacePublic }, // Real AI — zero API keys, public endpoint
+    { name: 'Ollama', fn: generateWithOllama },                        // Local AI — when laptop is running
   ];
 
   let lastError;
