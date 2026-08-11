@@ -54,8 +54,8 @@ const authenticate = async (req, res, next) => {
     return next();
   }
 
+  try {
     // 2. Verify our JWT
-    const jwt = require('jsonwebtoken');
     const secret = process.env.JWT_SECRET || 'smart-resume-verifier-default-super-secret-jwt-key-2025';
     let decoded;
     try {
