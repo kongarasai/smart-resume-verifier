@@ -227,18 +227,35 @@ export default function LoginForm() {
             {isRegister ? 'Join the platform.' : 'Access your dashboard.'}
           </p>
 
+          {/* ── Role Selector for Registration ── */}
+          {isRegister && !inviteToken && (
+            <div className="mb-6">
+              <label className="label mb-2">Select Your Role</label>
+              <div className="grid grid-cols-2 gap-2">
+                {ROLES.map(({ value, label, icon, desc }) => (
+                  <label key={value} className={`flex flex-col gap-1 p-3 rounded-lg border cursor-pointer transition-all ${selectedRole === value ? 'border-ink-900 bg-ink-100 ring-2 ring-ink-900' : 'border-ink-200 bg-white hover:border-ink-300'}`}>
+                    <input {...register('role')} type="radio" value={value} className="sr-only" />
+                    <span className="text-base">{icon}</span>
+                    <span className="text-sm font-medium text-ink-900">{label}</span>
+                    <span className="text-xs text-ink-500">{desc}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Google Button ── */}
           <button
             id="google-signin-btn"
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 mb-4 rounded-xl border border-ink-200 bg-white hover:bg-ink-50 transition-colors font-medium text-ink-800 text-sm shadow-sm disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-ink-200 bg-white hover:bg-ink-50 transition-all font-semibold text-ink-900 text-base shadow-sm disabled:opacity-60 hover:shadow"
           >
             {googleLoading ? (
-              <span className="w-4 h-4 border-2 border-ink-300 border-t-ink-800 rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-ink-300 border-t-ink-800 rounded-full animate-spin" />
             ) : (
-              <svg width="18" height="18" viewBox="0 0 48 48">
+              <svg width="20" height="20" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                 <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
                 <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
@@ -248,64 +265,9 @@ export default function LoginForm() {
             Continue with Google
           </button>
 
-          {/* ── Divider ── */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-ink-200" />
-            <span className="text-xs text-ink-400">or</span>
-            <div className="flex-1 h-px bg-ink-200" />
-          </div>
-
-          {/* ── Email / Password Form ── */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {isRegister && (
-              <div>
-                <label className="label">Full name</label>
-                <input {...register('full_name', { required: 'Name required' })} className="input" placeholder="Enter your full name" />
-                {errors.full_name && <p className="text-red-500 text-xs mt-1">{errors.full_name.message as string}</p>}
-              </div>
-            )}
-            <div>
-              <label className="label">Email</label>
-              <input {...register('email', { required: 'Email required', pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' } })} type="email" className="input" placeholder="name@company.com" />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message as string}</p>}
-            </div>
-            <div>
-              <label className="label">Password</label>
-              <div className="relative">
-                <input {...register('password', { required: 'Password required', minLength: { value: 6, message: 'Min 6 characters' } })} type={showPass ? 'text' : 'password'} className="input pr-10" placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-2.5 text-ink-400">
-                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message as string}</p>}
-            </div>
-
-            {isRegister && !inviteToken && (
-              <div>
-                <label className="label">I am a...</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {ROLES.map(({ value, label, icon, desc }) => (
-                    <label key={value} className={`flex flex-col gap-1 p-3 rounded-lg border cursor-pointer transition-all ${selectedRole === value ? 'border-ink-900 bg-ink-100' : 'border-ink-200 bg-white hover:border-ink-300'}`}>
-                      <input {...register('role')} type="radio" value={value} className="sr-only" />
-                      <span className="text-base">{icon}</span>
-                      <span className="text-sm font-medium text-ink-900">{label}</span>
-                      <span className="text-xs text-ink-500">{desc}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button type="submit" id="email-signin-btn" disabled={loading} className="btn-primary w-full justify-center py-3 mt-2">
-              {loading
-                ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{isRegister ? 'Creating...' : 'Signing in...'}</span>
-                : isRegister ? 'Create account' : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="text-center text-ink-500 text-sm mt-5">
+          <p className="text-center text-ink-500 text-sm mt-6">
             {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button onClick={() => setIsRegister(!isRegister)} className="text-ink-900 underline underline-offset-2">
+            <button onClick={() => setIsRegister(!isRegister)} className="text-ink-900 font-semibold underline underline-offset-2">
               {isRegister ? 'Sign in' : 'Create one'}
             </button>
           </p>
