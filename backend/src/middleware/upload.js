@@ -25,6 +25,7 @@ const MAGIC_BYTES = {
   jpg:  [0xFF, 0xD8, 0xFF],
   png:  [0x89, 0x50, 0x4E, 0x47],
   webp: [0x52, 0x49, 0x46, 0x46],   // RIFF
+  avif: [0x00, 0x00, 0x00],         // ftypavif (ISOBMFF)
   docx: [0x50, 0x4B],               // PK (zip)
   doc:  [0xD0, 0xCF, 0x11, 0xE0]    // OLE2 compound doc
 };
@@ -75,7 +76,8 @@ const fileFilter = (allowedExts) => (req, file, cb) => {
     '.jpg':  ['image/jpeg'],
     '.jpeg': ['image/jpeg'],
     '.png':  ['image/png'],
-    '.webp': ['image/webp']
+    '.webp': ['image/webp'],
+    '.avif': ['image/avif', 'image/heif']
   };
   const allowedMimes = mimeWhitelist[ext] || [];
   if (!allowedMimes.includes(file.mimetype)) {
@@ -111,19 +113,19 @@ const uploadResume = multer({
 const uploadScreenshot = multer({
   storage: createStorage('screenshots'),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp'])
+  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp', '.avif'])
 });
 
 const uploadPhoto = multer({
   storage: createStorage('photos'),
-  limits: { fileSize: 3 * 1024 * 1024 },
-  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp'])
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp', '.avif'])
 });
 
 const uploadAttachment = multer({
   storage: createStorage('attachments'),
   limits: { fileSize: 15 * 1024 * 1024 },
-  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx'])
+  fileFilter: fileFilter(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.pdf', '.doc', '.docx'])
 });
 
 const handleUploadError = (err, req, res, next) => {
