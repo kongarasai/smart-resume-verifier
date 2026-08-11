@@ -85,23 +85,37 @@ export default function LoginForm() {
       toast.success(`Welcome, ${googleUser.full_name}!`);
       router.push(ROLE_REDIRECTS[googleUser.role] || '/candidate/profile');
 
-      // Sync user profile in background without blocking login
-      authAPI.loginWithToken(idToken)
-        .then((res: any) => {
-          if (res?.data?.user) {
-            setAuth(res.data.user, res.data.token ?? idToken);
-          }
-        })
-        .catch((err: any) => {
-          if (err.response?.status === 404) {
-            authAPI.registerWithToken(idToken, {
-              role: selectedRole || 'candidate',
-              ...(inviteToken ? { invite_token: inviteToken } : {}),
-            }).then((regRes: any) => {
-              if (regRes?.data?.user) setAuth(regRes.data.user, regRes.data.token ?? idToken);
-            }).catch(() => {});
-          }
-        });
+      // Sync user profile with selected role
+      if (isRegister) {
+        try {
+          const regRes = await authAPI.registerWithToken(idToken, {
+            role: selectedRole || 'hr',
+            ...(inviteToken ? { invite_token: inviteToken } : {}),
+          });
+          if (regRes?.data?.user) setAuth(regRes.data.user, regRes.data.token ?? idToken);
+        } catch {
+          // If already exists, log in
+          const loginRes = await authAPI.loginWithToken(idToken);
+          if (loginRes?.data?.user) setAuth(loginRes.data.user, loginRes.data.token ?? idToken);
+        }
+      } else {
+        authAPI.loginWithToken(idToken)
+          .then((res: any) => {
+            if (res?.data?.user) {
+              setAuth(res.data.user, res.data.token ?? idToken);
+            }
+          })
+          .catch((err: any) => {
+            if (err.response?.status === 404) {
+              authAPI.registerWithToken(idToken, {
+                role: selectedRole || 'candidate',
+                ...(inviteToken ? { invite_token: inviteToken } : {}),
+              }).then((regRes: any) => {
+                if (regRes?.data?.user) setAuth(regRes.data.user, regRes.data.token ?? idToken);
+              }).catch(() => {});
+            }
+          });
+      }
     } catch (err: any) {
       if (err.code === 'auth/popup-closed-by-user') return; // user cancelled — no toast
       if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
