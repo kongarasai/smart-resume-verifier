@@ -107,6 +107,10 @@ export default function LoginForm() {
       }
     } catch (err: any) {
       if (err.code === 'auth/popup-closed-by-user') return; // user cancelled — no toast
+      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+        toast.error('Domain not authorized in Firebase Console. Add smart-resume-verifier.vercel.app to Firebase Auth > Settings > Authorized domains.', { duration: 8000 });
+        return;
+      }
       const msg = err.response?.data?.error || err.message || 'Google sign-in failed';
       toast.error(msg);
     } finally {
