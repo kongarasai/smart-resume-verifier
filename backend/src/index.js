@@ -226,5 +226,21 @@ server.listen(PORT, () => {
   logger.info(`Smart Resume Verifier backend running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 });
 
+// ── 6. HUGGINGFACE SPACE KEEP-ALIVE ───────────────────────────────────────────
+// Pings the Ollama HuggingFace Space every 4 minutes so it never goes to sleep.
+const OLLAMA_URL = process.env.OLLAMA_URL;
+if (OLLAMA_URL && OLLAMA_URL.includes('hf.space')) {
+  const keepAlive = () => {
+    fetch(`${OLLAMA_URL}/api/tags`, {
+      headers: { 'bypass-tunnel-reminder': 'true', 'User-Agent': 'SmartResumeVerifier/2.0' }
+    })
+      .then(() => logger.info('✅ HuggingFace Ollama Space keep-alive ping OK'))
+      .catch(() => logger.warn('⚠️  HuggingFace Ollama Space keep-alive ping failed (space may be waking up)'));
+  };
+  setInterval(keepAlive, 4 * 60 * 1000); // every 4 minutes
+  keepAlive(); // immediate first ping on startup
+  logger.info(`🤖 HuggingFace Ollama keep-alive active for: ${OLLAMA_URL}`);
+}
+
 module.exports = { app, server };
 // Redeploy trigger to sync latest repository state.
