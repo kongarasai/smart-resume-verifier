@@ -6,36 +6,42 @@ const { getStorage } = require('firebase-admin/storage');
 // Initialize Firebase Admin SDK
 let app;
 if (getApps().length === 0) {
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT || 'resumeverify-79302';
+  let credential = null;
+
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      const serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string'
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+        : process.env.FIREBASE_SERVICE_ACCOUNT;
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+      credential = cert(serviceAccount);
+    } catch (e) {
+      console.warn('FIREBASE_SERVICE_ACCOUNT parse skipped/failed:', e.message);
+    }
+  }
+
   try {
-    let credential;
-    let projectId = process.env.GOOGLE_CLOUD_PROJECT || 'resumeverify-79302';
-    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    if (credential) {
+      app = initializeApp({ credential, projectId });
+    } else {
+      // Try applicationDefault, fallback to bare projectId if no GCloud env is present
       try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        if (serviceAccount.private_key) {
-          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        credential = cert(serviceAccount);
-        if (serviceAccount.project_id) projectId = serviceAccount.project_id;
+        app = initializeApp({ credential: applicationDefault(), projectId });
       } catch (e) {
-        console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT, using default credentials');
+        app = initializeApp({ projectId });
       }
     }
-    if (!credential) {
-      try {
-        credential = applicationDefault();
-      } catch (err) {
-        console.warn('applicationDefault() failed, initializing with projectId only:', err.message);
-      }
-    }
-    app = initializeApp(credential ? { credential, projectId } : { projectId });
     console.log(`Firebase Admin initialized successfully (projectId: ${projectId})`);
   } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
+    console.warn('Firebase Admin primary init notice:', error.message);
     try {
       app = initializeApp({ projectId: 'resumeverify-79302' });
     } catch (e) {
-      console.error('Firebase Admin fallback initialization error:', e);
+      console.error('Firebase Admin fallback error:', e.message);
+      app = getApps()[0];
     }
   }
 } else {
