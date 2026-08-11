@@ -73,14 +73,14 @@ const fileFilter = (allowedExts) => (req, file, cb) => {
     '.pdf':  ['application/pdf'],
     '.doc':  ['application/msword'],
     '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    '.jpg':  ['image/jpeg'],
-    '.jpeg': ['image/jpeg'],
-    '.png':  ['image/png'],
+    '.jpg':  ['image/jpeg', 'image/pjpeg'],
+    '.jpeg': ['image/jpeg', 'image/pjpeg'],
+    '.png':  ['image/png', 'image/x-png'],
     '.webp': ['image/webp'],
-    '.avif': ['image/avif', 'image/heif']
+    '.avif': ['image/avif', 'image/heif', 'image/heic', 'application/octet-stream']
   };
   const allowedMimes = mimeWhitelist[ext] || [];
-  if (!allowedMimes.includes(file.mimetype)) {
+  if (allowedMimes.length > 0 && !allowedMimes.includes(file.mimetype) && !file.mimetype.startsWith('image/')) {
     return cb(new Error(`MIME type mismatch. Got "${file.mimetype}" for extension "${ext}"`), false);
   }
   cb(null, true);
