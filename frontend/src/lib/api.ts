@@ -24,9 +24,11 @@ const getFallbackApiUrl = () => {
   }
   return 'http://localhost:5000/api';
 };
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')
-  ? process.env.NEXT_PUBLIC_API_URL
-  : getFallbackApiUrl();
+const rawApiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
+  ? 'https://smart-resume-verifier-backend.onrender.com/api'
+  : (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')
+      ? process.env.NEXT_PUBLIC_API_URL
+      : getFallbackApiUrl());
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
 const api = typeof axiosInstance?.create === 'function'
