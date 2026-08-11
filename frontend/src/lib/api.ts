@@ -35,7 +35,7 @@ const api = typeof axiosInstance?.create === 'function'
   ? axiosInstance.create({
       baseURL: API_URL,
       withCredentials: true,
-      timeout: 90000, // 90 second timeout to accommodate Render free instance cold starts
+      timeout: 15000, // Fast 15s timeout for snappy UI responses
       headers: { 
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true'
@@ -89,18 +89,14 @@ api.interceptors.response.use(
   async (err: any) => {
     console.error(`[API ERROR] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status);
     
-    // Auto-retry up to 3 times on Network Error / Cold-start connection drop
+    // Quick single retry on Network Error
     const config = err.config;
-    if (config && (err.message === 'Network Error' || err.code === 'ECONNABORTED')) {
-      config._retryCount = (config._retryCount || 0) + 1;
-      if (config._retryCount <= 3) {
-        console.log(`[API RETRY] Attempt ${config._retryCount}/3 after connection drop / cold start...`);
-        await new Promise(r => setTimeout(r, config._retryCount * 3000)); // 3s, 6s, 9s backoff
-        try {
-          return await api(config);
-        } catch (retryErr) {
-          return Promise.reject(retryErr);
-        }
+    if (config && !config._retried && (err.message === 'Network Error' || err.code === 'ECONNABORTED')) {
+      config._retried = true;
+      try {
+        return await api(config);
+      } catch (retryErr) {
+        return Promise.reject(retryErr);
       }
     }
 
