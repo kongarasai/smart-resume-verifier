@@ -22,9 +22,13 @@ if (getApps().length === 0) {
       }
     }
     if (!credential) {
-      credential = applicationDefault();
+      try {
+        credential = applicationDefault();
+      } catch (err) {
+        console.warn('applicationDefault() failed, initializing with projectId only:', err.message);
+      }
     }
-    app = initializeApp({ credential, projectId });
+    app = initializeApp(credential ? { credential, projectId } : { projectId });
     console.log(`Firebase Admin initialized successfully (projectId: ${projectId})`);
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
