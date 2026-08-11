@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { ShieldCheck, LogOut, User, Github, Code2, BookOpen, LayoutDashboard, Search, Calendar, MessageSquare, Briefcase, Trophy, Clock, Lock, Users, Settings, Megaphone, PlusCircle, Star, Sparkles, TrendingUp } from 'lucide-react';
+import clsx from 'clsx';
 import { getImageUrl } from '@/utils/platform';
 
 const navMap: Record<string, { href: string; label: string; icon: any }[]> = {
