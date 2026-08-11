@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { ShieldCheck, LogOut, User, Github, Code2, BookOpen, LayoutDashboard, Search, Calendar, MessageSquare, Briefcase, Trophy, Clock, Lock, Users, Settings, Megaphone, PlusCircle, Star, Sparkles, TrendingUp } from 'lucide-react';
-import clsx from 'clsx';
+import { getImageUrl } from '@/utils/platform';
 
 const navMap: Record<string, { href: string; label: string; icon: any }[]> = {
   candidate: [
@@ -61,9 +61,19 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsO
         <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-ink-300" /><span className="font-display text-sm text-white tracking-tight">ResumeVerify</span></div>
         <div className="mt-3 flex items-center gap-2">
           {mounted && user?.photo_url
-            ? <img src={`${apiBase}${user.photo_url}`} className="w-7 h-7 rounded-full object-cover" alt="" />
-            : <div className="w-7 h-7 rounded-full bg-ink-700 flex items-center justify-center text-xs text-ink-200 font-medium">{mounted ? user?.full_name?.[0]?.toUpperCase() : ''}</div>
+            ? <img 
+                src={getImageUrl(user.photo_url)} 
+                className="w-7 h-7 rounded-full object-cover" 
+                alt="" 
+                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+              />
+            : null
           }
+          {(!mounted || !user?.photo_url) && (
+            <div className="w-7 h-7 rounded-full bg-ink-700 flex items-center justify-center text-xs text-ink-200 font-medium">
+              {mounted ? user?.full_name?.[0]?.toUpperCase() : ''}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-xs text-white font-medium truncate">{mounted ? user?.full_name : ''}</p>
             <p className="text-xs text-ink-500 capitalize">{mounted ? user?.role : ''}</p>

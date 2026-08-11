@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Filter, ChevronRight, Github, Code2, SlidersHorizontal } from 'lucide-react';
 import clsx from 'clsx';
+import { getImageUrl } from '@/utils/platform';
 
 const READINESS_BADGE: Record<string, string> = {
   top_performer: 'badge-green', interview_ready: 'badge-green', job_ready: 'badge-blue',
@@ -110,8 +111,16 @@ export default function HRCandidatesPage() {
                 onClick={() => router.push(`/candidates/view/?id=${c.id}`)}
                 className="card p-5 flex items-center gap-4 hover:shadow-md hover:border-ink-300 transition-all block w-full text-left"
               >
-                <div className="w-10 h-10 rounded-full bg-ink-200 flex items-center justify-center text-ink-600 font-medium text-sm shrink-0 overflow-hidden">
-                  {c.photo_url ? <img src={c.photo_url} className="w-full h-full object-cover" alt="" /> : c.full_name?.[0]?.toUpperCase()}
+                <div className="w-10 h-10 rounded-full bg-ink-200 flex items-center justify-center text-ink-600 font-medium text-sm shrink-0 overflow-hidden relative">
+                  {c.photo_url ? (
+                    <img 
+                      src={getImageUrl(c.photo_url)} 
+                      className="w-full h-full object-cover" 
+                      alt="" 
+                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                    />
+                  ) : null}
+                  <span className="absolute">{c.full_name?.[0]?.toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">

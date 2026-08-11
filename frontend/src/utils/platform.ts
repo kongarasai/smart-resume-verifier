@@ -39,3 +39,18 @@ export const platformUtils = {
     return Capacitor.getPlatform();
   }
 };
+
+/**
+ * Helper to safely format image URLs (e.g. photo_url, attachment_url)
+ * across Render production backend, local environment, and external URLs.
+ */
+export function getImageUrl(url?: string | null): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'https://smart-resume-backend-7jeu.onrender.com/api').replace(/\/api\/?$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${apiBase}${cleanPath}`;
+}
+

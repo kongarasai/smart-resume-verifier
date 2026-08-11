@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import { ProgressTimeline } from '@/components/candidate/ProgressTimeline';
 import ResumeFeedback from '@/components/candidate/ResumeFeedback';
 import TrustScoreBadge from '@/components/candidate/TrustScoreBadge';
+import { getImageUrl } from '@/utils/platform';
 
 type Tab = 'overview' | 'skills' | 'projects' | 'education' | 'experience' | 'certificates';
 
@@ -274,14 +275,16 @@ export default function ProfilePage() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-start gap-4">
             <label className="relative cursor-pointer group">
-              <div className="w-14 h-14 rounded-full bg-ink-200 overflow-hidden flex items-center justify-center text-ink-600 text-xl font-semibold">
-                {profile?.photo_url
-                  ? <img 
-                      src={profile.photo_url.startsWith('http') ? profile.photo_url : `https://smart-resume-backend-7jeu.onrender.com${profile.photo_url}`} 
-                      className="w-full h-full object-cover" 
-                      alt="" 
-                    />
-                  : profile?.full_name?.[0]?.toUpperCase()}
+              <div className="w-14 h-14 rounded-full bg-ink-200 overflow-hidden flex items-center justify-center text-ink-600 text-xl font-semibold relative">
+                {profile?.photo_url ? (
+                  <img 
+                    src={getImageUrl(profile.photo_url)} 
+                    className="w-full h-full object-cover" 
+                    alt="" 
+                    onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                  />
+                ) : null}
+                <span className="absolute">{profile?.full_name?.[0]?.toUpperCase()}</span>
               </div>
               <div className="absolute inset-0 rounded-full bg-black/30 hidden group-hover:flex items-center justify-center">
                 <Upload size={16} className="text-white" />

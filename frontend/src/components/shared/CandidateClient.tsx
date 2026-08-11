@@ -10,6 +10,8 @@ import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import { sendDebugLog } from '@/lib/debug';
 
+import { getImageUrl } from '@/utils/platform';
+
 export default function CandidateClient() {
   const { user } = useAuthStore();
   const params = useParams();
@@ -117,12 +119,16 @@ export default function CandidateClient() {
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-ink-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-ink-200 flex items-center justify-center text-ink-600 text-2xl font-bold overflow-hidden">
+          <div className="w-16 h-16 rounded-full bg-ink-200 flex items-center justify-center text-ink-600 text-2xl font-bold overflow-hidden relative">
             {profile?.photo_url ? (
-              <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api','')}${profile.photo_url}`} className="w-full h-full object-cover" alt="" />
-            ) : (
-              profile?.full_name?.[0]?.toUpperCase()
-            )}
+              <img 
+                src={getImageUrl(profile.photo_url)} 
+                className="w-full h-full object-cover" 
+                alt="" 
+                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+              />
+            ) : null}
+            <span className="absolute">{profile?.full_name?.[0]?.toUpperCase()}</span>
           </div>
           <div>
             <h1 className="font-display text-2xl text-ink-900">{profile?.full_name}</h1>
