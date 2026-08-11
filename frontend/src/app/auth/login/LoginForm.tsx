@@ -84,7 +84,19 @@ export default function LoginForm() {
       } else {
         // Logging in
         try {
-          const res = await authAPI.loginWithToken(idToken);
+          let res;
+          try {
+            res = await authAPI.loginWithToken(idToken);
+          } catch (firstErr: any) {
+            if (firstErr.message === 'Network Error' || firstErr.code === 'ECONNABORTED') {
+              toast.loading('Server spinning up, syncing session...', { id: 'auth-sync' });
+              await new Promise(r => setTimeout(r, 3000));
+              res = await authAPI.loginWithToken(idToken);
+              toast.dismiss('auth-sync');
+            } else {
+              throw firstErr;
+            }
+          }
           setAuth(res.data.user, res.data.token ?? idToken);
           toast.success(`Welcome, ${res.data.user.full_name}!`);
           router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
