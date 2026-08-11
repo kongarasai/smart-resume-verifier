@@ -149,11 +149,25 @@ const generateDynamicRuleResponse = (promptStr) => {
       }
     ];
 
+    const ids = ['a', 'b', 'c', 'd'];
+
     const result = [];
     for (let i = 0; i < reqCount; i++) {
       const t = templates[i % templates.length];
       const cycle = Math.floor(i / templates.length);
       const suffix = cycle > 0 ? ` (Part ${cycle + 1})` : '';
+
+      // Build shuffled options so correct answer is NOT always 'a'
+      const correctText = t.correct(topic);
+      const allOptions = [correctText, ...t.distractors];
+
+      // Fisher-Yates shuffle seeded by position for consistency
+      for (let j = allOptions.length - 1; j > 0; j--) {
+        const k = (i * 7 + j * 3 + cycle) % (j + 1);
+        [allOptions[j], allOptions[k]] = [allOptions[k], allOptions[j]];
+      }
+
+      const correctId = ids[allOptions.indexOf(correctText)];
 
       result.push({
         title: `What is a critical practice regarding ${t.aspect} in ${topic}${suffix}?`,
@@ -161,13 +175,8 @@ const generateDynamicRuleResponse = (promptStr) => {
         category: "technical_mcq",
         difficulty: "medium",
         question_type: "mcq",
-        options: [
-          { id: "a", text: t.correct(topic) },
-          { id: "b", text: t.distractors[0] },
-          { id: "c", text: t.distractors[1] },
-          { id: "d", text: t.distractors[2] }
-        ],
-        correct_answer: "a",
+        options: ids.map((id, idx) => ({ id, text: allOptions[idx] })),
+        correct_answer: correctId,
         points: 10,
         tags: [topic]
       });
