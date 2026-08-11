@@ -95,19 +95,24 @@ export default function ProfilePage() {
   const loadData = async () => {
     try {
       const [profileRes, scoreRes, verifRes, timelineRes] = await Promise.all([
-        profileAPI.get(),
+        profileAPI.get().catch(() => null),
         scoringAPI.get().catch(() => null),
         verificationAPI.getSummary().catch(() => null),
         profileAPI.getTimeline().catch(() => []),
       ]);
-      setData(profileRes);
+      if (profileRes) {
+        setData(profileRes);
+        setIsAvailable(profileRes?.profile?.is_available !== false);
+        reset(profileRes?.profile);
+      }
       setScore(scoreRes);
       setVerification(verifRes);
       setTimeline(Array.isArray(timelineRes) ? timelineRes : []);
-      setIsAvailable(profileRes?.profile?.is_available !== false);
-      reset(profileRes?.profile);
-    } catch (err) { toast.error('Failed to load profile'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.warn('Profile background fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { loadData(); }, []);
