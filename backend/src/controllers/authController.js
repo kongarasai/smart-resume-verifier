@@ -8,9 +8,10 @@ const jwt = require('jsonwebtoken');
  * This is what the frontend stores and uses as Bearer token for subsequent API calls.
  */
 const issueJWT = (user) => {
+  const secret = process.env.JWT_SECRET || 'smart-resume-verifier-default-super-secret-jwt-key-2025';
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
-    process.env.JWT_SECRET,
+    secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
@@ -178,7 +179,7 @@ const login = async (req, res) => {
 
   } catch (err) {
     logger.error('Login error:', err.message);
-    return res.status(500).json({ error: 'Login failed. Please try again.' });
+    return res.status(500).json({ error: 'Login failed: ' + err.message });
   }
 };
 
