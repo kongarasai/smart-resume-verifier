@@ -33,7 +33,7 @@ const api = typeof axiosInstance?.create === 'function'
   ? axiosInstance.create({
       baseURL: API_URL,
       withCredentials: true,
-      timeout: 60000, // Increased timeout for AI Generation requests
+      timeout: 90000, // 90 second timeout to accommodate Render free instance cold starts
       headers: { 
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true'
