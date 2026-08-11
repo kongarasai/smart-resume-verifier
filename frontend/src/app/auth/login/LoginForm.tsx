@@ -72,78 +72,36 @@ export default function LoginForm() {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
 
-      if (isRegister) {
-        // Registering
-        const res = await authAPI.registerWithToken(idToken, {
-          role: selectedRole || 'candidate',
-          ...(inviteToken ? { invite_token: inviteToken } : {}),
-        });
-        setAuth(res.data.user, res.data.token ?? idToken);
-        toast.success('Account created with Google!');
-        router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
-      } else {
-        // Logging in
-        try {
-          let res;
-          try {
-            res = await authAPI.loginWithToken(idToken);
-          } catch (firstErr: any) {
-            if (firstErr.message === 'Network Error' || firstErr.code === 'ECONNABORTED') {
-              toast.loading('Server spinning up, syncing session...', { id: 'auth-sync' });
-              await new Promise(r => setTimeout(r, 3000));
-              res = await authAPI.loginWithToken(idToken);
-              toast.dismiss('auth-sync');
-            } else {
-              throw firstErr;
-            }
+      const googleUser = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        full_name: result.user.displayName || result.user.email?.split('@')[0] || 'Candidate',
+        role: (selectedRole || 'candidate') as 'candidate' | 'hr' | 'mentor' | 'teacher',
+        photo_url: result.user.photoURL || undefined
+      };
+
+      // Set user session in local store immediately for instant UI response
+      setAuth(googleUser, idToken);
+      toast.success(`Welcome, ${googleUser.full_name}!`);
+      router.push(ROLE_REDIRECTS[googleUser.role] || '/candidate/profile');
+
+      // Sync user profile in background without blocking login
+      authAPI.loginWithToken(idToken)
+        .then((res) => {
+          if (res?.data?.user) {
+            setAuth(res.data.user, res.data.token ?? idToken);
           }
-          setAuth(res.data.user, res.data.token ?? idToken);
-          toast.success(`Welcome, ${res.data.user.full_name}!`);
-          router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
-        } catch (err: any) {
+        })
+        .catch((err) => {
           if (err.response?.status === 404) {
-            // Auto-register as candidate if login failed because profile wasn't found
-            toast.loading('Creating your profile...', { id: 'google-reg' });
-            try {
-              const res = await authAPI.registerWithToken(idToken, {
-                role: 'candidate',
-                ...(inviteToken ? { invite_token: inviteToken } : {}),
-              });
-              toast.dismiss('google-reg');
-              setAuth(res.data.user, res.data.token ?? idToken);
-              toast.success('Welcome! Your account has been created.');
-              router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
-            } catch (regErr: any) {
-              toast.dismiss('google-reg');
-              // Fallback client session if backend cold start persists
-              const googleUser = {
-                id: result.user.uid,
-                email: result.user.email || '',
-                full_name: result.user.displayName || 'Google User',
-                role: 'candidate' as const,
-                photo_url: result.user.photoURL || undefined
-              };
-              setAuth(googleUser, idToken);
-              toast.success(`Welcome, ${googleUser.full_name}!`);
-              router.push('/candidate/profile');
-            }
-          } else if (err.message === 'Network Error' || err.code === 'ECONNABORTED' || !err.response) {
-            // Instant offline/cold-start fallback for Google authenticated users
-            const googleUser = {
-              id: result.user.uid,
-              email: result.user.email || '',
-              full_name: result.user.displayName || 'Google User',
-              role: 'candidate' as const,
-              photo_url: result.user.photoURL || undefined
-            };
-            setAuth(googleUser, idToken);
-            toast.success(`Welcome, ${googleUser.full_name}!`);
-            router.push('/candidate/profile');
-          } else {
-            throw err;
+            authAPI.registerWithToken(idToken, {
+              role: selectedRole || 'candidate',
+              ...(inviteToken ? { invite_token: inviteToken } : {}),
+            }).then((regRes) => {
+              if (regRes?.data?.user) setAuth(regRes.data.user, regRes.data.token ?? idToken);
+            }).catch(() => {});
           }
-        }
-      }
+        });
     } catch (err: any) {
       if (err.code === 'auth/popup-closed-by-user') return; // user cancelled — no toast
       if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
