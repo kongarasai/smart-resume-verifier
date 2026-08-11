@@ -564,7 +564,7 @@ export default function TeacherProblemsPage() {
                     </div>
                     <div className="col-span-2">
                       <label className="label">Count</label>
-                      <input type="number" className="input" value={genForm.count} onChange={e => setGenForm(s => ({ ...s, count: parseInt(e.target.value) }))} />
+                      <input type="number" min="1" max="20" className="input" value={genForm.count} onChange={e => setGenForm(s => ({ ...s, count: Math.max(1, parseInt(e.target.value) || 1) }))} />
                     </div>
                     <div className="col-span-2">
                       <button onClick={handleGenerate} disabled={generating || !genForm.topic} className="btn-primary w-full h-10 justify-center bg-purple-600 hover:bg-purple-700">

@@ -466,9 +466,10 @@ const bulkCreateQuestions = async (req, res) => {
 
 const generateQuestions = async (req, res) => {
   const { topic, difficulty, count } = req.body;
-  if (!topic || !count) return res.status(400).json({ error: 'Topic and count are required' });
+  if (!topic) return res.status(400).json({ error: 'Topic is required' });
 
-  const numQuestions = Math.min(parseInt(count) || 5, 20); // cap at 20
+  const parsedCount = parseInt(count);
+  const numQuestions = Math.min(Math.max(1, isNaN(parsedCount) ? 5 : parsedCount), 20); // default 5, min 1, max 20
 
   const prompt = `
 Generate ${numQuestions} multiple-choice questions (MCQs) about the topic "${topic}" with a difficulty level of "${difficulty}".
