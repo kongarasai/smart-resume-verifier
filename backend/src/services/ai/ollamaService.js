@@ -31,7 +31,10 @@ const generateWithOllama = async (prompt) => {
   try {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
       body: JSON.stringify({
         model: OLLAMA_MODEL,
         prompt: prompt,
