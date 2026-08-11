@@ -282,7 +282,7 @@ export default function ProfilePage() {
               <div className="absolute inset-0 rounded-full bg-black/30 hidden group-hover:flex items-center justify-center">
                 <Upload size={16} className="text-white" />
               </div>
-              <input type="file" accept="image/*" onChange={onPhotoUpload} className="sr-only" />
+              <input type="file" accept="image/*,.avif,.webp,.png,.jpg,.jpeg" onChange={onPhotoUpload} className="sr-only" />
             </label>
             <div>
               <h1 className="font-display text-2xl text-ink-900">{profile?.full_name}</h1>
