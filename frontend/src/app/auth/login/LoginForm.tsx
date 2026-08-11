@@ -87,17 +87,17 @@ export default function LoginForm() {
 
       // Sync user profile in background without blocking login
       authAPI.loginWithToken(idToken)
-        .then((res) => {
+        .then((res: any) => {
           if (res?.data?.user) {
             setAuth(res.data.user, res.data.token ?? idToken);
           }
         })
-        .catch((err) => {
+        .catch((err: any) => {
           if (err.response?.status === 404) {
             authAPI.registerWithToken(idToken, {
               role: selectedRole || 'candidate',
               ...(inviteToken ? { invite_token: inviteToken } : {}),
-            }).then((regRes) => {
+            }).then((regRes: any) => {
               if (regRes?.data?.user) setAuth(regRes.data.user, regRes.data.token ?? idToken);
             }).catch(() => {});
           }
