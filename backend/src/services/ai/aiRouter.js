@@ -39,6 +39,95 @@ const generateDynamicRuleResponse = (promptStr) => {
   else if (p.includes('javascript') || p.includes('react') || p.includes('node')) role = 'Fullstack JavaScript Developer';
   else if (p.includes('java')) role = 'Backend Java Developer';
 
+  // Handle MCQ Question Generation Prompts
+  if (p.includes('multiple-choice') || p.includes('mcq') || p.includes('mcqs')) {
+    const topicMatch = promptStr.match(/topic "([^"]+)"/) || promptStr.match(/about ([a-zA-Z0-9\s]+) with/);
+    const topic = topicMatch ? topicMatch[1] : 'Software Engineering';
+    
+    return [
+      {
+        title: `What is the primary core concept behind ${topic}?`,
+        description: `Understanding essential architectural principles and execution in ${topic}.`,
+        category: "technical_mcq",
+        difficulty: "medium",
+        question_type: "mcq",
+        options: [
+          { id: "a", text: `Modular structure and efficient state management in ${topic}` },
+          { id: "b", text: "Global namespace mutation without scope isolation" },
+          { id: "c", text: "Blocking single-threaded asynchronous queue" },
+          { id: "d", text: "Synchronous memory allocation bypass" }
+        ],
+        correct_answer: "a",
+        points: 10,
+        tags: [topic]
+      },
+      {
+        title: `Which performance optimization strategy is most recommended in ${topic}?`,
+        description: "Optimizing runtime execution speed and resource management.",
+        category: "technical_mcq",
+        difficulty: "medium",
+        question_type: "mcq",
+        options: [
+          { id: "a", text: "Avoid memory leaks by unsubscribing event listeners & memoizing expensive computations" },
+          { id: "b", text: "Increasing polling frequency in infinite loops" },
+          { id: "c", text: "Executing heavy synchronous computations on main thread" },
+          { id: "d", text: "Disabling browser caching completely" }
+        ],
+        correct_answer: "a",
+        points: 10,
+        tags: [topic]
+      },
+      {
+        title: `How are edge-case errors handled effectively when building with ${topic}?`,
+        description: "Error boundary and exception handling best practices.",
+        category: "technical_mcq",
+        difficulty: "medium",
+        question_type: "mcq",
+        options: [
+          { id: "a", text: "Using structured try-catch blocks, error boundaries, and centralized loggers" },
+          { id: "b", text: "Suppressing all error events silently" },
+          { id: "c", text: "Re-throwing unhandled promise rejections" },
+          { id: "d", text: "Restarting the process on every network error" }
+        ],
+        correct_answer: "a",
+        points: 10,
+        tags: [topic]
+      },
+      {
+        title: `What is the main advantage of using immutable data structures in ${topic}?`,
+        description: "Data integrity and state change predictability.",
+        category: "technical_mcq",
+        difficulty: "medium",
+        question_type: "mcq",
+        options: [
+          { id: "a", text: "Predictable state changes, simple re-render checks, and easier debugging" },
+          { id: "b", text: "Higher RAM consumption without garbage collection" },
+          { id: "c", text: "Allowing direct variable mutation across components" },
+          { id: "d", text: "Eliminating the need for unit tests" }
+        ],
+        correct_answer: "a",
+        points: 10,
+        tags: [topic]
+      },
+      {
+        title: `What is a security best practice when processing user data in ${topic}?`,
+        description: "Preventing common web vulnerabilities like XSS and Injection.",
+        category: "technical_mcq",
+        difficulty: "medium",
+        question_type: "mcq",
+        options: [
+          { id: "a", text: "Sanitizing user input, using parameterization, and implementing strict CORS rules" },
+          { id: "b", text: "Storing secret keys in frontend client state" },
+          { id: "c", text: "Disabling HTTPS certificate validation" },
+          { id: "d", text: "Trusting all incoming headers blindly" }
+        ],
+        correct_answer: "a",
+        points: 10,
+        tags: [topic]
+      }
+    ];
+  }
+
   return {
     score: 88,
     overall_score: 88,
