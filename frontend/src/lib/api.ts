@@ -18,7 +18,15 @@ const getAxiosInstance = () => {
 const axiosInstance: any = getAxiosInstance();
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const getFallbackApiUrl = () => {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://smart-resume-verifier-backend.onrender.com/api';
+  }
+  return 'http://localhost:5000/api';
+};
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')
+  ? process.env.NEXT_PUBLIC_API_URL
+  : getFallbackApiUrl();
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
 const api = typeof axiosInstance?.create === 'function'
