@@ -20,12 +20,12 @@ const axiosInstance: any = getAxiosInstance();
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
 const getFallbackApiUrl = () => {
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return 'https://smart-resume-verifier-backend.onrender.com/api';
+    return 'https://smart-resume-backend-7jeu.onrender.com/api';
   }
   return 'http://localhost:5000/api';
 };
 const rawApiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
-  ? 'https://smart-resume-verifier-backend.onrender.com/api'
+  ? 'https://smart-resume-backend-7jeu.onrender.com/api'
   : (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')
       ? process.env.NEXT_PUBLIC_API_URL
       : getFallbackApiUrl());
