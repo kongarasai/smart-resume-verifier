@@ -197,7 +197,9 @@ export default function PracticePage() {
                           {a.expires_at && (
                             <>
                               <span>•</span>
-                              <span className="flex items-center gap-1 text-amber-600"><Clock size={10} /> {new Date(a.expires_at).toLocaleDateString()}</span>
+                              <span className="flex items-center gap-1 text-amber-600">
+                                <Clock size={10} /> {a.expires_at && !isNaN(new Date(a.expires_at).getTime()) ? new Date(a.expires_at).toLocaleDateString() : 'Active'}
+                              </span>
                             </>
                           )}
                         </div>
@@ -293,7 +295,9 @@ export default function PracticePage() {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-center text-ink-500">{s.correct_answers}/{s.total_questions}</td>
-                          <td className="px-4 py-3 text-right text-xs text-ink-400">{s.completed_at ? new Date(s.completed_at).toLocaleDateString() : '-'}</td>
+                          <td className="px-4 py-3 text-right text-xs text-ink-400">
+                            {s.completed_at && !isNaN(new Date(s.completed_at).getTime()) ? new Date(s.completed_at).toLocaleDateString() : '—'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

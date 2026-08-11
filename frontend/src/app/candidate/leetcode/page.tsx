@@ -113,7 +113,7 @@ export default function LeetCodePage() {
                   Verified: @{data.username || data.ocr_raw_text}
                 </span>
                 <span className="text-xs text-green-600 ml-2">
-                  Last updated {new Date(data.extracted_at).toLocaleDateString()}
+                  Last updated {data.extracted_at && !isNaN(new Date(data.extracted_at).getTime()) ? new Date(data.extracted_at).toLocaleDateString() : 'Recently'}
                 </span>
               </div>
               {data.username && (
