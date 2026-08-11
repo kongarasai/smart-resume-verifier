@@ -164,8 +164,9 @@ export default function ProfilePage() {
       await verificationAPI.run();
       toast.success('Skill verification complete!');
       loadData();
-    } catch { toast.error('Verification failed'); }
-    finally { setVerifying(false); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message || 'Verification failed');
+    } finally { setVerifying(false); }
   };
 
   const calcScore = async () => {
@@ -174,8 +175,9 @@ export default function ProfilePage() {
       const res = await scoringAPI.calculate();
       setScore(res);
       toast.success('Score recalculated based on verified skills!');
-    } catch { toast.error('Calculation failed'); }
-    finally { setCalculating(false); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message || 'Calculation failed');
+    } finally { setCalculating(false); }
   };
 
   const toggleAvailability = async () => {
@@ -184,7 +186,9 @@ export default function ProfilePage() {
       await availabilityAPI.update(next);
       setIsAvailable(next);
       toast.success(`Status: ${next ? 'Available for opportunities' : 'Not available'}`);
-    } catch { toast.error('Failed to update'); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to update');
+    }
   };
 
   const addSkill = async (e: React.FormEvent<HTMLFormElement>) => {
