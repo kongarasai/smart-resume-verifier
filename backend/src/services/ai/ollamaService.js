@@ -33,7 +33,9 @@ const generateWithOllama = async (prompt) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'bypass-tunnel-reminder': 'true',   // localtunnel bypass
+        'User-Agent': 'SmartResumeVerifier/2.0'
       },
       body: JSON.stringify({
         model: OLLAMA_MODEL,
