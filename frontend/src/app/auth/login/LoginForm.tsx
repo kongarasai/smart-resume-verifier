@@ -260,19 +260,19 @@ export default function LoginForm() {
             {isRegister && (
               <div>
                 <label className="label">Full name</label>
-                <input {...register('full_name', { required: 'Name required' })} className="input" placeholder="Jane Smith" />
+                <input {...register('full_name', { required: 'Name required' })} className="input" placeholder="Enter your full name" />
                 {errors.full_name && <p className="text-red-500 text-xs mt-1">{errors.full_name.message as string}</p>}
               </div>
             )}
             <div>
               <label className="label">Email</label>
-              <input {...register('email', { required: 'Email required', pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' } })} type="email" className="input" placeholder="you@example.com" />
+              <input {...register('email', { required: 'Email required', pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' } })} type="email" className="input" placeholder="name@company.com" />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message as string}</p>}
             </div>
             <div>
               <label className="label">Password</label>
               <div className="relative">
-                <input {...register('password', { required: 'Password required', minLength: { value: 6, message: 'Min 6 characters' } })} type={showPass ? 'text' : 'password'} className="input pr-10" placeholder="Min 6 characters" />
+                <input {...register('password', { required: 'Password required', minLength: { value: 6, message: 'Min 6 characters' } })} type={showPass ? 'text' : 'password'} className="input pr-10" placeholder="••••••••" />
                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-2.5 text-ink-400">
                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
