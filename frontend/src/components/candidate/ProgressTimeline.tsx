@@ -109,6 +109,12 @@ export function ProgressTimeline({ events }: { events: any[] }) {
                   const colorClass = EVENT_COLORS[event.event_type] || 'text-ink-500 bg-ink-50';
                   const isHiringEvent = ['shortlisted', 'blocked', 'rejected', 'hold'].includes(event.event_type);
 
+                  const rawEvDate = event.created_at || event.timestamp || event.date;
+                  const evDateObj = rawEvDate ? new Date(rawEvDate) : null;
+                  const isEvDateValid = evDateObj && !isNaN(evDateObj.getTime());
+                  const formattedEvDate = isEvDateValid ? evDateObj.toLocaleDateString([], { day: 'numeric', month: 'short' }) : 'Recent';
+                  const formattedEvTime = isEvDateValid ? evDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently';
+
                   return (
                     <div key={event.id || `${gIdx}-${idx}`} 
                          className={clsx(
@@ -125,7 +131,7 @@ export function ProgressTimeline({ events }: { events: any[] }) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                                <h4 className={clsx("text-xs font-semibold truncate", isHiringEvent ? "text-ink-900" : "text-ink-900")}>{event.event_title}</h4>
-                               <span className="text-[9px] text-ink-400">{new Date(event.created_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}</span>
+                               <span className="text-[9px] text-ink-400">{formattedEvDate}</span>
                             </div>
                             {event.points_gained > 0 && (
                               <div className="text-[9px] font-bold text-green-600">+{event.points_gained} PTS</div>
@@ -142,7 +148,7 @@ export function ProgressTimeline({ events }: { events: any[] }) {
                                <h4 className="font-display text-sm text-ink-900 font-semibold">{event.event_title}</h4>
                             </div>
                             <span className="text-[9px] text-ink-400 font-medium">
-                              {new Date(event.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {formattedEvTime}
                             </span>
                           </div>
                           <p className="text-xs text-ink-600 leading-relaxed ml-8">{event.event_detail}</p>
