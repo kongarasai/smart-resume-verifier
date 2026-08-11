@@ -118,28 +118,46 @@ export default function ProfilePage() {
   useEffect(() => { loadData(); }, []);
 
   const onSaveProfile = async (values: any) => {
-    try { await profileAPI.update(values); toast.success('Profile updated'); loadData(); }
-    catch (err: any) { toast.error(err.response?.data?.error || 'Update failed'); }
+    try { 
+      await profileAPI.update(values); 
+      toast.success('Profile updated'); 
+      loadData(); 
+    } catch (err: any) { 
+      const msg = err.response?.data?.error || (err.message === 'Network Error' ? 'Backend is waking up, please retry in a moment' : err.message || 'Update failed');
+      toast.error(msg); 
+    }
   };
 
   const onResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
+      toast.loading('Uploading resume...', { id: 'upload-resume' });
       await profileAPI.uploadResume(file);
+      toast.dismiss('upload-resume');
       toast.success('Resume uploaded');
       loadData();
-    } catch (err: any) { toast.error(err.response?.data?.error || 'Upload failed'); }
+    } catch (err: any) { 
+      toast.dismiss('upload-resume');
+      const msg = err.response?.data?.error || (err.message === 'Network Error' ? 'Backend is waking up, please retry in a moment' : err.message || 'Upload failed');
+      toast.error(msg); 
+    }
   };
 
   const onPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
+      toast.loading('Uploading photo...', { id: 'upload-photo' });
       await profileAPI.uploadPhoto(file);
+      toast.dismiss('upload-photo');
       toast.success('Photo updated');
       loadData();
-    } catch (err: any) { toast.error(err.response?.data?.error || 'Photo upload failed'); }
+    } catch (err: any) { 
+      toast.dismiss('upload-photo');
+      const msg = err.response?.data?.error || (err.message === 'Network Error' ? 'Backend is waking up, please retry in a moment' : err.message || 'Photo upload failed');
+      toast.error(msg); 
+    }
   };
 
   const parseResume = async () => {
