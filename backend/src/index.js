@@ -141,8 +141,8 @@ app.get('/uploads/resumes/:filename', authenticate, (req, res) => {
   res.sendFile(filePath);
 });
 
-// Other upload types (photos, attachments) — still require auth, less strict ownership
-app.use('/uploads/photos', authenticate, express.static(path.join(UPLOADS_DIR, 'photos'), {
+// Photos and attachments — served publicly with cross-origin headers so browser <img> tags display them cleanly
+app.use('/uploads/photos', express.static(path.join(UPLOADS_DIR, 'photos'), {
   maxAge: '1d',
   setHeaders: (res) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
