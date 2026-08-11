@@ -42,12 +42,7 @@ app.use(cors({
     // Allow server-to-server (no origin header) e.g. mobile native or curl
     if (!origin) return callback(null, true);
     
-    // In development, allow any local origin (localhost, 127.0.0.1, or local IP)
-    if (process.env.NODE_ENV === 'development') {
-      return callback(null, true);
-    }
-    
-    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('vercel.app')) {
+    if (process.env.NODE_ENV === 'development' || origin.includes('vercel.app') || ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
     logger.warn(`CORS rejected origin: ${origin}`);
