@@ -63,6 +63,10 @@ export default function LoginForm() {
 
   // ── Google Sign-In ────────────────────────────────────────────────────────
   const handleGoogleSignIn = async () => {
+    if (!auth || !auth.app) {
+      toast.error('Firebase Auth is not configured for this environment. Please check environment variables.');
+      return;
+    }
     setGoogleLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);

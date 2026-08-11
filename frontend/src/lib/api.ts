@@ -1,17 +1,28 @@
 import rawAxios from 'axios';
 import toast from 'react-hot-toast';
 
-// Handle CJS/ESM default export wrapper variations in production Next.js builds
-const axios: any = (rawAxios as any)?.create
-  ? rawAxios
-  : ((rawAxios as any)?.default?.create ? (rawAxios as any).default : rawAxios);
+// Handle CJS/ESM default export wrapper variations in production Next.js builds / Vercel
+const getAxiosInstance = () => {
+  if (typeof rawAxios === 'function' && typeof (rawAxios as any).create === 'function') {
+    return rawAxios;
+  }
+  if (rawAxios && typeof (rawAxios as any).create === 'function') {
+    return rawAxios;
+  }
+  if (rawAxios && (rawAxios as any).default && typeof (rawAxios as any).default.create === 'function') {
+    return (rawAxios as any).default;
+  }
+  return rawAxios;
+};
+
+const axiosInstance: any = getAxiosInstance();
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
-const api = typeof axios.create === 'function'
-  ? axios.create({
+const api = typeof axiosInstance?.create === 'function'
+  ? axiosInstance.create({
       baseURL: API_URL,
       withCredentials: true,
       timeout: 60000, // Increased timeout for AI Generation requests
