@@ -488,7 +488,9 @@ export default function ProfilePage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-ink-900">{e.role}</h3>
-                    <span className="text-xs text-ink-400">{new Date(e.start_date).getFullYear()} - {e.end_date ? new Date(e.end_date).getFullYear() : 'Present'}</span>
+                    <span className="text-xs text-ink-400">
+                      {e.start_date && !isNaN(new Date(e.start_date).getTime()) ? new Date(e.start_date).getFullYear() : '—'} - {e.end_date && !isNaN(new Date(e.end_date).getTime()) ? new Date(e.end_date).getFullYear() : 'Present'}
+                    </span>
                   </div>
                   <div className="text-sm text-ink-700">{e.company} · {e.location}</div>
                   <p className="text-xs text-ink-500 mt-2 leading-relaxed">{e.description}</p>
@@ -567,7 +569,9 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <h3 className="font-medium text-ink-900">{c.name}</h3>
                     <div className="text-sm text-ink-700">{c.issuer}</div>
-                    <div className="text-[10px] text-ink-400 uppercase tracking-wider mt-1">Issued: {new Date(c.issue_date).toLocaleDateString()}</div>
+                    <div className="text-[10px] text-ink-400 uppercase tracking-wider mt-1">
+                      Issued: {c.issue_date && !isNaN(new Date(c.issue_date).getTime()) ? new Date(c.issue_date).toLocaleDateString() : 'N/A'}
+                    </div>
                   </div>
                   <button onClick={() => profileAPI.deleteCertificate(c.id).then(loadData)} className="text-ink-400 hover:text-red-500"><Trash2 size={16} /></button>
                 </div>

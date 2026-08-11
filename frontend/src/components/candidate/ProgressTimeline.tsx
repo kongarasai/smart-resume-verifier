@@ -53,19 +53,21 @@ export function ProgressTimeline({ events }: { events: any[] }) {
   const groups: { label: string; type: 'day' | 'month'; events: any[] }[] = [];
   
   events.forEach(ev => {
-    const d = new Date(ev.created_at);
-    const isCurrentMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    const rawDate = ev.created_at || ev.timestamp || Date.now();
+    const d = new Date(rawDate);
+    const validDate = !isNaN(d.getTime()) ? d : new Date();
+    const isCurrentMonth = validDate.getMonth() === currentMonth && validDate.getFullYear() === currentYear;
     
     let label: string;
     let type: 'day' | 'month';
     
     if (isCurrentMonth) {
-      label = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      label = validDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
       const today = new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
       if (label === today) label = 'Today';
       type = 'day';
     } else {
-      label = d.toLocaleDateString([], { month: 'long', year: 'numeric' });
+      label = validDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
       type = 'month';
     }
 
