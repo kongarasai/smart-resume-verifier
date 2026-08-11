@@ -109,9 +109,7 @@ api.interceptors.response.use(
       typeof window !== 'undefined' &&
       !window.location.pathname.includes('/auth/')
     ) {
-      toast.error('Session expired. Please log in again.');
-      localStorage.removeItem('token');
-      window.location.href = '/auth/login';
+      console.warn('Backend request unauthorized (401), retaining client session');
     }
     return Promise.reject(err);
   }
