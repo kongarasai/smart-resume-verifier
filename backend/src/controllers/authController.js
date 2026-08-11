@@ -49,8 +49,10 @@ const register = async (req, res) => {
     try {
       const jwt = require('jsonwebtoken');
       decoded = jwt.decode(token);
-      if (decoded && decoded.uid) {
-        logger.info(`Fell back to decoded token for UID ${decoded.uid}`);
+      const uid = decoded?.uid || decoded?.user_id || decoded?.sub;
+      if (decoded && uid) {
+        decoded.uid = uid;
+        logger.info(`Fell back to decoded token for UID ${uid}`);
       } else {
         return res.status(401).json({ error: 'Invalid or expired session. Please sign in again.' });
       }
@@ -140,8 +142,10 @@ const login = async (req, res) => {
     try {
       const jwt = require('jsonwebtoken');
       decoded = jwt.decode(token);
-      if (decoded && decoded.uid) {
-        logger.info(`Fell back to decoded token for UID ${decoded.uid}`);
+      const uid = decoded?.uid || decoded?.user_id || decoded?.sub;
+      if (decoded && uid) {
+        decoded.uid = uid;
+        logger.info(`Fell back to decoded token for UID ${uid}`);
       } else {
         return res.status(401).json({ error: 'Invalid or expired session. Please sign in again.' });
       }
