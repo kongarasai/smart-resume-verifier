@@ -134,7 +134,7 @@ export default function ProfilePage() {
       await profileAPI.uploadPhoto(file);
       toast.success('Photo updated');
       loadData();
-    } catch { toast.error('Photo upload failed'); }
+    } catch (err: any) { toast.error(err.response?.data?.error || 'Photo upload failed'); }
   };
 
   const parseResume = async () => {

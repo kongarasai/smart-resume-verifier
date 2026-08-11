@@ -2,7 +2,9 @@ import rawAxios from 'axios';
 import toast from 'react-hot-toast';
 
 // Handle CJS/ESM default export wrapper variations in production Next.js builds
-const axios: any = (rawAxios as any)?.default?.create ? (rawAxios as any).default : (rawAxios || {});
+const axios: any = (rawAxios as any)?.create
+  ? rawAxios
+  : ((rawAxios as any)?.default?.create ? (rawAxios as any).default : rawAxios);
 
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
