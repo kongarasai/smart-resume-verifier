@@ -130,8 +130,9 @@ export default function DashboardLayout({ children, requiredRole }: { children: 
       )}
 
       <main className="flex-1 w-full md:ml-56 min-h-screen bg-ink-50 flex flex-col">
-        <div className="bg-red-600 text-white p-1 text-[10px] font-bold text-center uppercase tracking-tighter">
-          Debug Build v3.0 - Layout Mounted
+        <div className="bg-ink-900 text-white px-4 py-2 text-xs font-medium flex items-center justify-between shadow-sm">
+          <span>Welcome, {mounted && user ? (user.full_name || user.email?.split('@')[0] || 'User') : 'User'}!</span>
+          <span className="text-[10px] text-ink-400 font-mono">Smart Resume Verifier</span>
         </div>
         <div className="sticky top-0 z-20 flex items-center justify-between p-4 bg-ink-50/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">

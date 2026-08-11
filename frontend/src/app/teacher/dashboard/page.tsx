@@ -46,13 +46,6 @@ export default function TeacherDashboard() {
   return (
     <DashboardLayout requiredRole="teacher">
       <div className="animate-fade-in">
-        <div className="bg-red-600 text-white p-4 rounded-xl mb-6 flex items-center justify-between shadow-lg border-2 border-red-400">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-            <div className="font-bold uppercase tracking-tighter">Debug Build v2.5 - Navigation Tracker Active</div>
-          </div>
-          <div className="text-[10px] font-mono opacity-80">{new Date().toLocaleTimeString()}</div>
-        </div>
         <h1 className="font-display text-3xl text-ink-900 mb-1">Teacher Dashboard</h1>
         <p className="text-ink-500 text-sm mb-8">Monitor candidates, rankings, and manage group activity</p>
 
