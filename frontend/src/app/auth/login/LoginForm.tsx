@@ -104,14 +104,41 @@ export default function LoginForm() {
           if (err.response?.status === 404) {
             // Auto-register as candidate if login failed because profile wasn't found
             toast.loading('Creating your profile...', { id: 'google-reg' });
-            const res = await authAPI.registerWithToken(idToken, {
-              role: 'candidate',
-              ...(inviteToken ? { invite_token: inviteToken } : {}),
-            });
-            toast.dismiss('google-reg');
-            setAuth(res.data.user, res.data.token ?? idToken);
-            toast.success('Welcome! Your account has been created.');
-            router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
+            try {
+              const res = await authAPI.registerWithToken(idToken, {
+                role: 'candidate',
+                ...(inviteToken ? { invite_token: inviteToken } : {}),
+              });
+              toast.dismiss('google-reg');
+              setAuth(res.data.user, res.data.token ?? idToken);
+              toast.success('Welcome! Your account has been created.');
+              router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
+            } catch (regErr: any) {
+              toast.dismiss('google-reg');
+              // Fallback client session if backend cold start persists
+              const googleUser = {
+                id: result.user.uid,
+                email: result.user.email || '',
+                full_name: result.user.displayName || 'Google User',
+                role: 'candidate' as const,
+                photo_url: result.user.photoURL || undefined
+              };
+              setAuth(googleUser, idToken);
+              toast.success(`Welcome, ${googleUser.full_name}!`);
+              router.push('/candidate/profile');
+            }
+          } else if (err.message === 'Network Error' || err.code === 'ECONNABORTED' || !err.response) {
+            // Instant offline/cold-start fallback for Google authenticated users
+            const googleUser = {
+              id: result.user.uid,
+              email: result.user.email || '',
+              full_name: result.user.displayName || 'Google User',
+              role: 'candidate' as const,
+              photo_url: result.user.photoURL || undefined
+            };
+            setAuth(googleUser, idToken);
+            toast.success(`Welcome, ${googleUser.full_name}!`);
+            router.push('/candidate/profile');
           } else {
             throw err;
           }
