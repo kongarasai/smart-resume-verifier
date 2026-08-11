@@ -95,7 +95,21 @@ export default function MessagesPage() {
     }
   };
 
-  const formatTime = (ts: string) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (ts: any) => {
+    if (!ts) return 'Just now';
+    let d: Date;
+    if (typeof ts === 'object' && ts._seconds !== undefined) {
+      d = new Date(ts._seconds * 1000);
+    } else if (typeof ts === 'object' && ts.seconds !== undefined) {
+      d = new Date(ts.seconds * 1000);
+    } else if (typeof ts === 'number') {
+      d = new Date(ts);
+    } else {
+      d = new Date(ts);
+    }
+    if (isNaN(d.getTime())) return 'Just now';
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   // Merge contacts + conversations into a unified list (contacts first, then anyone with messages)
   const allContacts = contacts;

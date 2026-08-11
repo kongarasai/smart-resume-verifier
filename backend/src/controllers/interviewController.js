@@ -154,6 +154,7 @@ const sendMessage = async (req, res) => {
       return res.status(403).json({ error: 'Messaging is only enabled after an interview is scheduled between you' });
     }
 
+    const nowIso = new Date().toISOString();
     const newMessage = {
       sender_id: req.user.id,
       receiver_id,
@@ -178,7 +179,7 @@ const sendMessage = async (req, res) => {
       docRef.id
     );
 
-    res.status(201).json({ id: docRef.id, ...newMessage });
+    res.status(201).json({ id: docRef.id, ...newMessage, sent_at: nowIso });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to send message' });
