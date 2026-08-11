@@ -160,7 +160,24 @@ const login = async (req, res) => {
     const doc = await userRef.get();
 
     if (!doc.exists) {
-      return res.status(404).json({ error: 'Account not found. Please register first.' });
+      // Auto-provision user record on first login
+      const newUser = {
+        email: (decoded.email || `${decoded.uid}@firebase.user`).toLowerCase(),
+        full_name: decoded.name || decoded.email?.split('@')[0] || 'User',
+        role: 'candidate',
+        photo_url: decoded.picture || '',
+        is_active: true,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        last_login: admin.firestore.FieldValue.serverTimestamp()
+      };
+      await userRef.set(newUser);
+      await db.collection('profiles').doc(decoded.uid).set({ created_at: admin.firestore.FieldValue.serverTimestamp() });
+      await db.collection('privacy_settings').doc(decoded.uid).set({ created_at: admin.firestore.FieldValue.serverTimestamp() });
+      
+      const user = { id: decoded.uid, ...newUser };
+      const sessionToken = issueJWT(user);
+      logger.info(`Auto-provisioned new user: ${newUser.email}`);
+      return res.json({ user, token: sessionToken });
     }
 
     const userData = doc.data();
