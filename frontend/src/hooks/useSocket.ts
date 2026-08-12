@@ -2,6 +2,14 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { Capacitor } from '@capacitor/core';
+
+const PRODUCTION_SOCKET = 'https://smart-resume-backend-7jeu.onrender.com';
+
+const getSocketUrl = () => {
+  if (Capacitor.isNativePlatform()) return PRODUCTION_SOCKET;
+  return process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+};
 
 export const useSocket = () => {
   const { user, token } = useAuthStore();
@@ -10,7 +18,7 @@ export const useSocket = () => {
   useEffect(() => {
     if (!token || !user) return;
 
-    const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+    const SOCKET_URL = getSocketUrl();
     
     // Connect with userId in query for targeted notifications
     socketRef.current = io(SOCKET_URL, {

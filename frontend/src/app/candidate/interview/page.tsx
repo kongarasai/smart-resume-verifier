@@ -289,7 +289,7 @@ export default function MockInterviewPage() {
               </div>
             </div>
 
-            <button onClick={() => window.location.reload()} className="btn-secondary px-8 py-3 rounded-xl">
+            <button onClick={() => typeof window !== 'undefined' && window.location.reload()} className="btn-secondary px-8 py-3 rounded-xl">
               Take Another Interview
             </button>
           </div>

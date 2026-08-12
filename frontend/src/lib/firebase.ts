@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, indexedDBLocalPersistence, browserLocalPersistence, initializeAuth } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAmadOPOm5x8euauSa5sFoX8irC3MB1_rs',
@@ -18,7 +19,15 @@ const app = isConfigValid
   ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
   : null;
 
-export const auth = app ? getAuth(app) : ({} as any);
+// Use indexedDBLocalPersistence on native (Capacitor) to avoid sessionStorage issues
+// that cause "missing initial state" errors in WebView environments
+export const auth = app
+  ? (Capacitor.isNativePlatform()
+      ? initializeAuth(app, {
+          persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+        })
+      : getAuth(app))
+  : ({} as any);
 export const googleProvider = new GoogleAuthProvider();
 
 if (app) {

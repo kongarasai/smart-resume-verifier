@@ -5,6 +5,10 @@ import { teacherAPI, groupAPI, practiceAPI } from '@/lib/api';
 import { Plus, BookOpen, CheckCircle, Info, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import dynamic from 'next/dynamic';
+
+const WebLLMAIGenerator = dynamic(() => import('@/components/shared/WebLLMAIGenerator'), { ssr: false });
+
 
 export default function TeacherProblemsPage() {
   const [form, setForm] = useState({
@@ -23,11 +27,13 @@ export default function TeacherProblemsPage() {
   const [bulkQuestions, setBulkQuestions] = useState<any[]>([]);
   const [recentlyCreated, setRecentlyCreated] = useState<any[]>([]);
   const [bulkForm, setBulkForm] = useState({ name: '', expires_at: '' });
+  const [aiGeneratedData, setAiGeneratedData] = useState<{
+    groupId: string;
+    heading: string;
+    expiresAt: string;
+    questions: any[];
+  } | null>(null);
 
-  // AI Generator states
-  const [genForm, setGenForm] = useState({ topic: '', count: 10, heading: '', difficulty: 'medium', expires_at: '' });
-  const [generating, setGenerating] = useState(false);
-  const [genQuestions, setGenQuestions] = useState<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<any>(null);
@@ -251,43 +257,20 @@ export default function TeacherProblemsPage() {
     }
   };
 
-  const handleGenerate = async () => {
-    if (!genForm.topic || !genForm.count) return toast.error('Topic and count required');
-    setGenerating(true);
-    try {
-      const res = await practiceAPI.generateQuestions({ topic: genForm.topic, count: genForm.count, difficulty: genForm.difficulty });
-      setGenQuestions(res.data.questions);
-      toast.success(`Generated ${res.data.questions.length} questions for review`);
-    } catch {
-      toast.error('AI Generation failed');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const saveBulk = async (type: 'pdf' | 'ai') => {
+  const saveBulk = async () => {
     if (!form.group_id) return toast.error('Select a group first');
-    const questionsToSave = type === 'pdf' ? bulkQuestions : genQuestions;
-    const finalHeading = type === 'pdf' ? bulkForm.name : genForm.heading;
-    const expiry = type === 'pdf' ? bulkForm.expires_at : genForm.expires_at;
-
-    if (!questionsToSave || questionsToSave.length === 0) return toast.error('No questions to save');
+    if (!bulkQuestions || bulkQuestions.length === 0) return toast.error('No questions to save');
     setSaving(true);
     try {
       await practiceAPI.bulkCreateQuestions({ 
         group_id: form.group_id, 
-        questions: questionsToSave,
-        assignment_name: finalHeading,
-        expires_at: expiry || null
+        questions: bulkQuestions,
+        assignment_name: bulkForm.name,
+        expires_at: bulkForm.expires_at || null
       });
       toast.success('Questions saved successfully!');
-      if (type === 'pdf') {
-        setBulkQuestions([]);
-        setBulkForm({ name: '', expires_at: '' });
-      } else {
-        setGenQuestions([]);
-        setGenForm({ topic: '', count: 10, heading: '', difficulty: 'medium', expires_at: '' });
-      }
+      setBulkQuestions([]);
+      setBulkForm({ name: '', expires_at: '' });
       teacherAPI.getGroupQuestions(form.group_id).then((r: any) => setGroupQuestions(r.data || []));
     } catch {
       toast.error('Saving failed');
@@ -354,16 +337,16 @@ export default function TeacherProblemsPage() {
             Single Question
           </button>
           <button 
-            onClick={() => setActiveTab('bulk')}
-            className={clsx('pb-2 px-1 text-sm font-medium whitespace-nowrap transition-colors', activeTab === 'bulk' ? 'text-ink-900 border-b-2 border-ink-900' : 'text-ink-400 hover:text-ink-600')}
-          >
-            Bulk Upload / PDF
-          </button>
-          <button 
             onClick={() => setActiveTab('ai')}
             className={clsx('pb-2 px-1 text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5', activeTab === 'ai' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-ink-400 hover:text-purple-400')}
           >
             <Plus size={14} /> AI Assignment Generator
+          </button>
+          <button 
+            onClick={() => setActiveTab('bulk')}
+            className={clsx('pb-2 px-1 text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5', activeTab === 'bulk' ? 'text-ink-900 border-b-2 border-ink-900' : 'text-ink-400 hover:text-ink-600')}
+          >
+            <BookOpen size={14} /> Bulk Import PDF
           </button>
         </div>
 
@@ -444,13 +427,76 @@ export default function TeacherProblemsPage() {
                   {saving ? 'Creating...' : <><Plus size={14} /> Create Question for "{selectedGroupName}"</>}
                 </button>
               </div>
+            ) : activeTab === 'ai' ? (
+              /* AI Generator UI */
+              <div className="space-y-6">
+                <WebLLMAIGenerator 
+                  groups={groups} 
+                  saving={saving}
+                  onGenerateSuccess={(data) => {
+                    setAiGeneratedData(data);
+                    setForm(s => ({ ...s, group_id: data.groupId }));
+                  }} 
+                />
+                
+                {aiGeneratedData && aiGeneratedData.questions.length > 0 && (
+                  <div className="card p-6 bg-white border border-ink-100 shadow-sm rounded-xl space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-100">
+                      <div>
+                        <h4 className="font-medium text-purple-900">Generated ({aiGeneratedData.questions.length}) Questions</h4>
+                        <p className="text-[10px] text-purple-700">
+                          Heading: <span className="font-bold">{aiGeneratedData.heading}</span> | 
+                          Expires: <span className="font-bold">{aiGeneratedData.expiresAt || 'Never'}</span>
+                        </p>
+                      </div>
+                      <button 
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            await practiceAPI.bulkCreateQuestions({ 
+                              group_id: aiGeneratedData.groupId, 
+                              questions: aiGeneratedData.questions,
+                              assignment_name: aiGeneratedData.heading,
+                              expires_at: aiGeneratedData.expiresAt || null
+                            });
+                            toast.success('Questions saved successfully!');
+                            setAiGeneratedData(null);
+                            teacherAPI.getGroupQuestions(aiGeneratedData.groupId).then((r: any) => setGroupQuestions(r.data || []));
+                          } catch {
+                            toast.error('Saving failed');
+                          } finally {
+                            setSaving(false);
+                          }
+                        }} 
+                        disabled={saving} 
+                        className="btn-primary py-2 px-6 bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        {saving ? 'Saving...' : 'Add to Assignment'}
+                      </button>
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto border border-ink-100 rounded-lg bg-white">
+                      {aiGeneratedData.questions.map((q: any, i: number) => (
+                        <div key={i} className="p-3 border-b border-ink-100 last:border-0 text-xs">
+                          <div className="font-medium text-ink-800 mb-1">{i+1}. {q.title}</div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-ink-500">
+                            {q.options.map((o: any) => (
+                              <div key={o.id} className={clsx(q.correct_answer === o.id && 'text-green-600 font-bold')}>
+                                {o.id}) {o.text}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
-              /* Bulk Upload UI */
+              /* Bulk Import PDF UI */
               <div className="space-y-6">
                 <div className="card p-6">
                   <h3 className="font-display text-lg text-ink-900 mb-4">Bulk Import from PDF</h3>
-                  
-                  {/* Pre-upload Group Selector */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="p-4 bg-ink-50 rounded-xl border border-ink-100">
                       <label className="label text-ink-700 font-medium mb-2 block">1. Target Group *</label>
@@ -478,9 +524,7 @@ export default function TeacherProblemsPage() {
                       />
                     </div>
                   </div>
-
                   <label className="label text-ink-700 font-medium mb-2 block">4. Upload MCQ PDF</label>
-
                   <div className="flex flex-col items-center justify-center border-2 border-dashed border-ink-200 rounded-xl p-8 bg-ink-25/50">
                     <input type="file" id="bulk-pdf" className="hidden" accept=".pdf" onChange={handlePdfParse} />
                     <label htmlFor="bulk-pdf" className="btn-secondary py-3 px-6 cursor-pointer flex flex-col items-center gap-2">
@@ -496,8 +540,8 @@ export default function TeacherProblemsPage() {
                         </>
                       )}
                     </label>
+                    <p className="mt-4 text-[10px] text-ink-400 text-center">Best for numbered questions with a), b), c), d) options.<br/>Merged options like A.opt1B.opt2 are supported.</p>
                   </div>
-
                   {(bulkQuestions?.length || 0) > 0 && (
                     <div className="mt-8 space-y-4">
                       <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
@@ -505,88 +549,13 @@ export default function TeacherProblemsPage() {
                           <h4 className="font-medium text-green-900">Extracted ({bulkQuestions.length}) Questions</h4>
                           <p className="text-[10px] text-green-700">Group: <span className="font-bold">{selectedGroupName}</span> | Heading: <span className="font-bold">{bulkForm.name || 'None'}</span> | Expires: <span className="font-bold">{bulkForm.expires_at || 'Never'}</span></p>
                         </div>
-                        <button onClick={() => saveBulk('pdf')} disabled={saving || !form.group_id} className="btn-primary py-2 px-6">
+                        <button onClick={() => saveBulk()} disabled={saving || !form.group_id} className="btn-primary py-2 px-6">
                           {saving ? 'Saving...' : 'Confirm & Save All'}
                         </button>
                       </div>
-
                       <div className="max-h-80 overflow-y-auto border border-ink-100 rounded-lg">
                         {bulkQuestions.map((q, i) => (
                           <div key={i} className="p-3 border-b border-ink-100 last:border-0 bg-white text-xs">
-                            <div className="font-medium text-ink-800 mb-1">{i+1}. {q.title}</div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-ink-500">
-                              {q.options.map((o: any) => <div key={o.id} className={clsx(q.correct_answer === o.id && 'text-green-600 font-bold')}>{o.id}) {o.text}</div>)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'ai' && (
-              /* AI Generator UI */
-              <div className="space-y-6">
-                <div className="card p-6 border-purple-100 bg-purple-25/30">
-                  <h3 className="font-display text-lg text-purple-900 mb-1">AI Assignment Generator</h3>
-                  <p className="text-xs text-purple-600 mb-6">Describe your topic and we will generate professional MCQs for you.</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="label">Target Group *</label>
-                      <select className="input" value={form.group_id} onChange={e => setForm(s => ({ ...s, group_id: e.target.value }))}>
-                        <option value="">— Select Group —</option>
-                        {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="label">Assignment Heading</label>
-                      <input className="input" placeholder="e.g. Python Quiz 1" value={genForm.heading} onChange={e => setGenForm(s => ({ ...s, heading: e.target.value }))} />
-                    </div>
-                    <div>
-                      <label className="label">Expiry Date & Time</label>
-                      <input type="datetime-local" className="input" value={genForm.expires_at} onChange={e => setGenForm(s => ({ ...s, expires_at: e.target.value }))} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-12 gap-3 items-end">
-                    <div className="col-span-5">
-                      <label className="label">Topic / Skill</label>
-                      <input className="input" placeholder="e.g. Python, SQL, React" value={genForm.topic} onChange={e => setGenForm(s => ({ ...s, topic: e.target.value }))} />
-                    </div>
-                    <div className="col-span-3">
-                      <label className="label">Difficulty</label>
-                      <select className="input" value={genForm.difficulty} onChange={e => setGenForm(s => ({ ...s, difficulty: e.target.value }))}>
-                        {['easy', 'medium', 'hard'].map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="label">Count</label>
-                      <input type="number" min="1" max="20" className="input" value={genForm.count} onChange={e => setGenForm(s => ({ ...s, count: Math.max(1, parseInt(e.target.value) || 1) }))} />
-                    </div>
-                    <div className="col-span-2">
-                      <button onClick={handleGenerate} disabled={generating || !genForm.topic} className="btn-primary w-full h-10 justify-center bg-purple-600 hover:bg-purple-700">
-                        {generating ? '...' : 'Generate'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {(genQuestions?.length || 0) > 0 && (
-                    <div className="mt-8 space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-100">
-                        <div>
-                          <h4 className="font-medium text-purple-900">Generated ({genQuestions.length}) Questions</h4>
-                          <p className="text-[10px] text-purple-700">Expires: <span className="font-bold">{genForm.expires_at || 'Never'}</span> | Review below before adding to <span className="font-bold">{selectedGroupName}</span></p>
-                        </div>
-                        <button onClick={() => saveBulk('ai')} disabled={saving || !form.group_id} className="btn-primary py-2 px-6 bg-purple-600">
-                          {saving ? 'Saving...' : 'Add to Assignment'}
-                        </button>
-                      </div>
-                      <div className="max-h-80 overflow-y-auto border border-ink-100 rounded-lg bg-white">
-                        {genQuestions.map((q, i) => (
-                          <div key={i} className="p-3 border-b border-ink-100 last:border-0 text-xs">
                             <div className="font-medium text-ink-800 mb-1">{i+1}. {q.title}</div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-ink-500">
                               {q.options.map((o: any) => <div key={o.id} className={clsx(q.correct_answer === o.id && 'text-green-600 font-bold')}>{o.id}) {o.text}</div>)}

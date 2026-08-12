@@ -47,6 +47,7 @@ export default function LoginForm() {
   const [showPass, setShowPass]     = useState(false);
   const [loading, setLoading]       = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [mobileRedirectUrl, setMobileRedirectUrl] = useState<string | null>(null);
   const { setAuth } = useAuthStore();
   const router      = useRouter();
   const searchParams = useSearchParams();
@@ -67,6 +68,35 @@ export default function LoginForm() {
       toast.error('Firebase Auth is not configured for this environment. Please check environment variables.');
       return;
     }
+
+    // Capacitor WebView does not support signInWithPopup — it causes "missing initial state" error
+    // because sessionStorage is cleared between OAuth redirects in a native WebView.
+    // Instead, we open the secure system browser pointing to our production site with a platform=mobile param.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Capacitor } = require('@capacitor/core');
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { Browser } = require('@capacitor/browser');
+        toast.loading('Opening secure browser for Google Sign-In...', { duration: 3000 });
+        const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'https://smart-resume-verifier.vercel.app';
+        await Browser.open({ 
+          url: `${webUrl}/auth/login?platform=mobile&role=${selectedRole || 'candidate'}${inviteToken ? `&invite=${inviteToken}` : ''}` 
+        });
+      } catch (e) {
+        toast.error('Failed to open system browser.');
+      }
+      return;
+    }
+
+    // Save platform and role/invite to localStorage to survive Firebase OAuth redirects
+    const params = new URLSearchParams(window.location.search);
+    const isMobileUrl = params.get('platform') === 'mobile';
+    if (isMobileUrl) {
+      localStorage.setItem('auth_redirect_platform', 'mobile');
+      localStorage.setItem('auth_redirect_role', selectedRole || 'candidate');
+      if (inviteToken) localStorage.setItem('auth_redirect_invite', inviteToken);
+    }
+
     setGoogleLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -83,6 +113,25 @@ export default function LoginForm() {
       // Set user session in local store immediately for instant UI response
       setAuth(googleUser, idToken);
       toast.success(`Welcome, ${googleUser.full_name}!`);
+
+      // If we are on the Web page serving a mobile redirect authentication request
+      const isMobile = localStorage.getItem('auth_redirect_platform') === 'mobile' || isMobileUrl;
+      const redirectRole = localStorage.getItem('auth_redirect_role') || googleUser.role;
+      
+      localStorage.removeItem('auth_redirect_platform');
+      localStorage.removeItem('auth_redirect_role');
+      localStorage.removeItem('auth_redirect_invite');
+
+      if (isMobile) {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const redirectUrl = isAndroid
+          ? `intent://oauth-callback?token=${idToken}&role=${redirectRole}#Intent;scheme=com.smartresume.verifier;package=com.smartresume.verifier;end`
+          : `com.smartresume.verifier://oauth-callback?token=${idToken}&role=${redirectRole}`;
+        window.location.href = redirectUrl;
+        setMobileRedirectUrl(redirectUrl);
+        return;
+      }
+
       router.push(ROLE_REDIRECTS[googleUser.role] || '/candidate/profile');
 
       // Sync user profile with selected role
@@ -126,6 +175,11 @@ export default function LoginForm() {
         toast.error('Google Sign-In is not enabled in Firebase. Go to Firebase Console > Authentication > Sign-in method and enable Google.', { duration: 8000 });
         return;
       }
+      // Catch the "missing initial state" sessionStorage error from WebViews
+      if (err.message?.includes('missing initial state') || err.message?.includes('sessionStorage')) {
+        toast.error('Google Sign-In is not supported in this environment. Please use Email & Password.', { duration: 5000 });
+        return;
+      }
       const msg = err.response?.data?.error || err.message || 'Google sign-in failed';
       toast.error(msg);
     } finally {
@@ -150,6 +204,25 @@ export default function LoginForm() {
         });
         setAuth(res.data.user, res.data.token ?? idToken);
         toast.success('Account created!');
+        
+        // Handle mobile redirect
+        const params = new URLSearchParams(window.location.search);
+        const isMobile = localStorage.getItem('auth_redirect_platform') === 'mobile' || params.get('platform') === 'mobile';
+        const redirectRole = localStorage.getItem('auth_redirect_role') || res.data.user.role;
+        localStorage.removeItem('auth_redirect_platform');
+        localStorage.removeItem('auth_redirect_role');
+        localStorage.removeItem('auth_redirect_invite');
+        
+        if (isMobile) {
+          const isAndroid = /Android/i.test(navigator.userAgent);
+          const redirectUrl = isAndroid
+            ? `intent://oauth-callback?token=${idToken}&role=${redirectRole}#Intent;scheme=com.smartresume.verifier;package=com.smartresume.verifier;end`
+            : `com.smartresume.verifier://oauth-callback?token=${idToken}&role=${redirectRole}`;
+          window.location.href = redirectUrl;
+          setMobileRedirectUrl(redirectUrl);
+          return;
+        }
+
         router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
       } else {
         const credential = await signInWithEmailAndPassword(auth, data.email, data.password);
@@ -157,6 +230,25 @@ export default function LoginForm() {
         const res = await authAPI.loginWithToken(idToken);
         setAuth(res.data.user, res.data.token ?? idToken);
         toast.success(`Welcome back, ${res.data.user.full_name}!`);
+        
+        // Handle mobile redirect
+        const params = new URLSearchParams(window.location.search);
+        const isMobile = localStorage.getItem('auth_redirect_platform') === 'mobile' || params.get('platform') === 'mobile';
+        const redirectRole = localStorage.getItem('auth_redirect_role') || res.data.user.role;
+        localStorage.removeItem('auth_redirect_platform');
+        localStorage.removeItem('auth_redirect_role');
+        localStorage.removeItem('auth_redirect_invite');
+        
+        if (isMobile) {
+          const isAndroid = /Android/i.test(navigator.userAgent);
+          const redirectUrl = isAndroid
+            ? `intent://oauth-callback?token=${idToken}&role=${redirectRole}#Intent;scheme=com.smartresume.verifier;package=com.smartresume.verifier;end`
+            : `com.smartresume.verifier://oauth-callback?token=${idToken}&role=${redirectRole}`;
+          window.location.href = redirectUrl;
+          setMobileRedirectUrl(redirectUrl);
+          return;
+        }
+
         router.push(ROLE_REDIRECTS[res.data.user.role] || '/candidate/profile');
       }
     } catch (err: any) {
@@ -180,6 +272,39 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
+
+  if (mobileRedirectUrl) {
+    return (
+      <div className="min-h-screen bg-ink-950 flex flex-col items-center justify-center p-6 text-white text-center">
+        <div className="max-w-md w-full space-y-8 animate-fade-in">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center animate-bounce">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-3xl font-display font-bold text-amber-400">Successfully Signed In!</h2>
+            <p className="text-ink-300 text-sm">
+              Your Google authentication is complete. Tap the button below to return to the Smart Resume mobile app.
+            </p>
+          </div>
+          <div className="pt-4">
+            <a 
+              href={mobileRedirectUrl}
+              className="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl bg-amber-400 hover:bg-amber-500 text-ink-950 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+            >
+              Open Smart Resume App
+            </a>
+          </div>
+          <p className="text-xs text-ink-500 font-mono pt-8">
+            If the app did not open automatically, tap the button above.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">

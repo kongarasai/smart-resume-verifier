@@ -75,9 +75,26 @@ const getProfile = async (req, res) => {
 
     const mergedProfile = { ...profileData, full_name: userData.full_name, email: userData.email, photo_url: userData.photo_url };
 
+    // Deduplicate skills case-insensitively, keeping the highest verification level
+    const skillMap = {};
+    const levels = ['claimed', 'evidence', 'verified', 'strong_verified', 'expert'];
+    for (const s of skills) {
+      const key = (s.name || '').toLowerCase().trim();
+      if (!skillMap[key]) {
+        skillMap[key] = s;
+      } else {
+        const currentLevelIdx = levels.indexOf(skillMap[key].verification_level || 'claimed');
+        const newLevelIdx = levels.indexOf(s.verification_level || 'claimed');
+        if (newLevelIdx > currentLevelIdx) {
+          skillMap[key] = s;
+        }
+      }
+    }
+    const deduplicatedSkills = Object.values(skillMap);
+
     res.json({
       profile: mergedProfile,
-      skills,
+      skills: deduplicatedSkills,
       raw_skills: skills,
       projects,
       education,
@@ -194,8 +211,73 @@ const deleteSubcollectionItem = async (req, res, collectionName) => {
   }
 };
 
-const addSkill = (req, res) => addSubcollectionItem(req, res, 'skills', { name: req.body.name, proficiency_level: req.body.proficiency_level, verification_level: 'claimed', source: req.body.source || 'manual' });
-const deleteSkill = (req, res) => deleteSubcollectionItem(req, res, 'skills');
+const addSkill = async (req, res) => {
+  const userId = req.user.id;
+  const name = (req.body.name || '').trim();
+  const level = req.body.proficiency_level || 'beginner';
+  const source = req.body.source || 'manual';
+  
+  if (!name) return res.status(400).json({ error: 'Skill name is required' });
+  
+  try {
+    const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
+    const exists = skillsSnap.docs.some(doc => (doc.data().name || '').toLowerCase().trim() === name.toLowerCase());
+    
+    if (exists) {
+      return res.status(400).json({ error: 'Skill already exists on your profile' });
+    }
+    
+    await addSubcollectionItem(req, res, 'skills', { 
+      name, 
+      proficiency_level: level, 
+      verification_level: 'claimed', 
+      source 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add skill' });
+  }
+};
+
+const deleteSkill = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const skillId = req.params.id;
+    
+    // Find the skill to get its name
+    const skillDoc = await db.collection('users').doc(userId).collection('skills').doc(skillId).get();
+    if (!skillDoc.exists) {
+      return res.status(404).json({ error: 'Skill not found' });
+    }
+    
+    const skillName = (skillDoc.data().name || '').toLowerCase().trim();
+    
+    // Find all matching skills in subcollection
+    const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
+    const batch = db.batch();
+    
+    skillsSnap.forEach(doc => {
+      if ((doc.data().name || '').toLowerCase().trim() === skillName) {
+        batch.delete(doc.ref);
+      }
+    });
+    
+    // Also delete any skill verification engines' record
+    const verifDocRef = db.collection('skill_verifications').doc(`${userId}_${skillName}`);
+    batch.delete(verifDocRef);
+    
+    const { normalise } = require('../services/skillVerificationEngine');
+    const normName = normalise(skillName);
+    if (normName !== skillName) {
+      batch.delete(db.collection('skill_verifications').doc(`${userId}_${normName}`));
+    }
+    
+    await batch.commit();
+    res.json({ message: 'Skill deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete skill: ' + err.message });
+  }
+};
 
 const addProject = (req, res) => addSubcollectionItem(req, res, 'projects', req.body);
 const deleteProject = (req, res) => deleteSubcollectionItem(req, res, 'projects');

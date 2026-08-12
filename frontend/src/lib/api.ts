@@ -1,5 +1,6 @@
 import rawAxios from 'axios';
 import toast from 'react-hot-toast';
+import { Capacitor } from '@capacitor/core';
 
 // Handle CJS/ESM default export wrapper variations in production Next.js builds / Vercel
 const getAxiosInstance = () => {
@@ -17,18 +18,24 @@ const getAxiosInstance = () => {
 
 const axiosInstance: any = getAxiosInstance();
 
+const PRODUCTION_API = 'https://smart-resume-backend-7jeu.onrender.com/api';
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
-const getFallbackApiUrl = () => {
+const getApiUrl = () => {
+  // Capacitor native mobile app — always use production backend (no localhost on phone)
+  if (Capacitor.isNativePlatform()) {
+    return PRODUCTION_API;
+  }
+  // Vercel deployment
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return 'https://smart-resume-backend-7jeu.onrender.com/api';
+    return PRODUCTION_API;
+  }
+  // Local development — use env var or fallback to localhost
+  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+    return process.env.NEXT_PUBLIC_API_URL;
   }
   return 'http://localhost:5000/api';
 };
-const rawApiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
-  ? 'https://smart-resume-backend-7jeu.onrender.com/api'
-  : (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')
-      ? process.env.NEXT_PUBLIC_API_URL
-      : getFallbackApiUrl());
+const rawApiUrl = getApiUrl();
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
 const api = typeof axiosInstance?.create === 'function'
