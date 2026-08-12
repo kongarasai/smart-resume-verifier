@@ -62,6 +62,48 @@ export default function LoginForm() {
   useEffect(() => { if (inviteToken) { setIsRegister(true); setValue('role', 'candidate'); } }, [inviteToken]);
   useEffect(() => { if (isRegister && !watch('role')) setValue('role', 'candidate'); }, [isRegister]);
 
+  // Handle persisted mobile redirection on mount/reload after Google OAuth redirect
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isMobile = localStorage.getItem('auth_redirect_platform') === 'mobile';
+    if (!isMobile) return;
+
+    if (!auth) return;
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser: any) => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          const redirectRole = localStorage.getItem('auth_redirect_role') || 'candidate';
+          
+          const googleUser = {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            full_name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Candidate',
+            role: redirectRole as 'candidate' | 'hr' | 'mentor' | 'teacher',
+            photo_url: firebaseUser.photoURL || undefined
+          };
+          setAuth(googleUser, idToken);
+
+          localStorage.removeItem('auth_redirect_platform');
+          localStorage.removeItem('auth_redirect_role');
+          localStorage.removeItem('auth_redirect_invite');
+
+          const isAndroid = /Android/i.test(navigator.userAgent);
+          const redirectUrl = isAndroid
+            ? `intent://oauth-callback?token=${idToken}&role=${redirectRole}#Intent;scheme=com.smartresume.verifier;package=com.smartresume.verifier;end`
+            : `com.smartresume.verifier://oauth-callback?token=${idToken}&role=${redirectRole}`;
+          
+          window.location.href = redirectUrl;
+          setMobileRedirectUrl(redirectUrl);
+        } catch (e) {
+          console.error('Failed to get token for persisted mobile redirect:', e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // ── Google Sign-In ────────────────────────────────────────────────────────
   const handleGoogleSignIn = async () => {
     if (!auth || !auth.app) {
