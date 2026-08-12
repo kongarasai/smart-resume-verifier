@@ -272,7 +272,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-end mb-4">
           <TrustScoreBadge />
         </div>
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
           <div className="flex items-start gap-4">
             <label className="relative cursor-pointer group">
               <div className="w-14 h-14 rounded-full bg-ink-200 overflow-hidden flex items-center justify-center text-ink-600 text-xl font-semibold relative">
@@ -304,7 +304,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
              <button 
                onClick={() => setShowHV(!showHV)}
                className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm', {
