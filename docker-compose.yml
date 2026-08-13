@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./db-schema/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./backend/db-schema/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -44,7 +44,6 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
       PORT: 5000
-      OCR_SERVICE_URL: http://ocr:8000
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:
@@ -52,12 +51,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - app-network
-
-  ocr:
-    build: ./python-ocr-service
-    restart: always
     networks:
       - app-network
 

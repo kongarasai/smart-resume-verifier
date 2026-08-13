@@ -10,7 +10,7 @@ git push
 
 # Smart Resume Truth Verifier
 
-A **production-ready** full-stack platform for evidence-based resume verification. Verifies candidates using real GitHub API data, OCR-extracted LeetCode stats, and actual practice performance — not just self-reported claims.
+A **production-ready** full-stack platform for evidence-based resume verification. Verifies candidates using real GitHub API data, LeetCode stats, and actual practice performance — not just self-reported claims.
 
 ---
 
@@ -18,10 +18,9 @@ A **production-ready** full-stack platform for evidence-based resume verificatio
 
 ```
 smart-resume-verifier/
-├── frontend/              Next.js 14 + Tailwind CSS + Capacitor (Mobile)
+├── frontend/              Next.js 14 Web Frontend
 ├── backend/               Node.js + Express + Socket.IO + Firebase Admin
-├── python-ocr-service/    FastAPI + Tesseract OCR
-└── qa-testing/            E2E Selenium Testing Suite
+└── native-kotlin-app/     Native Android Kotlin Application
 ```
 
 ---
@@ -30,56 +29,45 @@ smart-resume-verifier/
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14, React 18, Tailwind CSS, Zustand, Recharts, Socket.IO Client |
-| Mobile | Capacitor (Android/iOS) |
+| Web Frontend | Next.js 14, React 18, Tailwind CSS, Zustand, Recharts, Socket.IO Client |
+| Android App | Native Kotlin, Android WebView, WebViewAssetLoader |
 | Backend | Node.js, Express, JWT, bcryptjs, Socket.IO, pdf-parse, BullMQ, Redis |
 | Database | Firebase Firestore (NoSQL) |
-| OCR | Python, FastAPI, Tesseract, Pillow |
-| AI | Google Gemini / Groq / OpenRouter |
-| Auth | JWT (RS256 ready), bcrypt (12 rounds), Firebase Auth |
+| AI | WebLLM (local browser), Ollama, Backend AI |
+| Auth | JWT, Firebase Auth |
 | Real-time | Socket.IO for live messaging |
-| Deployment | Vercel (Frontend), Render (Backend) |
+| Deployment | Vercel (Web), Render (Backend) |
 
 ---
 
 ## Prerequisites
 
 - Node.js v18+
-- Python 3.10+
-- Tesseract OCR
 - Firebase Project with Firestore enabled
-- Redis (for BullMQ)
-
-### Install Tesseract
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install tesseract-ocr
-```
-
-**macOS:**
-```bash
-brew install tesseract
-```
-
-**Windows:**
-Download installer from https://github.com/UB-Mannheim/tesseract/wiki
+- Redis (optional, backend falls back to in-process mock mode if unavailable)
 
 ---
 
-## Quick Start (Automated)
+## Quick Start (Local Development)
 
-If you have all prerequisites installed, you can initialize and run all services with:
+To run the web and backend services locally:
 
-```bash
-# 1. Start Redis for background queues
-docker run -d --name redis -p 6379:6379 redis
+1. **Start the Backend:**
+   ```bash
+   cd backend
+   npm install
+   npm run dev
+   ```
 
-# 2. Start all services (separate terminals)
-cd python-ocr-service && python main.py
-cd backend && npm run dev
-cd frontend && npm run dev
-```
+2. **Start the Web Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. **Open local application:**
+   Go to [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 

@@ -21,7 +21,7 @@ const getQuestions = async (req, res) => {
     } else {
       qRef = qRef.where('group_id', '==', null);
     }
-    
+
     const snap = await qRef.get();
     let questions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
@@ -61,7 +61,7 @@ const submitAnswer = async (req, res) => {
       .where('user_id', '==', req.user.id)
       .where('question_id', '==', question_id)
       .get();
-    
+
     const attemptCount = attemptsSnap.size;
     const maxAttempts = question.max_attempts || MAX_ATTEMPTS_PER_QUESTION;
 
@@ -96,7 +96,7 @@ const submitAnswer = async (req, res) => {
       for (const tag of question.tags) {
         const evidenceRef = db.collection('users').doc(req.user.id).collection('skill_evidence').doc(tag.toLowerCase());
         batch.set(evidenceRef, { practice_evidence: { correct_answers: admin.firestore.FieldValue.increment(1) }, updated_at: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-        
+
         // Skip direct skill verification update here for brevity, assume skill engine catches up
       }
       await batch.commit();
@@ -116,11 +116,11 @@ const submitAssignmentTest = async (req, res) => {
   const { assignment_id, answers } = req.body;
   if (!assignment_id || !answers) return res.status(400).json({ error: 'Missing data' });
   const userId = req.user.id;
-  
+
   try {
     const aDoc = await db.collection('assignments').doc(assignment_id).get();
     const assignmentName = aDoc.exists ? aDoc.data().name : 'Assignment';
-    
+
     let totalScore = 0;
     let correctCount = 0;
     const results = [];
@@ -130,14 +130,14 @@ const submitAssignmentTest = async (req, res) => {
       const qDoc = await db.collection('questions').doc(qId).get();
       if (!qDoc.exists) continue;
       const question = qDoc.data();
-      
+
       let is_correct = null;
       let score = 0;
       if (question.question_type === 'mcq' && question.correct_answer) {
         is_correct = String(ans || '').trim().toLowerCase() === String(question.correct_answer).trim().toLowerCase();
         score = is_correct ? (question.points || 10) : 0;
       }
-      
+
       const newAttempt = { user_id: userId, question_id: qId, submitted_answer: ans, is_correct, score, time_taken_seconds: 0, attempted_at: admin.firestore.FieldValue.serverTimestamp() };
       batch.set(db.collection('practice_attempts').doc(), newAttempt);
 
@@ -178,7 +178,7 @@ const endSession = async (req, res) => {
   try {
     const attemptsSnap = await db.collection('practice_attempts').where('user_id', '==', req.user.id).get();
     const recentAttempts = attemptsSnap.docs.map(d => d.data()).filter(a => question_ids.includes(a.question_id) && a.is_correct !== null);
-    
+
     const correct = recentAttempts.filter(a => a.is_correct).length;
     const totalScore = recentAttempts.reduce((s, a) => s + (a.score || 0), 0);
     const percentage = recentAttempts.length > 0 ? Math.round((correct / recentAttempts.length) * 100) : 0;
@@ -442,7 +442,7 @@ const getStarredQuestions = async (req, res) => {
 const bulkCreateQuestions = async (req, res) => {
   const { group_id, questions, assignment_name, expires_at } = req.body;
   if (!group_id || !Array.isArray(questions)) return res.status(400).json({ error: 'group_id and questions required' });
-  
+
   try {
     let assignmentId = null;
     if (assignment_name) {
@@ -497,7 +497,7 @@ The JSON array should exactly match this structure:
 
   try {
     const parsedData = await getAIResponse(prompt);
-    
+
     let generatedQuestions = [];
     if (Array.isArray(parsedData)) {
       generatedQuestions = parsedData;
@@ -569,7 +569,7 @@ const getAssignments = async (req, res) => {
     const groups = [];
     const assignments = [];
     const mSnap = await db.collection('group_members').where('user_id', '==', req.user.id).where('is_active', '==', true).get();
-    
+
     for (const mDoc of mSnap.docs) {
       const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
       if (gDoc.exists && !gDoc.data().is_archived) {
@@ -590,7 +590,7 @@ const getAssignmentQuestions = async (req, res) => {
   try {
     let qRef = db.collection('questions').where('group_id', '==', groupId).where('is_active', '==', true);
     if (assignmentId) qRef = qRef.where('assignment_id', '==', assignmentId);
-    
+
     const snap = await qRef.get();
     const questions = snap.docs.map(d => ({ id: d.id, ...d.data(), my_attempts: 0, last_result: null, is_expired: false }));
     res.json(questions);
