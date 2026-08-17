@@ -1,0 +1,16 @@
+{
+  "name": "appium-mobile-e2e-tests",
+  "version": "1.0.0",
+  "description": "Appium E2E Mobile Automation Tests for Smart Resume Verifier App",
+  "main": "tests/appium-mobile-tests.js",
+  "scripts": {
+    "test": "mocha tests/appium-mobile-tests.js --timeout 120000",
+    "report": "node generate-report.js"
+  },
+  "dependencies": {
+    "webdriverio": "^8.24.0",
+    "mocha": "^10.8.2",
+    "chai": "^4.5.0",
+    "exceljs": "^4.4.0"
+  }
+}

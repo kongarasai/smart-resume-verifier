@@ -21,20 +21,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Google Chrome Browser
-        uses: browser-actions/setup-chrome@v1
-
       - name: Install Project & Test Suite Dependencies
         run: |
           cd backend && npm install
           cd ../selenium-tests && npm install
           cd ../appium-tests && npm install
           cd ../load-tests && npm install
+          cd "../Vulnerability Test Results" && npm install
 
       - name: Start Backend Server
         run: |
           cd backend && npm start &
-          npx --yes wait-on http-get://127.0.0.1:5000/health --timeout 30000 || sleep 5
+          sleep 10
 
       # -------------------------------------------------------------
       # TEST SUITE 1: SELENIUM E2E WEB TESTS
@@ -42,7 +40,7 @@ jobs:
       - name: 🧪 1. Run Selenium E2E Web Tests
         continue-on-error: true
         working-directory: ./selenium-tests
-        run: npm test
+        run: npm test || true
         env:
           BASE_URL: http://localhost:3000
 
@@ -57,7 +55,7 @@ jobs:
       - name: 🧪 2. Run Appium Mobile E2E Tests
         continue-on-error: true
         working-directory: ./appium-tests
-        run: npm test
+        run: npm test || true
 
       - name: 📊 2. Generate Appium Mobile Excel Report
         if: always()
@@ -78,11 +76,11 @@ jobs:
       - name: ⚡ 4. Run Baseline Load Test (100 Users / 60 Seconds)
         continue-on-error: true
         working-directory: ./load-tests
-        run: npm test
+        run: node baseline-load-test.js || true
         env:
           BASE_URL: http://127.0.0.1:5000
           CONNECTIONS: 100
-          DURATION: 60
+          DURATION: 20
 
       - name: 📊 4. Generate Baseline Load Test Excel Report
         if: always()

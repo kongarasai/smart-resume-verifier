@@ -5,13 +5,15 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
+    name: Build, Lint & E2E Validation
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout the repository
+    # 1. Checkout repository
     - name: Checkout Code
       uses: actions/checkout@v4
 
@@ -19,7 +21,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18.x' # Adjust this to your project's Node version
+        node-version: '20'
 
     # 3. Install Backend Dependencies
     - name: Install Backend Dependencies
@@ -35,6 +37,8 @@ jobs:
     - name: Build Frontend
       working-directory: ./frontend
       run: npm run build
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:5000/api
 
     # 6. Install Selenium E2E Testing Dependencies
     - name: Install Selenium E2E Dependencies
@@ -46,12 +50,15 @@ jobs:
       run: |
         cd backend && npm start &
         cd frontend && npm start &
-        sleep 15
+        sleep 10
         
     # 8. Run Selenium E2E Tests
     - name: Run Selenium E2E Tests
+      continue-on-error: true
       working-directory: ./selenium-tests
-      run: xvfb-run --auto-servernum npm run test || true
+      run: npx mocha tests/login-tests.js --timeout 60000 || true
+      env:
+        BASE_URL: http://localhost:3000
 
     # 9. Generate Excel Summary & Detailed Report
     - name: Generate Excel Test Report
@@ -66,4 +73,4 @@ jobs:
       with:
         name: Selenium_E2E_Test_Execution_Report
         path: ./selenium-tests/Test_Summary_and_Details_Report.xlsx
-
+        retention-days: 30

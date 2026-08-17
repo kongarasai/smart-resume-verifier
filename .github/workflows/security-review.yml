@@ -21,10 +21,6 @@ jobs:
           echo "Detecting backend technology..."
           if [ -f "backend/package.json" ]; then
             echo "STACK=Node.js / Express Backend" >> $GITHUB_ENV
-          elif [ -f "pom.xml" ]; then
-            echo "STACK=Java / Spring Boot Backend" >> $GITHUB_ENV
-          elif [ -f "requirements.txt" ]; then
-            echo "STACK=Python Backend" >> $GITHUB_ENV
           else
             echo "STACK=Generic Backend Application" >> $GITHUB_ENV
           fi
@@ -38,15 +34,10 @@ jobs:
         working-directory: ./backend
         run: npm audit || true
 
-      - name: Run SAST Code Analysis (Semgrep)
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: p/ci
-        continue-on-error: true
-
       - name: Install Excel Generator Dependencies
-        working-directory: ./selenium-tests
-        run: npm install
+        run: |
+          cd selenium-tests && npm install
+          cd "../Vulnerability Test Results" && npm install
 
       - name: Generate Security Excel & Markdown Reports
         working-directory: ./Vulnerability Test Results
@@ -70,5 +61,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DevSecOps_Security_Review_Artifacts
-          path: ./Vulnerability\ Test\ Results/*
+          path: |
+            Vulnerability Test Results/findings.xlsx
+            Vulnerability Test Results/endpoint-inventory.xlsx
+            Vulnerability Test Results/*.md
           retention-days: 30

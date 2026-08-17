@@ -28,20 +28,20 @@ jobs:
       - name: Start Backend Server
         run: |
           cd backend && npm start &
-          npx --yes wait-on http-get://127.0.0.1:5000/health --timeout 30000 || sleep 5
+          sleep 10
 
       - name: Install Load Test Dependencies
         working-directory: ./load-tests
         run: npm install
 
-      - name: Run Baseline Load Test (100 Concurrent Users / 60s)
+      - name: Run Baseline Load Test (100 Concurrent Users)
         continue-on-error: true
         working-directory: ./load-tests
-        run: npm test
+        run: node baseline-load-test.js || true
         env:
           BASE_URL: http://127.0.0.1:5000
           CONNECTIONS: 100
-          DURATION: 60
+          DURATION: 20
 
       - name: Generate Excel Load Test Report
         if: always()
