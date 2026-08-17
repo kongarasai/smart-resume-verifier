@@ -87,9 +87,7 @@ const submitAnswer = async (req, res) => {
     };
     const attemptRef = await db.collection('practice_attempts').add(newAttempt);
 
-    await db.collection('users').doc(req.user.id).collection('progress_events').add({
-      event_type: 'practice_attempt', event_title: `Attempted: ${question.title}`, event_detail: is_correct ? 'Answered correctly!' : 'Incorrect answer.', points_gained: score, created_at: admin.firestore.FieldValue.serverTimestamp()
-    });
+    // Note: Do not log single question micro-events into timeline; whole session is logged on completion
 
     if (is_correct && question.tags) {
       const batch = db.batch();
@@ -176,21 +174,59 @@ const startSession = async (req, res) => {
 const endSession = async (req, res) => {
   const { category, question_ids, group_id } = req.body;
   try {
+    const qIdStrings = Array.isArray(question_ids) ? question_ids.map(String) : [];
     const attemptsSnap = await db.collection('practice_attempts').where('user_id', '==', req.user.id).get();
-    const recentAttempts = attemptsSnap.docs.map(d => d.data()).filter(a => question_ids.includes(a.question_id) && a.is_correct !== null);
+    
+    // Match attempts against answered question IDs
+    let recentAttempts = attemptsSnap.docs
+      .map(d => d.data())
+      .filter(a => (qIdStrings.length === 0 || qIdStrings.includes(String(a.question_id))) && a.is_correct !== null);
 
     const correct = recentAttempts.filter(a => a.is_correct).length;
     const totalScore = recentAttempts.reduce((s, a) => s + (a.score || 0), 0);
-    const percentage = recentAttempts.length > 0 ? Math.round((correct / recentAttempts.length) * 100) : 0;
+    const totalCount = recentAttempts.length > 0 ? recentAttempts.length : (qIdStrings.length > 0 ? qIdStrings.length : 1);
+    const percentage = totalCount > 0 ? Math.round((correct / totalCount) * 100) : 0;
 
     const newSession = {
-      user_id: req.user.id, category, total_questions: question_ids.length, correct_answers: correct, score_percentage: percentage, completed_at: admin.firestore.FieldValue.serverTimestamp()
+      user_id: req.user.id,
+      category: category || 'Practice',
+      total_questions: totalCount,
+      correct_answers: correct,
+      score_percentage: percentage,
+      completed_at: admin.firestore.FieldValue.serverTimestamp()
     };
     const sRef = await db.collection('practice_sessions').add(newSession);
 
     await db.collection('users').doc(req.user.id).collection('progress_events').add({
-      event_type: 'practice_completed', event_title: 'Practice Session Completed', event_detail: `${category}: ${correct}/${question_ids.length} correct`, points_gained: totalScore, created_at: admin.firestore.FieldValue.serverTimestamp()
+      event_type: 'practice_completed',
+      event_title: 'Practice Session Completed',
+      event_detail: `${category || 'Practice'}: ${correct}/${totalCount} correct (${percentage}%)`,
+      points_gained: totalScore,
+      created_at: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    // Automatically recalculate and sync confidence score
+    try {
+      const scoreDoc = await db.collection('confidence_scores').doc(req.user.id).get();
+      if (scoreDoc.exists) {
+        const cur = scoreDoc.data();
+        const newPracticeScore = Math.max(cur.practice_score || 0, percentage);
+        const overall = Math.round(
+          ((cur.github_score || 0) * 0.3) +
+          ((cur.skill_score || 60) * 0.3) +
+          (newPracticeScore * 0.2) +
+          ((cur.resume_score || 60) * 0.2)
+        );
+        await db.collection('confidence_scores').doc(req.user.id).set({
+          ...cur,
+          practice_score: newPracticeScore,
+          overall_score: overall,
+          calculated_at: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+    } catch (scErr) {
+      console.error('Failed to sync confidence score after practice:', scErr);
+    }
 
     if (group_id) {
       const gDoc = await db.collection('groups').doc(group_id).get();
@@ -199,9 +235,9 @@ const endSession = async (req, res) => {
       }
     }
 
-    res.json({ session: { id: sRef.id, ...newSession }, correct, total: question_ids.length, percentage, total_score: totalScore });
+    res.json({ session: { id: sRef.id, ...newSession }, correct, total: totalCount, percentage, total_score: totalScore });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to save session' });
+    res.status(500).json({ error: 'Failed to save session: ' + err.message });
   }
 };
 
@@ -210,8 +246,8 @@ const getMyProgress = async (req, res) => {
     const sSnap = await db.collection('practice_sessions').where('user_id', '==', req.user.id).get();
     let sessions = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     sessions = sessions.sort((a, b) => {
-      const t1 = a.completed_at?.toMillis ? a.completed_at.toMillis() : 0;
-      const t2 = b.completed_at?.toMillis ? b.completed_at.toMillis() : 0;
+      const t1 = a.completed_at?.toMillis ? a.completed_at.toMillis() : (a.completed_at ? new Date(a.completed_at).getTime() : 0);
+      const t2 = b.completed_at?.toMillis ? b.completed_at.toMillis() : (b.completed_at ? new Date(b.completed_at).getTime() : 0);
       return t2 - t1;
     });
 
@@ -252,13 +288,14 @@ const getMyProgress = async (req, res) => {
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const activeDays = new Set();
     aSnap.forEach(d => {
-      const ts = d.data().attempted_at?.toMillis ? d.data().attempted_at.toMillis() : 0;
+      const data = d.data();
+      const ts = data.attempted_at?.toMillis ? data.attempted_at.toMillis() : (data.created_at?.toMillis ? data.created_at.toMillis() : 0);
       if (ts > thirtyDaysAgo) {
         activeDays.add(new Date(ts).toDateString());
       }
     });
 
-    const overall = { total, correct, total_points };
+    const overall = { total, correct, total_points, accuracy: total > 0 ? Math.round((correct / total) * 100) : 0 };
     res.json({ sessions: sessions.slice(0, 20), overall, by_category, active_days_30: activeDays.size });
   } catch (err) {
     res.status(500).json({ error: 'Failed to load progress' });

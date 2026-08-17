@@ -32,7 +32,10 @@ const EVENT_COLORS: Record<string, string> = {
 export function ProgressTimeline({ events }: { events: any[] }) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  if (!events || events.length === 0) {
+  // Filter out individual question attempts — only show whole sessions and major milestones
+  const sessionEvents = (events || []).filter(e => e.event_type !== 'practice_attempt');
+
+  if (!sessionEvents || sessionEvents.length === 0) {
     return (
       <div className="text-center py-10 bg-ink-25 rounded-xl border border-ink-100">
         <Clock size={24} className="mx-auto text-ink-300 mb-2" />
@@ -52,7 +55,7 @@ export function ProgressTimeline({ events }: { events: any[] }) {
   // Grouping logic
   const groups: { label: string; type: 'day' | 'month'; events: any[] }[] = [];
   
-  events.forEach(ev => {
+  sessionEvents.forEach(ev => {
     const rawDate = ev.created_at || ev.timestamp || Date.now();
     const d = new Date(rawDate);
     const validDate = !isNaN(d.getTime()) ? d : new Date();

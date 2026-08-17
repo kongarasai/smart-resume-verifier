@@ -72,25 +72,34 @@ exports.saveHREvaluation = async (req, res) => {
 
 exports.getHREvaluation = async (req, res) => {
   const { candidateId } = req.params;
-  const hrId = req.user.id;
+  const hrId = req.user?.id;
   try {
     const snap = await db.collection('hr_evaluations')
       .where('candidate_id', '==', candidateId)
       .where('hr_id', '==', hrId)
-      .orderBy('created_at', 'desc')
-      .limit(1)
       .get();
       
-    res.json(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
+    if (snap.empty) {
+      return res.json(null);
+    }
+
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => {
+      const aTime = a.created_at?.toMillis ? a.created_at.toMillis() : (a.created_at ? new Date(a.created_at).getTime() : 0);
+      const bTime = b.created_at?.toMillis ? b.created_at.toMillis() : (b.created_at ? new Date(b.created_at).getTime() : 0);
+      return bTime - aTime;
+    });
+
+    res.json(docs[0] || null);
   } catch (err) {
-    console.error(err);
+    console.error('getHREvaluation Error:', err);
     res.status(500).json({ error: 'Failed to fetch evaluation' });
   }
 };
 
 exports.saveTeacherFeedback = async (req, res) => {
     const { candidateId } = req.params;
-    const teacherId = req.user.id;
+    const teacherId = req.user?.id;
     const { notes } = req.body;
   
     try {
@@ -122,19 +131,33 @@ exports.getTeacherFeedbacks = async (req, res) => {
     try {
       const snap = await db.collection('teacher_feedbacks')
         .where('candidate_id', '==', candidateId)
-        .orderBy('created_at', 'desc')
         .get();
         
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort((a, b) => {
+        const aTime = a.created_at?.toMillis ? a.created_at.toMillis() : (a.created_at ? new Date(a.created_at).getTime() : 0);
+        const bTime = b.created_at?.toMillis ? b.created_at.toMillis() : (b.created_at ? new Date(b.created_at).getTime() : 0);
+        return bTime - aTime;
+      });
+
       const feedbacks = [];
-      for (const doc of snap.docs) {
-        const data = doc.data();
-        const teacherDoc = await db.collection('users').doc(data.teacher_id).get();
-        const teacherName = teacherDoc.exists ? teacherDoc.data().full_name : 'Unknown Teacher';
-        feedbacks.push({ id: doc.id, teacher_name: teacherName, ...data });
+      for (const data of docs) {
+        let teacherName = 'Unknown Teacher';
+        if (data.teacher_id) {
+          try {
+            const teacherDoc = await db.collection('users').doc(data.teacher_id).get();
+            if (teacherDoc.exists) {
+              teacherName = teacherDoc.data().full_name || teacherDoc.data().email || 'Teacher';
+            }
+          } catch (e) {
+            // Keep default teacher name
+          }
+        }
+        feedbacks.push({ teacher_name: teacherName, ...data });
       }
       res.json(feedbacks);
     } catch (err) {
-      console.error(err);
+      console.error('getTeacherFeedbacks Error:', err);
       res.status(500).json({ error: 'Failed to fetch feedbacks' });
     }
 };

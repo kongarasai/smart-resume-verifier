@@ -10,14 +10,24 @@ node_modules/
 .next/
 out/
 
+# expo
+.expo/
+
 # env files
 .env
 .env.local
+.env*.local
+
+# secrets & keys
+serviceAccountKey.json
+*/serviceAccountKey.json
 
 # logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+backend/logs/ai-debug.txt
 
 # OS files
 .DS_Store
@@ -26,12 +36,18 @@ Thumbs.db
 # build
 dist/
 build/
+*.tsbuildinfo
 
 # cache
 .cache/
 
-# venv
+# venv & IDE
 venv/
 .idea/
-*.log
-*.local
+.vscode/
+
+# temp inspection scripts & images
+inspect_*.js
+temp_*.js
+mobile_screen.png
+mobile/find_jsx_errors.js

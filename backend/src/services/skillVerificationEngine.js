@@ -17,26 +17,34 @@ const LEVEL_ORDER = ['claimed', 'evidence', 'verified', 'strong_verified'];
 
 const deriveLevel = (src) => {
   const cnt = [src.has_resume, src.has_github, src.has_leetcode, src.has_practice, src.has_project].filter(Boolean).length;
-  if (cnt >= 3) return 'strong_verified';
-  if (src.has_resume && (src.has_github || src.has_leetcode) && src.has_practice) return 'strong_verified';
-  if (src.has_resume && src.has_practice) return 'verified';
-  if (src.has_resume && (src.has_github || src.has_leetcode || src.has_project)) return 'evidence';
-  if (cnt >= 2 && !src.has_resume) return 'evidence';
-  if (cnt >= 1) return 'claimed';
+  // Strong Verified ONLY if ALL 5 pillars are satisfied: Resume, GitHub, LeetCode, Practice, and Projects
+  if (cnt === 5 || (src.has_resume && src.has_github && src.has_leetcode && src.has_practice && src.has_project)) {
+    return 'strong_verified';
+  }
+  // Verified: Satisfied with 3 or 4 sources, or confirmed with Resume + Practice
+  if (cnt >= 3 || (src.has_resume && src.has_practice)) {
+    return 'verified';
+  }
+  // Evidence: At least 2 sources satisfied (e.g. Resume + LeetCode, GitHub + Projects, etc.)
+  if (cnt >= 2) {
+    return 'evidence';
+  }
+  // Claimed: 1 source or self-claimed
   return 'claimed';
 };
 
 const runVerification = async (userId) => {
-  const [resumeSnap, githubDoc, leetcodeDoc, practiceSnap, projectSnap] = await Promise.all([
-    db.collection('users').doc(userId).collection('skills').where('source', '==', 'resume').get(),
+  const [skillsSnap, githubDoc, leetcodeDoc, practiceSnap, projectSnap, existingVerifSnap] = await Promise.all([
+    db.collection('users').doc(userId).collection('skills').get(),
     db.collection('github_data').doc(userId).get(),
     db.collection('leetcode_data').doc(userId).get(),
     db.collection('users').doc(userId).collection('practice_attempts').where('is_correct', '==', true).get(),
-    db.collection('users').doc(userId).collection('projects').get()
+    db.collection('users').doc(userId).collection('projects').get(),
+    db.collection('skill_verifications').where('user_id', '==', userId).get()
   ]);
 
   const resume = new Set();
-  resumeSnap.forEach(doc => resume.add(normalise(doc.data().name)));
+  skillsSnap.forEach(doc => resume.add(normalise(doc.data().name)));
 
   const ghLangs = githubDoc.exists ? (githubDoc.data().languages || {}) : {};
   const github = new Set(Object.keys(ghLangs).map(l => normalise(l)));
@@ -94,6 +102,15 @@ const runVerification = async (userId) => {
     if (v.has_leetcode) upsertSkillInBatch(batch, userId, skillName, 'leetcode', v.verification_level);
     if (v.has_practice) upsertSkillInBatch(batch, userId, skillName, 'practice', v.verification_level);
   }
+
+  // Delete stale verifications that are no longer present in allSkills
+  existingVerifSnap.forEach(doc => {
+    const skillName = doc.data().skill_name;
+    if (skillName && !allSkills.has(skillName)) {
+      batch.delete(doc.ref);
+    }
+  });
+
   await batch.commit();
 
   const counts = { claimed: 0, evidence: 0, verified: 0, strong_verified: 0, total: allSkills.size };
@@ -116,11 +133,12 @@ const getVerificationSummary = async (req, res) => {
 
     const counts = { claimed: 0, evidence: 0, verified: 0, strong_verified: 0, total: skills.length };
     skills.forEach(r => {
-      const level = r.verification_level;
-      if (level === 'strong_verified') { counts.strong_verified++; counts.verified++; counts.evidence++; counts.claimed++; }
-      else if (level === 'verified') { counts.verified++; counts.evidence++; counts.claimed++; }
-      else if (level === 'evidence') { counts.evidence++; counts.claimed++; }
-      else if (level === 'claimed') { counts.claimed++; }
+      const level = r.verification_level || 'claimed';
+      if (counts[level] !== undefined) {
+        counts[level]++;
+      } else {
+        counts.claimed++;
+      }
     });
     res.json({ skills, counts });
   } catch (err) {
@@ -132,6 +150,12 @@ const triggerVerification = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
     const result = await runVerification(userId);
+    try {
+      const { recalculateUserScoreInternal } = require('./scoringService');
+      await recalculateUserScoreInternal(userId);
+    } catch (scoreErr) {
+      console.error('Failed to auto-recalculate score after verification:', scoreErr);
+    }
     res.json({ message: 'Verification complete', counts: result.counts });
   } catch (err) {
     res.status(500).json({ error: 'Verification failed: ' + err.message });

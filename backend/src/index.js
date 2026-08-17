@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 // ── 1. SECURITY MIDDLEWARE ────────────────────────────────────────────────────
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'same-origin' }, // Prevent cross-origin resource sharing
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow cross-origin API and resource requests
   contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
 }));
 

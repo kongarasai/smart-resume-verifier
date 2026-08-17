@@ -308,8 +308,11 @@ const updatePrivacy = async (req, res) => {
 const getTimeline = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
-    const snapshot = await db.collection('users').doc(userId).collection('progress_events').orderBy('created_at', 'desc').limit(50).get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const snapshot = await db.collection('users').doc(userId).collection('progress_events').orderBy('created_at', 'desc').limit(60).get();
+    const events = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(ev => ev.event_type !== 'practice_attempt'); // Show whole sessions & major milestones, not individual questions
+    res.json(events);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load timeline' });
   }

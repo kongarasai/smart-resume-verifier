@@ -142,14 +142,6 @@ export default function DashboardLayout({ children, requiredRole }: { children: 
             >
               <Menu size={20} />
             </button>
-            {pathname !== '/' && !pathname?.includes('dashboard') && (
-              <button 
-                onClick={() => router.back()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-ink-200 text-ink-600 text-xs font-medium shadow-sm hover:bg-ink-50 transition-all"
-              >
-                <ArrowLeft size={14} /> Back
-              </button>
-            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex flex-col items-end">

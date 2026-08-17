@@ -50,9 +50,21 @@ const calcGitHubScore = ({ repos, stars, commits, languages, followers, ageYears
 const fetchGitHubData = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
-    const profileDoc = await db.collection('profiles').doc(userId).get();
-    const githubUrl = profileDoc.exists ? profileDoc.data().github_url : null;
-    if (!githubUrl) return res.status(400).json({ error: 'No GitHub URL in profile. Add your GitHub URL first.' });
+    let githubUrl = req.body?.github_url || req.query?.github_url;
+    if (githubUrl) {
+      githubUrl = githubUrl.trim();
+      if (!githubUrl.includes('github.com')) {
+        githubUrl = `https://github.com/${githubUrl.replace(/^@/, '').replace(/^https?:\/\//, '')}`;
+      }
+      await db.collection('profiles').doc(userId).set({ 
+        github_url: githubUrl,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } else {
+      const profileDoc = await db.collection('profiles').doc(userId).get();
+      githubUrl = profileDoc.exists ? profileDoc.data().github_url : null;
+    }
+    if (!githubUrl) return res.status(400).json({ error: 'No GitHub URL provided. Please enter your GitHub URL or username.' });
 
     const username = extractUsername(githubUrl);
     if (!username) return res.status(400).json({ error: 'Invalid GitHub URL format. Expected: https://github.com/username' });
@@ -164,9 +176,15 @@ const getGitHubData = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   const resultDoc = await db.collection('github_data').doc(userId).get();
   const profileDoc = await db.collection('profiles').doc(userId).get();
-  const ghUrl = profileDoc.exists ? profileDoc.data().github_url : null;
-  const username = ghUrl ? extractUsername(ghUrl) : null;
-  res.json(resultDoc.exists ? { ...resultDoc.data(), username } : null);
+  const github_url = profileDoc.exists ? profileDoc.data().github_url : null;
+  const username = github_url ? extractUsername(github_url) : null;
+  if (resultDoc.exists) {
+    res.json({ ...resultDoc.data(), github_url, username: resultDoc.data().github_username || username });
+  } else if (github_url) {
+    res.json({ github_url, username, not_verified_yet: true });
+  } else {
+    res.json(null);
+  }
 };
 
 module.exports = { fetchGitHubData, getGitHubData };

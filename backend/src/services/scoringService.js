@@ -1,16 +1,18 @@
 /**
  * Scoring Service
  * ------------------
- * Truth Verification Engine Formula:
+ * Truth Verification Engine Formula (5 Pillars):
  * Final Score (0–100) = 
- *   - Coding Test Score (50%)
- *   - GitHub Authenticity Score (30%)
+ *   - Coding/Practice Score (20%)
+ *   - LeetCode Score (25%)
+ *   - GitHub Authenticity Score (20%)
  *   - Resume Skill Match Score (20%)
+ *   - Projects & Certifications (15%)
  *
  * Confidence Level:
- *   - 80–100 -> Highly Verified
- *   - 60–79 -> Moderately Verified
- *   - <60 -> Risky Candidate
+ *   - 80–100 -> high
+ *   - 60–79  -> medium
+ *   - <60    -> limited
  */
 const { db, admin } = require('../config/firebase');
 const axios = require('axios');
@@ -20,14 +22,30 @@ const MAX_SKILL_SCORE = 100;
 
 const computeSkillVerificationScore = async (userId) => {
   const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
-  let raw = 0;
+  
+  // Deduplicate case-insensitively, taking the highest verification level for each unique skill
+  const skillMap = {};
+  const levels = ['claimed', 'evidence', 'verified', 'strong_verified', 'expert'];
+  
   skillsSnap.docs.forEach(doc => {
-    const level = doc.data().verification_level;
+    const d = doc.data();
+    const name = (d.name || '').toLowerCase().trim();
+    if (!name) return;
+    const level = d.verification_level || 'claimed';
+    
+    if (!skillMap[name] || levels.indexOf(level) > levels.indexOf(skillMap[name])) {
+      skillMap[name] = level;
+    }
+  });
+
+  let raw = 0;
+  Object.values(skillMap).forEach(level => {
     if (level === 'claimed') raw += 10;
     else if (level === 'evidence') raw += 20;
     else if (level === 'verified') raw += 40;
     else if (level === 'strong_verified' || level === 'expert') raw += 50;
   });
+  
   return Math.min(Math.round((raw / 500) * 100), MAX_SKILL_SCORE);
 };
 
@@ -40,17 +58,38 @@ const computePracticeScore = async (userId) => {
       count++;
     }
   });
-  const codingSessionAvg = count > 0 ? total / count : 0;
-  
+  return count > 0 ? Math.min(Math.round(total / count), 100) : 0;
+};
+
+const computeLeetCodeScore = async (userId) => {
   const lcDoc = await db.collection('leetcode_data').doc(userId).get();
-  const lcScore = lcDoc.exists ? parseFloat(lcDoc.data().coding_evidence_score || 0) : 0;
-  
-  return Math.max(codingSessionAvg, lcScore, 0);
+  return lcDoc.exists ? Math.min(parseFloat(lcDoc.data().coding_evidence_score || 0), 100) : 0;
 };
 
 const computeGitHubScore = async (userId) => {
   const doc = await db.collection('github_data').doc(userId).get();
   return doc.exists ? parseFloat(doc.data().skill_match_score || 0) : 0;
+};
+
+const computeProjectCertScore = async (userId) => {
+  const [projectsSnap, certsSnap] = await Promise.all([
+    db.collection('users').doc(userId).collection('projects').get(),
+    db.collection('users').doc(userId).collection('certificates').get()
+  ]);
+  
+  let score = 0;
+  // Each project with GitHub link: 15pts, without: 10pts (max 60)
+  const projects = projectsSnap.docs.map(d => d.data());
+  projects.forEach(p => {
+    score += (p.github_url || p.project_url) ? 15 : 10;
+  });
+  score = Math.min(score, 60);
+  
+  // Each certificate: 10pts (max 40)
+  const certCount = certsSnap.docs.length;
+  score += Math.min(certCount * 10, 40);
+  
+  return Math.min(score, 100);
 };
 
 async function getFraudProbability(userId, overallScore, testScore, githubScore, skillScore) {
@@ -85,6 +124,87 @@ async function getFraudProbability(userId, overallScore, testScore, githubScore,
   return { prob: rawFraudProb, reasons };
 }
 
+const recalculateUserScoreInternal = async (userId) => {
+  const [skillScore, testScore, githubScore, leetcodeScore, projectCertScore] = await Promise.all([
+    computeSkillVerificationScore(userId),
+    computePracticeScore(userId),
+    computeGitHubScore(userId),
+    computeLeetCodeScore(userId),
+    computeProjectCertScore(userId)
+  ]);
+
+  // 5-PILLAR FORMULA:
+  // Coding/Practice 20% | LeetCode 25% | GitHub 20% | Skills 20% | Projects/Certs 15%
+  const overall = (testScore * 0.20) + (leetcodeScore * 0.25) + (githubScore * 0.20) + (skillScore * 0.20) + (projectCertScore * 0.15);
+  const finalScore = Math.round(overall);
+
+  // Confidence Level:
+  let confidenceLabel = 'limited';
+  if (finalScore >= 80) confidenceLabel = 'high';
+  else if (finalScore >= 60) confidenceLabel = 'medium';
+
+  // Fetch basic completeness profile to avoid schema breaking on unrelated sections
+  const profileDocScore = await db.collection('profiles').doc(userId).get();
+  const profileScore = profileDocScore.exists ? (profileDocScore.data().profile_completeness || 0) : 0;
+
+  // AI Fraud Risk Component
+  const fraudData = await getFraudProbability(userId, finalScore, testScore, githubScore, skillScore);
+  const fraudProbability = fraudData.prob;
+  
+  let fraudRiskLabel = 'Medium';
+  if (fraudProbability > 0.65) fraudRiskLabel = 'High';
+  else if (fraudProbability < 0.35) fraudRiskLabel = 'Low';
+
+  // Skill gaps logic
+  const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
+  const verifiedSet = new Set(skillsSnap.docs.map(d => (d.data().name || '').toLowerCase()));
+  const commonSkills = ['javascript', 'python', 'sql', 'git', 'docker', 'react', 'nodejs', 'aws', 'java'];
+  const skillGaps = commonSkills.filter(s => !verifiedSet.has(s));
+
+  const weakAreas = [];
+  if (skillScore < 50) weakAreas.push('Verify more skills via resume or manual upload');
+  if (testScore < 60) weakAreas.push('Improve coding test results on practice sessions');
+  if (leetcodeScore < 40) weakAreas.push('Solve more LeetCode problems to boost your score');
+  if (githubScore < 60) weakAreas.push('Enhance GitHub footprint and origin repositories');
+  if (projectCertScore < 30) weakAreas.push('Add projects and certifications to strengthen your profile');
+
+  const scoreData = {
+    user_id: userId,
+    github_score: Math.round(githubScore),
+    practice_score: Math.round(testScore),
+    coding_test_score: Math.round(testScore),
+    leetcode_score: Math.round(leetcodeScore),
+    profile_completeness_score: profileScore,
+    skill_match_score: Math.round(skillScore),
+    project_cert_score: Math.round(projectCertScore),
+    overall_score: finalScore,
+    confidence_label: confidenceLabel,
+    skill_gaps: skillGaps,
+    weak_areas: weakAreas,
+    fraud_probability: fraudProbability,
+    fraud_reasons: fraudData.reasons,
+    fraud_risk_level: fraudRiskLabel,
+    calculated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+
+  await db.collection('confidence_scores').doc(userId).set(scoreData, { merge: true });
+
+  return {
+    coding_test_score: Math.round(testScore),
+    leetcode_score: Math.round(leetcodeScore),
+    github_score: Math.round(githubScore),
+    skill_match_score: Math.round(skillScore),
+    project_cert_score: Math.round(projectCertScore),
+    overall_score: finalScore,
+    confidence_label: confidenceLabel,
+    fraud_probability: fraudProbability,
+    fraud_reasons: fraudData.reasons,
+    fraud_risk_level: fraudRiskLabel,
+    skill_gaps: skillGaps,
+    weak_areas: weakAreas
+  };
+};
+
 const calculateConfidenceScore = async (req, res) => {
   const userId = req.params.userId || req.user.id;
 
@@ -94,76 +214,8 @@ const calculateConfidenceScore = async (req, res) => {
   }
 
   try {
-    const [skillScore, testScore, githubScore] = await Promise.all([
-      computeSkillVerificationScore(userId),
-      computePracticeScore(userId),
-      computeGitHubScore(userId)
-    ]);
-
-    // NEW FORMULA:
-    const overall = (testScore * 0.50) + (githubScore * 0.30) + (skillScore * 0.20);
-    const finalScore = Math.round(overall);
-
-    // Confidence Level:
-    let confidenceLabel = 'Risky Candidate';
-    if (finalScore >= 80) confidenceLabel = 'Highly Verified';
-    else if (finalScore >= 60) confidenceLabel = 'Moderately Verified';
-
-    // Fetch basic completeness profile to avoid schema breaking on unrelated sections
-    const profileDocScore = await db.collection('profiles').doc(userId).get();
-    const profileScore = profileDocScore.exists ? (profileDocScore.data().profile_completeness || 0) : 0;
-
-    // AI Fraud Risk Component
-    const fraudData = await getFraudProbability(userId, finalScore, testScore, githubScore, skillScore);
-    const fraudProbability = fraudData.prob;
-    
-    let fraudRiskLabel = 'Medium';
-    if (fraudProbability > 0.65) fraudRiskLabel = 'High';
-    else if (fraudProbability < 0.35) fraudRiskLabel = 'Low';
-
-    // Skill gaps logic
-    const skillsSnap = await db.collection('users').doc(userId).collection('skills').get();
-    const verifiedSet = new Set(skillsSnap.docs.map(d => (d.data().name || '').toLowerCase()));
-    const commonSkills = ['javascript', 'python', 'sql', 'git', 'docker', 'react', 'nodejs', 'aws', 'java'];
-    const skillGaps = commonSkills.filter(s => !verifiedSet.has(s));
-
-    const weakAreas = [];
-    if (skillScore < 50) weakAreas.push('Verify more skills via resume or manual upload');
-    if (testScore < 60) weakAreas.push('Improve coding test results on SentryConnect or LeetCode');
-    if (githubScore < 60) weakAreas.push('Enhance GitHub footprint and origin repositories');
-
-    const scoreData = {
-      user_id: userId,
-      github_score: Math.round(githubScore),
-      practice_score: Math.round(testScore),
-      coding_evidence_score: Math.round(testScore),
-      profile_completeness_score: profileScore,
-      skill_match_score: Math.round(skillScore),
-      project_score: 0,
-      overall_score: finalScore,
-      confidence_label: confidenceLabel,
-      skill_gaps: skillGaps,
-      weak_areas: weakAreas,
-      fraud_probability: fraudProbability,
-      fraud_reasons: fraudData.reasons,
-      fraud_risk_level: fraudRiskLabel,
-      calculated_at: admin.firestore.FieldValue.serverTimestamp()
-    };
-
-    await db.collection('confidence_scores').doc(userId).set(scoreData, { merge: true });
-
-    res.json({
-      coding_test_score: Math.round(testScore),
-      github_score: Math.round(githubScore),
-      skill_match_score: Math.round(skillScore),
-      overall_score: finalScore,
-      confidence_label: confidenceLabel,
-      fraud_probability: fraudProbability,
-      fraud_reasons: fraudData.reasons,
-      fraud_risk_level: fraudRiskLabel,
-      skill_gaps: skillGaps,
-      weak_areas: weakAreas
-    });
+    const result = await recalculateUserScoreInternal(userId);
+    res.json(result);
   } catch (err) {
     console.error('Score error:', err);
     res.status(500).json({ error: 'Score calculation failed: ' + err.message });
@@ -268,5 +320,5 @@ const generateInterviewSuggestions = async (req, res) => {
   }
 };
 
-module.exports = { calculateConfidenceScore, getConfidenceScore, predictRisk, generateInterviewSuggestions };
+module.exports = { calculateConfidenceScore, getConfidenceScore, predictRisk, generateInterviewSuggestions, recalculateUserScoreInternal };
 

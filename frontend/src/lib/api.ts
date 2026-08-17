@@ -19,21 +19,43 @@ const axiosInstance: any = getAxiosInstance();
 
 const PRODUCTION_API = 'https://smart-resume-backend-7jeu.onrender.com/api';
 const cleanUrl = (url: string) => url.replace(/^"+|"+$/g, '').trim();
-const getApiUrl = () => {
-  // Custom Native Kotlin mobile app or mobile user agents — always use production backend (no localhost on phone)
-  if (typeof window !== 'undefined' && (!!(window as any).AndroidInterface || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent))) {
-    return PRODUCTION_API;
+
+export const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Explicit localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    }
+
+    // Local Area Network / WiFi IP (e.g. testing from mobile device on same WiFi)
+    if (
+      hostname.startsWith('192.168.') || 
+      hostname.startsWith('10.') || 
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
+    ) {
+      return `http://${hostname}:5000/api`;
+    }
+
+    // Native Kotlin WebView interface
+    if (!!(window as any).AndroidInterface) {
+      return PRODUCTION_API;
+    }
+
+    // Vercel deployment
+    if (hostname.includes('vercel.app')) {
+      return process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API;
+    }
   }
-  // Vercel deployment
-  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return PRODUCTION_API;
-  }
-  // Local development — use env var or fallback to localhost
-  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+
+  // Fallback for SSR or build time
+  if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   return 'http://localhost:5000/api';
 };
+
 const rawApiUrl = getApiUrl();
 const API_URL = rawApiUrl.endsWith('/') ? rawApiUrl : `${rawApiUrl}/`;
 
@@ -41,7 +63,7 @@ const api = typeof axiosInstance?.create === 'function'
   ? axiosInstance.create({
       baseURL: API_URL,
       withCredentials: true,
-      timeout: 15000, // Fast 15s timeout for snappy UI responses
+      timeout: 15000,
       headers: { 
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true'
@@ -56,12 +78,13 @@ const api = typeof axiosInstance?.create === 'function'
       interceptors: { request: { use: () => {} }, response: { use: () => {} } }
     } as any);
 
-// ── Request Interceptor: attach localStorage token + CSRF ──
+// ── Request Interceptor: attach dynamic baseURL + localStorage token + CSRF ──
 api.interceptors.request.use((config: any) => {
-  console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`);
   if (typeof window !== 'undefined') {
+    const currentBase = getApiUrl();
+    config.baseURL = currentBase.endsWith('/') ? currentBase : `${currentBase}/`;
+    
     // Only attach stored token if the caller didn't explicitly set one
-    // (e.g. loginWithToken passes a Firebase ID token — must not be overwritten)
     if (!config.headers['Authorization']) {
       const token = localStorage.getItem('token');
       if (token) config.headers['Authorization'] = `Bearer ${token}`;
@@ -74,6 +97,7 @@ api.interceptors.request.use((config: any) => {
       ?.split('=')[1];
     if (csrfToken) config.headers['X-CSRF-Token'] = csrfToken;
   }
+  console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
   return config;
 });
 

@@ -57,6 +57,11 @@ export default function ProgressPage() {
     { done: timeline.some(e=>e.event_type==='practice_completed'), action: 'Complete a practice session', gain: 'Boost practice score', href: '/candidate/practice' },
   ];
 
+  const completedCount = SUGGESTIONS.filter(s => s.done).length;
+  const progressPercent = Math.round((completedCount / SUGGESTIONS.length) * 100);
+  // Vanish completed items when progress reaches 50%
+  const visibleSuggestions = progressPercent >= 50 ? SUGGESTIONS.filter(s => !s.done) : SUGGESTIONS;
+
   if (loading) return <DashboardLayout requiredRole="candidate"><div className="flex items-center justify-center h-64"><div className="w-7 h-7 border-2 border-ink-900 border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
 
   return (
@@ -224,25 +229,30 @@ export default function ProgressPage() {
           </div>
 
           <div className="col-span-1 space-y-6">
-             {/* Next steps */}
-            <div className="card p-5">
-              <h2 className="section-title mb-4">Recommended Next Steps</h2>
-              <div className="space-y-3">
-                {SUGGESTIONS.map(({ action, gain, href, done }) => (
-                  <a key={action} href={href} className={clsx('flex items-center gap-3 p-3 border rounded-lg transition-all', 
-                    done ? 'bg-green-50/50 border-green-100 opacity-60' : 'bg-amber-50 border-amber-200 hover:bg-amber-100')}>
-                    <div className={clsx('w-5 h-5 rounded-full flex items-center justify-center shrink-0', done ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600')}>
-                      {done ? <CheckCircle size={12} /> : <Plus size={12} />}
-                    </div>
-                    <div className="min-w-0">
-                      <div className={clsx('text-xs font-medium truncate', done ? 'text-green-800' : 'text-amber-900')}>{action}</div>
-                      <div className={clsx('text-[10px]', done ? 'text-green-600' : 'text-amber-600')}>{done ? 'Completed' : gain}</div>
-                    </div>
-                    {!done && <ArrowRight size={10} className="ml-auto text-amber-400" />}
-                  </a>
-                ))}
+             {/* Next steps: vanish completed items when progress >= 50% */}
+            {visibleSuggestions.length > 0 && (
+              <div className="card p-5 animate-fade-in">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="section-title">Recommended Next Steps</h2>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">{progressPercent}% Completed</span>
+                </div>
+                <div className="space-y-3">
+                  {visibleSuggestions.map(({ action, gain, href, done }) => (
+                    <a key={action} href={href} className={clsx('flex items-center gap-3 p-3 border rounded-lg transition-all', 
+                      done ? 'bg-green-50/50 border-green-100 opacity-60' : 'bg-amber-50 border-amber-200 hover:bg-amber-100')}>
+                      <div className={clsx('w-5 h-5 rounded-full flex items-center justify-center shrink-0', done ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600')}>
+                        {done ? <CheckCircle size={12} /> : <Plus size={12} />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className={clsx('text-xs font-medium truncate', done ? 'text-green-800' : 'text-amber-900')}>{action}</div>
+                        <div className={clsx('text-[10px]', done ? 'text-green-600' : 'text-amber-600')}>{done ? 'Completed' : gain}</div>
+                      </div>
+                      {!done && <ArrowRight size={10} className="ml-auto text-amber-400" />}
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Streak/Activity card */}
             <div className="card p-5 bg-ink-900 text-white">

@@ -20,9 +20,11 @@ export function ConfidenceMeter({ score, compact }: ScoreProps) {
   const Icon = cfg.icon;
 
   const bars = [
-    { label: 'Coding (50%)', value: score.coding_test_score ?? score.practice_score ?? 0, color: '#d4820a' },
-    { label: 'GitHub (30%)', value: score.github_score ?? 0, color: '#1a6fa8' },
+    { label: 'Coding (20%)', value: score.coding_test_score ?? score.practice_score ?? 0, color: '#d4820a' },
+    { label: 'LeetCode (25%)', value: score.leetcode_score ?? 0, color: '#7c3aed' },
+    { label: 'GitHub (20%)', value: score.github_score ?? 0, color: '#1a6fa8' },
     { label: 'Skills (20%)', value: score.skill_match_score ?? score.profile_completeness_score ?? 0, color: '#2d9e5f' },
+    { label: 'Projects (15%)', value: score.project_cert_score ?? 0, color: '#e11d48' },
   ];
 
   const overallScore = score.overall_score ?? 0;

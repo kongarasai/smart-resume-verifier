@@ -21,6 +21,19 @@ if (getApps().length === 0) {
     } catch (e) {
       console.warn('FIREBASE_SERVICE_ACCOUNT parse skipped/failed:', e.message);
     }
+  } else {
+    const fs = require('fs');
+    const path = require('path');
+    const keyPath = path.join(__dirname, '../../serviceAccountKey.json');
+    if (fs.existsSync(keyPath)) {
+      try {
+        const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+        credential = cert(serviceAccount);
+        console.log('Firebase Admin loaded credential from serviceAccountKey.json');
+      } catch (e) {
+        console.warn('serviceAccountKey.json load failed:', e.message);
+      }
+    }
   }
 
   try {

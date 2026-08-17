@@ -1,8 +1,73 @@
 const { db, admin } = require('../config/firebase');
 const { recalculateGroupRanking } = require('../services/rankingService');
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 const MAX_GROUPS_PER_WORKSPACE = 5;
+
+/**
+ * Helper: Resolve canonical user record by email and optionally expected role.
+ * Prioritizes Firebase Auth UID, then existing Firestore user docs.
+ */
+const resolveCanonicalUserByEmail = async (email, expectedRole = null) => {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  if (!cleanEmail) return null;
+
+  // 1. Try Firebase Admin Auth to get the canonical UID
+  let authUid = null;
+  let authUserRecord = null;
+  try {
+    authUserRecord = await admin.auth().getUserByEmail(cleanEmail);
+    authUid = authUserRecord.uid;
+  } catch (e) {}
+
+  // 2. Look in Firestore users collection
+  const uSnap = await db.collection('users').where('email', '==', cleanEmail).get();
+  
+  if (!uSnap.empty) {
+    // If authUid matches one of the docs, use that one
+    let targetDoc = authUid ? uSnap.docs.find(d => d.id === authUid) : null;
+    if (!targetDoc && expectedRole) {
+      targetDoc = uSnap.docs.find(d => d.data().role === expectedRole);
+    }
+    if (!targetDoc) {
+      targetDoc = uSnap.docs[0];
+    }
+    return { id: targetDoc.id, ...targetDoc.data() };
+  }
+
+  // 3. If found in Firebase Auth but doc not yet in Firestore, create it
+  if (authUid && authUserRecord) {
+    const newUser = {
+      id: authUid,
+      email: cleanEmail,
+      full_name: authUserRecord.displayName || cleanEmail.split('@')[0],
+      role: expectedRole || 'candidate',
+      photo_url: authUserRecord.photoURL || '',
+      is_active: true,
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      last_login: admin.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('users').doc(authUid).set(newUser, { merge: true });
+    return newUser;
+  }
+
+  return null;
+};
+
+const getMentorIds = async (req) => {
+  const ids = new Set([req.user.id]);
+  if (req.user.email) {
+    const cleanEmail = req.user.email.toLowerCase().trim();
+    const uSnap = await db.collection('users').where('email', '==', cleanEmail).get();
+    uSnap.docs.forEach(d => ids.add(d.id));
+    try {
+      const authUser = await admin.auth().getUserByEmail(cleanEmail);
+      if (authUser?.uid) ids.add(authUser.uid);
+    } catch (e) {}
+  }
+  return ids;
+};
 
 // ── WORKSPACES ──
 const createWorkspace = async (req, res) => {
@@ -24,13 +89,19 @@ const createWorkspace = async (req, res) => {
 
 const getMyWorkspaces = async (req, res) => {
   try {
-    const snap = await db.collection('workspaces').where('mentor_id', '==', req.user.id).get();
+    const mentorIds = await getMentorIds(req);
+    const snap = await db.collection('workspaces').get();
     const workspaces = [];
     for (const doc of snap.docs) {
-      const gSnap = await db.collection('groups').where('workspace_id', '==', doc.id).where('is_archived', '==', false).get();
-      workspaces.push({ id: doc.id, ...doc.data(), group_count: gSnap.size });
+      if (mentorIds.has(doc.data().mentor_id)) {
+        if (doc.data().mentor_id !== req.user.id) {
+          await doc.ref.update({ mentor_id: req.user.id });
+        }
+        const gSnap = await db.collection('groups').where('workspace_id', '==', doc.id).where('is_archived', '==', false).get();
+        workspaces.push({ id: doc.id, ...doc.data(), group_count: gSnap.size });
+      }
     }
-    workspaces.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
+    workspaces.sort((a, b) => (b.created_at?.toMillis?.() || 0) - (a.created_at?.toMillis?.() || 0));
     res.json(workspaces);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load workspaces' });
@@ -39,9 +110,10 @@ const getMyWorkspaces = async (req, res) => {
 
 const deleteWorkspace = async (req, res) => {
   try {
+    const mentorIds = await getMentorIds(req);
     const docRef = db.collection('workspaces').doc(req.params.id);
     const doc = await docRef.get();
-    if (!doc.exists || doc.data().mentor_id !== req.user.id) return res.status(404).json({ error: 'Workspace not found' });
+    if (!doc.exists || !mentorIds.has(doc.data().mentor_id)) return res.status(404).json({ error: 'Workspace not found' });
     await docRef.delete();
     res.json({ message: 'Workspace deleted successfully' });
   } catch (err) {
@@ -51,8 +123,13 @@ const deleteWorkspace = async (req, res) => {
 
 const getTeacherWorkspaces = async (req, res) => {
   try {
+    const teacherIds = new Set([req.user.id]);
+    if (req.user.email) {
+      const uSnap = await db.collection('users').where('email', '==', req.user.email.toLowerCase()).get();
+      uSnap.docs.forEach(d => teacherIds.add(d.id));
+    }
+
     const membersSnap = await db.collection('group_members')
-      .where('user_id', '==', req.user.id)
       .where('role', '==', 'teacher')
       .where('is_active', '==', true)
       .get();
@@ -61,20 +138,27 @@ const getTeacherWorkspaces = async (req, res) => {
     const workspaces = [];
     
     for (const mDoc of membersSnap.docs) {
-      const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
-      if (gDoc.exists && !gDoc.data().is_archived) {
-        const wsId = gDoc.data().workspace_id;
-        if (!workspaceIds.has(wsId)) {
-          workspaceIds.add(wsId);
-          const wDoc = await db.collection('workspaces').doc(wsId).get();
-          if (wDoc.exists) {
-            workspaces.push({ id: wDoc.id, ...wDoc.data(), mentor_id: gDoc.data().mentor_id });
+      const mData = mDoc.data();
+      if (teacherIds.has(mData.user_id)) {
+        if (mData.user_id !== req.user.id) {
+          await mDoc.ref.update({ user_id: req.user.id });
+        }
+        const gDoc = await db.collection('groups').doc(mData.group_id).get();
+        if (gDoc.exists && !gDoc.data().is_archived) {
+          const wsId = gDoc.data().workspace_id;
+          if (!workspaceIds.has(wsId)) {
+            workspaceIds.add(wsId);
+            const wDoc = await db.collection('workspaces').doc(wsId).get();
+            if (wDoc.exists) {
+              workspaces.push({ id: wDoc.id, ...wDoc.data(), mentor_id: gDoc.data().mentor_id });
+            }
           }
         }
       }
     }
     res.json(workspaces);
   } catch (err) {
+    logger.error('Failed to load teacher workspaces:', err);
     res.status(500).json({ error: 'Failed to load workspaces' });
   }
 };
@@ -84,8 +168,9 @@ const createGroup = async (req, res) => {
   const { workspace_id, name, description } = req.body;
   if (!workspace_id || !name?.trim()) return res.status(400).json({ error: 'workspace_id and name required' });
   try {
+    const mentorIds = await getMentorIds(req);
     const wDoc = await db.collection('workspaces').doc(workspace_id).get();
-    if (!wDoc.exists || wDoc.data().mentor_id !== req.user.id) return res.status(403).json({ error: 'Workspace not found or not yours' });
+    if (!wDoc.exists || !mentorIds.has(wDoc.data().mentor_id)) return res.status(403).json({ error: 'Workspace not found or not yours' });
 
     const gSnap = await db.collection('groups').where('workspace_id', '==', workspace_id).where('is_archived', '==', false).get();
     if (gSnap.size >= MAX_GROUPS_PER_WORKSPACE) {
@@ -120,42 +205,70 @@ const getGroups = async (req, res) => {
   try {
     const groups = [];
     if (req.user.role === 'mentor') {
-      let gQuery = db.collection('groups').where('mentor_id', '==', req.user.id).where('is_archived', '==', false);
-      if (workspace_id) gQuery = gQuery.where('workspace_id', '==', workspace_id);
-      const snap = await gQuery.get();
+      const mentorIds = await getMentorIds(req);
+      const snap = await db.collection('groups').where('is_archived', '==', false).get();
       
       for (const doc of snap.docs) {
-        const wDoc = await db.collection('workspaces').doc(doc.data().workspace_id).get();
-        const mSnap = await db.collection('group_members').where('group_id', '==', doc.id).where('is_active', '==', true).get();
-        groups.push({ id: doc.id, ...doc.data(), workspace_name: wDoc.exists ? wDoc.data().name : '', member_count: mSnap.size });
+        if (mentorIds.has(doc.data().mentor_id)) {
+          if (doc.data().mentor_id !== req.user.id) {
+            await doc.ref.update({ mentor_id: req.user.id });
+          }
+          if (workspace_id && doc.data().workspace_id !== workspace_id) continue;
+          const wDoc = await db.collection('workspaces').doc(doc.data().workspace_id).get();
+          const mSnap = await db.collection('group_members').where('group_id', '==', doc.id).where('is_active', '==', true).get();
+          groups.push({ id: doc.id, ...doc.data(), workspace_name: wDoc.exists ? wDoc.data().name : '', member_count: mSnap.size });
+        }
       }
     } else if (req.user.role === 'teacher') {
-      const mSnap = await db.collection('group_members').where('user_id', '==', req.user.id).where('role', '==', 'teacher').where('is_active', '==', true).get();
+      const teacherIds = new Set([req.user.id]);
+      if (req.user.email) {
+        const uSnap = await db.collection('users').where('email', '==', req.user.email.toLowerCase()).get();
+        uSnap.docs.forEach(d => teacherIds.add(d.id));
+      }
+
+      const mSnap = await db.collection('group_members')
+        .where('role', '==', 'teacher')
+        .where('is_active', '==', true)
+        .get();
+
+      const seenGroupIds = new Set();
       for (const mDoc of mSnap.docs) {
-        const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
-        if (gDoc.exists && !gDoc.data().is_archived) {
-          if (workspace_id && gDoc.data().workspace_id !== workspace_id) continue;
-          const wDoc = await db.collection('workspaces').doc(gDoc.data().workspace_id).get();
-          const allMSnap = await db.collection('group_members').where('group_id', '==', gDoc.id).where('is_active', '==', true).get();
-          groups.push({ id: gDoc.id, ...gDoc.data(), workspace_name: wDoc.exists ? wDoc.data().name : '', member_count: allMSnap.size });
+        const mData = mDoc.data();
+        if (teacherIds.has(mData.user_id)) {
+          if (mData.user_id !== req.user.id) {
+            await mDoc.ref.update({ user_id: req.user.id });
+          }
+
+          if (!seenGroupIds.has(mData.group_id)) {
+            seenGroupIds.add(mData.group_id);
+            const gDoc = await db.collection('groups').doc(mData.group_id).get();
+            if (gDoc.exists && !gDoc.data().is_archived) {
+              if (workspace_id && gDoc.data().workspace_id !== workspace_id) continue;
+              const wDoc = await db.collection('workspaces').doc(gDoc.data().workspace_id).get();
+              const allMSnap = await db.collection('group_members').where('group_id', '==', gDoc.id).where('is_active', '==', true).get();
+              groups.push({ id: gDoc.id, ...gDoc.data(), workspace_name: wDoc.exists ? wDoc.data().name : '', member_count: allMSnap.size });
+            }
+          }
         }
       }
     } else {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    groups.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
+    groups.sort((a, b) => (b.created_at?.toMillis?.() || 0) - (a.created_at?.toMillis?.() || 0));
     res.json(groups);
   } catch (err) {
+    logger.error('Failed to load groups:', err);
     res.status(500).json({ error: 'Failed to load groups' });
   }
 };
 
 const archiveGroup = async (req, res) => {
   try {
+    const mentorIds = await getMentorIds(req);
     const gRef = db.collection('groups').doc(req.params.id);
     const doc = await gRef.get();
-    if (!doc.exists || doc.data().mentor_id !== req.user.id) return res.status(404).json({ error: 'Group not found' });
+    if (!doc.exists || !mentorIds.has(doc.data().mentor_id)) return res.status(404).json({ error: 'Group not found' });
     
     await gRef.update({ is_archived: true, archived_at: admin.firestore.FieldValue.serverTimestamp() });
     const updated = await gRef.get();
@@ -170,8 +283,9 @@ const addMembersByEmail = async (req, res) => {
   const { group_id, emails, role: memberRole = 'candidate' } = req.body;
   if (!group_id || !emails?.length) return res.status(400).json({ error: 'group_id and emails[] required' });
 
+  const mentorIds = await getMentorIds(req);
   const groupDoc = await db.collection('groups').doc(group_id).get();
-  if (!groupDoc.exists || groupDoc.data().mentor_id !== req.user.id || groupDoc.data().is_archived) {
+  if (!groupDoc.exists || !mentorIds.has(groupDoc.data().mentor_id) || groupDoc.data().is_archived) {
     return res.status(403).json({ error: 'Group not found or not yours' });
   }
   const groupName = groupDoc.data().name;
@@ -187,13 +301,14 @@ const addMembersByEmail = async (req, res) => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) continue;
 
-    const uSnap = await db.collection('users').where('email', '==', trimmed).where('role', '==', allowedRole).get();
-    if (uSnap.empty) {
+    const userObj = await resolveCanonicalUserByEmail(trimmed, allowedRole);
+    if (!userObj) {
       summary.not_registered.push(trimmed);
       continue;
     }
-    const userId = uSnap.docs[0].id;
+    const userId = userObj.id;
 
+    // Check if user is already in group under this UID
     const existingMSnap = await db.collection('group_members').where('group_id', '==', group_id).where('user_id', '==', userId).get();
     
     if (!existingMSnap.empty) {
@@ -205,7 +320,7 @@ const addMembersByEmail = async (req, res) => {
         summary.added++;
       }
     } else {
-      if (allowedRole === 'candidate' && currentCandidates + summary.added >= 50) { // MAX members
+      if (allowedRole === 'candidate' && currentCandidates + summary.added >= 50) {
         summary.skipped++; continue;
       }
       await db.collection('group_members').add({
@@ -222,7 +337,6 @@ const addMembersByEmail = async (req, res) => {
     }
   }
 
-  // Not strictly calling SQL recalculateGroupRanking here since it's firestore now. We'll handle ranks differently in NoSQL.
   res.json(summary);
 };
 
@@ -230,13 +344,22 @@ const addTeacherToGroup = async (req, res) => {
   const { group_id, email } = req.body;
   if (!group_id || !email) return res.status(400).json({ error: 'group_id and email required' });
 
+  const mentorIds = await getMentorIds(req);
   const groupDoc = await db.collection('groups').doc(group_id).get();
-  if (!groupDoc.exists || groupDoc.data().mentor_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+  if (!groupDoc.exists || !mentorIds.has(groupDoc.data().mentor_id)) return res.status(403).json({ error: 'Not authorized' });
 
-  const uSnap = await db.collection('users').where('email', '==', email.toLowerCase()).where('role', '==', 'teacher').get();
-  if (uSnap.empty) return res.status(404).json({ error: `No teacher account found with email "${email}".` });
+  const teacher = await resolveCanonicalUserByEmail(email, 'teacher');
+  if (!teacher) {
+    return res.status(404).json({ error: `No teacher account found with email "${email}". Make sure the teacher has registered.` });
+  }
 
-  const userId = uSnap.docs[0].id;
+  // Ensure role is set to teacher in user document if not already
+  if (teacher.role !== 'teacher') {
+    await db.collection('users').doc(teacher.id).update({ role: 'teacher' });
+    teacher.role = 'teacher';
+  }
+
+  const userId = teacher.id;
   const existingMSnap = await db.collection('group_members').where('group_id', '==', group_id).where('user_id', '==', userId).get();
 
   if (!existingMSnap.empty) {
@@ -250,13 +373,14 @@ const addTeacherToGroup = async (req, res) => {
   const { sendNotification } = require('./notificationController');
   await sendNotification(req.app, userId, 'group_added', 'Added as Teacher', `You've been added as a teacher to group "${groupDoc.data().name}"`, group_id);
 
-  res.json({ message: `${uSnap.docs[0].data().full_name} added as teacher`, teacher: { id: userId, ...uSnap.docs[0].data() } });
+  res.json({ message: `${teacher.full_name || teacher.email} added as teacher`, teacher });
 };
 
 const removeMember = async (req, res) => {
   const { group_id, user_id } = req.body;
+  const mentorIds = await getMentorIds(req);
   const groupDoc = await db.collection('groups').doc(group_id).get();
-  if (!groupDoc.exists || groupDoc.data().mentor_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+  if (!groupDoc.exists || !mentorIds.has(groupDoc.data().mentor_id)) return res.status(403).json({ error: 'Not authorized' });
 
   const mSnap = await db.collection('group_members').where('group_id', '==', group_id).where('user_id', '==', user_id).get();
   if (!mSnap.empty) {
@@ -288,19 +412,18 @@ const getGroupMembers = async (req, res) => {
         group_role: data.role,
         joined_at: data.created_at,
         user_id: data.user_id,
-        full_name: u.full_name,
-        email: u.email,
-        photo_url: u.photo_url,
-        headline: p.headline,
+        full_name: u.full_name || u.email?.split('@')[0] || 'User',
+        email: u.email || '',
+        photo_url: u.photo_url || '',
+        headline: p.headline || '',
         profile_completeness: p.profile_completeness || 0,
-        career_readiness: p.career_readiness || 0,
+        career_readiness: p.career_readiness || 'beginner',
         confidence_score: cs.overall_score || 0,
         rank_position: 0, rank_score: 0, rank_change: 0,
         last_practice: null
       });
     }
     
-    // Simplistic sorting for now since rankings need NoSQL refactoring
     members.sort((a, b) => {
       if (a.group_role !== b.group_role) return a.group_role === 'teacher' ? -1 : 1;
       return b.confidence_score - a.confidence_score;
@@ -308,6 +431,7 @@ const getGroupMembers = async (req, res) => {
 
     res.json(members);
   } catch (err) {
+    logger.error('Failed to load members:', err);
     res.status(500).json({ error: 'Failed to load members' });
   }
 };
@@ -388,27 +512,45 @@ const getGroupAnnouncements = async (req, res) => {
 
 const getMyGroups = async (req, res) => {
   try {
-    const mSnap = await db.collection('group_members').where('user_id', '==', req.user.id).where('is_active', '==', true).get();
+    const userIds = new Set([req.user.id]);
+    if (req.user.email) {
+      const uSnap = await db.collection('users').where('email', '==', req.user.email.toLowerCase()).get();
+      uSnap.docs.forEach(d => userIds.add(d.id));
+    }
+
+    const mSnap = await db.collection('group_members').where('is_active', '==', true).get();
     const groups = [];
+    const seenGroupIds = new Set();
+
     for (const mDoc of mSnap.docs) {
-      const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
-      if (gDoc.exists && !gDoc.data().is_archived) {
-        const wDoc = await db.collection('workspaces').doc(gDoc.data().workspace_id).get();
-        const mentorDoc = await db.collection('users').doc(gDoc.data().mentor_id).get();
-        const candSnap = await db.collection('group_members').where('group_id', '==', gDoc.id).where('role', '==', 'candidate').where('is_active', '==', true).get();
-        
-        groups.push({
-          id: gDoc.id, ...gDoc.data(),
-          workspace_name: wDoc.exists ? wDoc.data().name : '',
-          mentor_name: mentorDoc.exists ? mentorDoc.data().full_name : '',
-          candidate_count: candSnap.size,
-          rank_position: 0, total_score: 0, rank_change: 0
-        });
+      const mData = mDoc.data();
+      if (userIds.has(mData.user_id)) {
+        if (mData.user_id !== req.user.id) {
+          await mDoc.ref.update({ user_id: req.user.id });
+        }
+        if (!seenGroupIds.has(mData.group_id)) {
+          seenGroupIds.add(mData.group_id);
+          const gDoc = await db.collection('groups').doc(mData.group_id).get();
+          if (gDoc.exists && !gDoc.data().is_archived) {
+            const wDoc = await db.collection('workspaces').doc(gDoc.data().workspace_id).get();
+            const mentorDoc = await db.collection('users').doc(gDoc.data().mentor_id).get();
+            const candSnap = await db.collection('group_members').where('group_id', '==', gDoc.id).where('role', '==', 'candidate').where('is_active', '==', true).get();
+            
+            groups.push({
+              id: gDoc.id, ...gDoc.data(),
+              workspace_name: wDoc.exists ? wDoc.data().name : '',
+              mentor_name: mentorDoc.exists ? mentorDoc.data().full_name : '',
+              candidate_count: candSnap.size,
+              rank_position: 0, total_score: 0, rank_change: 0
+            });
+          }
+        }
       }
     }
-    groups.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
+    groups.sort((a, b) => (b.created_at?.toMillis?.() || 0) - (a.created_at?.toMillis?.() || 0));
     res.json(groups);
   } catch (err) {
+    logger.error('Failed to load my groups:', err);
     res.status(500).json({ error: 'Failed to load groups' });
   }
 };
@@ -416,9 +558,27 @@ const getMyGroups = async (req, res) => {
 const getGroupQuestions = async (req, res) => {
   const { groupId } = req.params;
   try {
-    const mSnap = await db.collection('group_members').where('group_id', '==', groupId).where('user_id', '==', req.user.id).where('is_active', '==', true).get();
+    const isMentorOrTeacher = ['mentor', 'teacher', 'admin'].includes(req.user.role);
     const gDoc = await db.collection('groups').doc(groupId).get();
-    if (mSnap.empty && (!gDoc.exists || gDoc.data().mentor_id !== req.user.id)) return res.status(403).json({ error: 'Not a member of this group' });
+    
+    let isMember = false;
+    if (req.user.role === 'teacher') {
+      const teacherIds = new Set([req.user.id]);
+      if (req.user.email) {
+        const uSnap = await db.collection('users').where('email', '==', req.user.email.toLowerCase()).get();
+        uSnap.docs.forEach(d => teacherIds.add(d.id));
+      }
+      const mSnap = await db.collection('group_members').where('group_id', '==', groupId).where('role', '==', 'teacher').where('is_active', '==', true).get();
+      isMember = mSnap.docs.some(d => teacherIds.has(d.data().user_id));
+    } else {
+      const mSnap = await db.collection('group_members').where('group_id', '==', groupId).where('user_id', '==', req.user.id).where('is_active', '==', true).get();
+      isMember = !mSnap.empty;
+    }
+
+    const isOwner = gDoc.exists && (gDoc.data().mentor_id === req.user.id);
+    if (!isMember && !isMentorOrTeacher && !isOwner) {
+      return res.status(403).json({ error: 'Not a member of this group' });
+    }
 
     const qSnap = await db.collection('questions').where('group_id', '==', groupId).where('is_active', '==', true).get();
     const questions = [];
@@ -426,35 +586,57 @@ const getGroupQuestions = async (req, res) => {
     
     for (const doc of qSnap.docs) {
       const q = doc.data();
-      const uDoc = await db.collection('users').doc(q.created_by).get();
+      let uDoc = null;
+      if (q.created_by && typeof q.created_by === 'string') {
+        try {
+          uDoc = await db.collection('users').doc(q.created_by).get();
+        } catch (e) {}
+      }
       
       let assignmentName = null;
       let expiresAt = q.expires_at;
-      if (q.assignment_id) {
-        const aDoc = await db.collection('assignments').doc(q.assignment_id).get();
-        if (aDoc.exists) {
-          assignmentName = aDoc.data().name;
-          if (!expiresAt) expiresAt = aDoc.data().expires_at;
-        }
+      if (q.assignment_id && typeof q.assignment_id === 'string') {
+        try {
+          const aDoc = await db.collection('assignments').doc(q.assignment_id).get();
+          if (aDoc.exists) {
+            assignmentName = aDoc.data().name;
+            if (!expiresAt) expiresAt = aDoc.data().expires_at;
+          }
+        } catch (e) {}
       }
 
-      const attemptsSnap = await db.collection('practice_attempts').where('question_id', '==', doc.id).where('user_id', '==', req.user.id).orderBy('attempted_at', 'desc').get();
+      let attemptsDocs = [];
+      try {
+        const attemptsSnap = await db.collection('practice_attempts').where('question_id', '==', doc.id).where('user_id', '==', req.user.id).get();
+        attemptsDocs = attemptsSnap.docs || [];
+      } catch (e) {}
       
+      attemptsDocs.sort((a, b) => {
+        const timeA = a.data().attempted_at?.toDate ? a.data().attempted_at.toDate().getTime() : (new Date(a.data().attempted_at || 0).getTime());
+        const timeB = b.data().attempted_at?.toDate ? b.data().attempted_at.toDate().getTime() : (new Date(b.data().attempted_at || 0).getTime());
+        return timeB - timeA;
+      });
+
       questions.push({
         id: doc.id, ...q,
-        created_by_name: uDoc.exists ? uDoc.data().full_name : 'Unknown',
+        created_by_name: (uDoc && uDoc.exists) ? uDoc.data().full_name : 'Unknown',
         assignment_name: assignmentName,
         expires_at: expiresAt,
-        my_attempts: attemptsSnap.size,
-        last_result: attemptsSnap.empty ? null : attemptsSnap.docs[0].data().is_correct,
+        my_attempts: attemptsDocs.length,
+        last_result: attemptsDocs.length === 0 ? null : attemptsDocs[0].data().is_correct,
         is_expired: expiresAt ? (expiresAt.toDate ? expiresAt.toDate().getTime() : new Date(expiresAt).getTime()) < now : false
       });
     }
     
-    questions.sort((a, b) => (b.created_at?.toMillis() || 0) - (a.created_at?.toMillis() || 0));
+    questions.sort((a, b) => {
+      const tA = a.created_at?.toDate ? a.created_at.toDate().getTime() : (new Date(a.created_at || 0).getTime());
+      const tB = b.created_at?.toDate ? b.created_at.toDate().getTime() : (new Date(b.created_at || 0).getTime());
+      return tB - tA;
+    });
     res.json(questions);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to load questions' });
+    logger.error('Failed to get group questions:', err);
+    res.status(500).json({ error: 'Failed to load questions: ' + err.message });
   }
 };
 
@@ -466,10 +648,17 @@ const getWorkspaceComparison = async (req, res) => {
     let isTeacher = false;
     
     if (!isMentor) {
-      const mSnap = await db.collection('group_members').where('user_id', '==', req.user.id).where('role', '==', 'teacher').where('is_active', '==', true).get();
+      const teacherIds = new Set([req.user.id]);
+      if (req.user.email) {
+        const uSnap = await db.collection('users').where('email', '==', req.user.email.toLowerCase()).get();
+        uSnap.docs.forEach(d => teacherIds.add(d.id));
+      }
+      const mSnap = await db.collection('group_members').where('role', '==', 'teacher').where('is_active', '==', true).get();
       for (const mDoc of mSnap.docs) {
-        const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
-        if (gDoc.exists && gDoc.data().workspace_id === workspaceId) isTeacher = true;
+        if (teacherIds.has(mDoc.data().user_id)) {
+          const gDoc = await db.collection('groups').doc(mDoc.data().group_id).get();
+          if (gDoc.exists && gDoc.data().workspace_id === workspaceId) isTeacher = true;
+        }
       }
     }
 
@@ -524,10 +713,12 @@ const exportGroupReport = async (req, res) => {
       const cs = csDoc.exists ? csDoc.data() : {};
 
       members.push({
-        full_name: u.full_name, email: u.email, group_role: data.role,
+        full_name: u.full_name || u.email?.split('@')[0] || 'User',
+        email: u.email || '',
+        group_role: data.role,
         rank_position: 0, total_score: 0, practice_score: 0, github_score: 0, leetcode_score: 0,
         profile_completeness: p.profile_completeness || 0,
-        career_readiness: p.career_readiness || 0,
+        career_readiness: p.career_readiness || 'beginner',
         overall_score: cs.overall_score || 0
       });
     }
@@ -535,10 +726,10 @@ const exportGroupReport = async (req, res) => {
     members.sort((a, b) => a.group_role.localeCompare(b.group_role));
 
     if (format === 'csv') {
-      const header = 'Name,Email,Role,Rank,Total Score,Practice,GitHub,LeetCode,Profile%,Career Readiness,Confidence\\n';
+      const header = 'Name,Email,Role,Rank,Total Score,Practice,GitHub,LeetCode,Profile%,Career Readiness,Confidence\n';
       const rows = members.map(m =>
         `"${m.full_name}","${m.email}","${m.group_role}",${m.rank_position||'—'},${Math.round(m.total_score||0)},${Math.round(m.practice_score||0)},${Math.round(m.github_score||0)},${Math.round(m.leetcode_score||0)},${m.profile_completeness||0},${m.career_readiness||'—'},${m.overall_score||0}`
-      ).join('\\n');
+      ).join('\n');
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="group-report-${groupId}.csv"`);
       return res.send(header + rows);
@@ -581,4 +772,5 @@ module.exports = {
   deleteWorkspace,
   exportGroupReport,
   getAssignmentAnalytics,
+  resolveCanonicalUserByEmail
 };

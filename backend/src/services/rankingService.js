@@ -62,7 +62,8 @@ const calculateUserScores = async (userId) => {
 };
 
 const recalculateGroupRanking = async (groupId) => {
-  const membersSnap = await db.collection('groups').doc(groupId).collection('members')
+  const membersSnap = await db.collection('group_members')
+    .where('group_id', '==', groupId)
     .where('is_active', '==', true)
     .where('role', '==', 'candidate').get();
 
@@ -137,6 +138,12 @@ const recalculateOverallRanking = async () => {
       user_id: m.user_id,
       rank_position: newRank,
       total_score: m.total_score,
+      practice_score: m.practice_score,
+      github_score: m.github_score,
+      leetcode_score: m.leetcode_score,
+      project_score: m.project_score,
+      skill_score: m.skill_score,
+      activity_score: m.activity_score,
       previous_rank: prevRank,
       rank_change: prevRank - newRank,
       calculated_at: admin.firestore.FieldValue.serverTimestamp()
@@ -148,9 +155,10 @@ const recalculateOverallRanking = async () => {
 const getRanking = async (req, res) => {
   const userId = req.params.userId || req.user.id;
   try {
-    const [groupSnap, overallDoc] = await Promise.all([
+    const [groupSnap, overallDoc, topRankingsSnap] = await Promise.all([
       db.collection('rankings').where('user_id', '==', userId).get(),
-      db.collection('overall_rankings').doc(userId).get()
+      db.collection('overall_rankings').doc(userId).get(),
+      db.collection('overall_rankings').orderBy('rank_position', 'asc').limit(25).get()
     ]);
     
     const group_rankings = [];
@@ -170,7 +178,40 @@ const getRanking = async (req, res) => {
     
     group_rankings.sort((a, b) => a.rank_position - b.rank_position);
 
-    res.json({ group_rankings, overall: overallDoc.exists ? overallDoc.data() : null });
+    const leaderboard = [];
+    for (const doc of topRankingsSnap.docs) {
+      const r = doc.data();
+      const [uDoc, pDoc] = await Promise.all([
+        db.collection('users').doc(r.user_id).get(),
+        db.collection('profiles').doc(r.user_id).get()
+      ]);
+      const uData = uDoc.exists ? uDoc.data() : {};
+      const pData = pDoc.exists ? pDoc.data() : {};
+
+      leaderboard.push({
+        rank_position: r.rank_position,
+        user_id: r.user_id,
+        full_name: uData.full_name || pData.full_name || (uData.email ? uData.email.split('@')[0] : 'Candidate'),
+        email: uData.email || null,
+        photo_url: uData.photo_url || pData.photo_url || null,
+        headline: pData.headline || null,
+        total_score: r.total_score || 0,
+        practice_score: r.practice_score || 0,
+        github_score: r.github_score || 0,
+        leetcode_score: r.leetcode_score || 0,
+        project_score: r.project_score || 0,
+        skill_score: r.skill_score || 0,
+        activity_score: r.activity_score || 0,
+        rank_change: r.rank_change || 0,
+        is_current_user: r.user_id === userId,
+      });
+    }
+
+    res.json({
+      group_rankings,
+      overall: overallDoc.exists ? overallDoc.data() : null,
+      leaderboard
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to load rankings: ' + err.message });
   }
@@ -228,7 +269,9 @@ const triggerRecalculate = async (req, res) => {
     // Workaround: Avoid collectionGroup index requirement by querying each group individually
     const groupsSnap = await db.collection('groups').get();
     for (const gDoc of groupsSnap.docs) {
-      const memberQuery = await db.collection('groups').doc(gDoc.id).collection('members').where('user_id', '==', userId).get();
+      const memberQuery = await db.collection('group_members')
+        .where('group_id', '==', gDoc.id)
+        .where('user_id', '==', userId).get();
       if (!memberQuery.empty) {
         if (memberQuery.docs[0].data().is_active === true) {
           await recalculateGroupRanking(gDoc.id);

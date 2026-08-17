@@ -5,6 +5,7 @@ const { requireOwnerOrPrivileged } = require('../middleware/authorize');
 const { uploadResume: uploadResumeMiddleware, uploadPhoto: uploadPhotoMiddleware, handleUploadError } = require('../middleware/upload');
 
 const { register, login, logout, me } = require('../controllers/authController');
+router.get('/health', (req, res) => res.json({ status: 'UP', timestamp: new Date().toISOString() }));
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.post('/auth/logout', logout);
@@ -64,6 +65,7 @@ router.get('/leetcode/data/:userId', authenticate, requireOwnerOrPrivileged(), g
 const practiceCtrl = require('../controllers/practiceController');
 router.get('/questions', authenticate, practiceCtrl.getQuestions);
 router.post('/questions/bulk', authenticate, practiceCtrl.bulkCreateQuestions);
+router.post('/practice/bulk-create', authenticate, practiceCtrl.bulkCreateQuestions);
 router.delete('/questions/bulk', authenticate, practiceCtrl.bulkDeleteQuestions);
 router.get('/questions/:id', authenticate, practiceCtrl.getQuestion);
 router.delete('/questions/:id', authenticate, practiceCtrl.deleteQuestion);
@@ -83,6 +85,7 @@ router.post('/practice/submit-assignment', authenticate, practiceCtrl.submitAssi
 router.get('/practice/history', authenticate, practiceCtrl.getSessionHistory);
 router.get('/practice/history/:sessionId', authenticate, practiceCtrl.getSessionAttempts);
 router.post('/questions/generate', authenticate, practiceCtrl.generateQuestions);
+router.post('/practice/generate', authenticate, practiceCtrl.generateQuestions);
 
 
 
@@ -91,7 +94,12 @@ router.post('/score/calculate', authenticate, scoringService.calculateConfidence
 router.get('/score', authenticate, scoringService.getConfidenceScore);
 router.get('/score/:userId', authenticate, requireOwnerOrPrivileged(), scoringService.getConfidenceScore);
 router.get('/score/:userId/risk', authenticate, requireOwnerOrPrivileged(), scoringService.predictRisk);
-router.get('/suggestions/:candidateId', authenticate, requireRole('hr'), scoringService.generateInterviewSuggestions);
+router.get('/suggestions/:candidateId', authenticate, (req, res, next) => {
+  if (!['hr', 'mentor', 'teacher', 'admin'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  next();
+}, scoringService.generateInterviewSuggestions);
 
 const rankingService = require('../services/rankingService');
 router.get('/ranking', authenticate, rankingService.getRanking);
@@ -108,6 +116,8 @@ router.get('/evaluations/hr/:candidateId', authenticate, requireRole('hr'), eval
 router.post('/evaluations/hr/:candidateId', authenticate, requireRole('hr'), evalCtrl.saveHREvaluation);
 router.get('/evaluations/teacher/:candidateId', authenticate, evalCtrl.getTeacherFeedbacks);
 router.post('/evaluations/teacher/:candidateId', authenticate, requireRole('teacher'), evalCtrl.saveTeacherFeedback);
+router.get('/evaluations/mentor/:candidateId', authenticate, evalCtrl.getTeacherFeedbacks);
+router.post('/evaluations/mentor/:candidateId', authenticate, requireRole('mentor'), evalCtrl.saveTeacherFeedback);
 
 const groupCtrl = require('../controllers/groupController');
 router.post('/workspaces', authenticate, requireRole('mentor'), groupCtrl.createWorkspace);

@@ -9,7 +9,6 @@ import { Upload, Plus, Trash2, FileText, RefreshCw, CheckCircle, Shield, X, Eye,
 import clsx from 'clsx';
 import { ProgressTimeline } from '@/components/candidate/ProgressTimeline';
 import ResumeFeedback from '@/components/candidate/ResumeFeedback';
-import TrustScoreBadge from '@/components/candidate/TrustScoreBadge';
 import { getImageUrl } from '@/utils/platform';
 
 type Tab = 'overview' | 'skills' | 'projects' | 'education' | 'experience' | 'certificates';
@@ -269,9 +268,6 @@ export default function ProfilePage() {
         />
       )}
       <div className="animate-fade-in">
-        <div className="flex items-center justify-end mb-4">
-          <TrustScoreBadge />
-        </div>
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
           <div className="flex items-start gap-4">
             <label className="relative cursor-pointer group">

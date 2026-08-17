@@ -77,9 +77,22 @@ const authenticate = async (req, res, next) => {
 
     if (!user) {
       // 4. Fetch fresh user from Firestore
-      const userDoc = await db.collection('users').doc(decoded.id).get();
+      let userDoc = await db.collection('users').doc(decoded.id).get();
 
-      if (!userDoc.exists) {
+      if (!userDoc.exists && decoded.email) {
+        // Fallback: look up by email
+        const cleanEmail = decoded.email.toLowerCase().trim();
+        const uSnap = await db.collection('users').where('email', '==', cleanEmail).get();
+        if (!uSnap.empty) {
+          userDoc = uSnap.docs[0];
+          // If doc ID doesn't match token UID, create the canonical doc with token UID
+          if (userDoc.id !== decoded.id) {
+            await db.collection('users').doc(decoded.id).set(userDoc.data(), { merge: true });
+          }
+        }
+      }
+
+      if (!userDoc || !userDoc.exists) {
         return res.status(401).json({ error: 'Account not found' });
       }
 

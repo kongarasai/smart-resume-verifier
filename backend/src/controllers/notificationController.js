@@ -6,8 +6,39 @@ const getNotifications = async (req, res) => {
     const snap = await db.collection('notifications')
       .where('user_id', '==', req.user.id)
       .get();
-      
+
     let notifications = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // If candidate has no notifications yet, generate helpful welcome notifications
+    if (notifications.length === 0) {
+      const welcomeNotifs = [
+        {
+          user_id: req.user.id,
+          type: 'welcome',
+          title: 'Welcome to Smart Resume Verifier! 🚀',
+          message: 'Complete your profile verification, practice coding assessments, and take an AI mock interview to boost your Trust Score.',
+          is_read: false,
+          created_at: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+          user_id: req.user.id,
+          type: 'interview',
+          title: 'AI Mock Interview Available 🤖',
+          message: 'Practice real-time technical questions personalized to your verified skill profile with instant AI scoring.',
+          is_read: false,
+          created_at: new Date(Date.now() - 7200000).toISOString()
+        }
+      ];
+
+      for (const notif of welcomeNotifs) {
+        const docRef = await db.collection('notifications').add({
+          ...notif,
+          created_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+        notifications.push({ id: docRef.id, ...notif });
+      }
+    }
+
     // Sort in memory to avoid Firestore missing index error
     notifications = notifications.sort((a, b) => {
       const t1 = a.created_at?.toMillis ? a.created_at.toMillis() : (new Date(a.created_at || 0).getTime());
@@ -17,10 +48,11 @@ const getNotifications = async (req, res) => {
       ...n,
       created_at: n.created_at?.toDate ? n.created_at.toDate().toISOString() : n.created_at
     }));
+
     res.json(notifications);
   } catch (err) {
     logger.error('Fetch notifications error:', err);
-    res.status(500).json({ error: 'Failed to fetch notifications' });
+    res.json([]);
   }
 };
 
@@ -41,13 +73,15 @@ const markAllRead = async (req, res) => {
       .where('user_id', '==', req.user.id)
       .where('is_read', '==', false)
       .get();
-      
-    const batch = db.batch();
-    snap.docs.forEach(doc => {
-      batch.update(doc.ref, { is_read: true });
-    });
-    await batch.commit();
-    
+
+    if (!snap.empty) {
+      const batch = db.batch();
+      snap.docs.forEach(doc => {
+        batch.update(doc.ref, { is_read: true });
+      });
+      await batch.commit();
+    }
+
     res.json({ message: 'All notifications marked as read' });
   } catch (err) {
     res.status(500).json({ error: 'Update failed' });
@@ -67,14 +101,14 @@ const sendNotification = async (app, userId, type, title, message, relatedId = n
       is_read: false,
       created_at: admin.firestore.FieldValue.serverTimestamp()
     };
-    
+
     const docRef = await db.collection('notifications').add(newNotif);
     const savedNotif = { id: docRef.id, ...newNotif };
-    
+
     // 2. Push via Socket.IO
-    const io = app.get('io');
-    const connectedUsers = app.get('connectedUsers');
-    
+    const io = app ? app.get('io') : null;
+    const connectedUsers = app ? app.get('connectedUsers') : null;
+
     if (io && connectedUsers && connectedUsers.has(userId)) {
       const socketIds = connectedUsers.get(userId);
       socketIds.forEach(sid => {
@@ -82,7 +116,7 @@ const sendNotification = async (app, userId, type, title, message, relatedId = n
       });
       logger.info(`Real-time notification sent to user ${userId}`);
     }
-    
+
     return savedNotif;
   } catch (err) {
     logger.error('Send notification helper error:', err);

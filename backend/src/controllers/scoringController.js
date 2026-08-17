@@ -98,7 +98,7 @@ const scoringController = {
       }
 
       const doc = await db.collection('confidence_scores').doc(targetId).get();
-      if (!doc.exists) return res.status(404).json({ error: 'Score not found' });
+      if (!doc.exists) return res.json(null);
       res.json({ id: doc.id, ...doc.data() });
     } catch (err) {
       res.status(500).json({ error: 'Database error' });
