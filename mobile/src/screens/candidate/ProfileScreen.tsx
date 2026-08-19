@@ -166,11 +166,11 @@ export default function ProfileScreen() {
   const toggleAvailability = async () => {
     const next = !isAvailable;
     try {
-      await apiClient.put('/profile/availability', next);
+      await apiClient.put('/profile/availability', { is_available: next });
       setIsAvailable(next);
       Alert.alert('Success', `Availability updated to: ${next ? 'Available' : 'Unavailable'}`);
     } catch (err: any) {
-      Alert.alert('Error', 'Failed to update availability status.');
+      Alert.alert('Error', err.response?.data?.error || err.message || 'Failed to update availability status.');
     }
   };
 

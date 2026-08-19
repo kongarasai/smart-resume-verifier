@@ -73,7 +73,14 @@ const getProfile = async (req, res) => {
 
     const hiring_status = hrEvalRes.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const mergedProfile = { ...profileData, full_name: userData.full_name, email: userData.email, photo_url: userData.photo_url };
+    const mergedProfile = { 
+      is_available: profileData.is_available !== undefined ? profileData.is_available : true,
+      availability: profileData.availability || (profileData.is_available === false ? 'unavailable' : 'available'),
+      ...profileData, 
+      full_name: userData.full_name, 
+      email: userData.email, 
+      photo_url: userData.photo_url 
+    };
 
     // Deduplicate skills case-insensitively, keeping the highest verification level
     const skillMap = {};
@@ -341,13 +348,34 @@ const updateHRProfile = async (req, res) => {
 
 const updateAvailability = async (req, res) => {
   try {
-    await db.collection('profiles').doc(req.user.id).update({
-      availability: req.body.availability,
+    let isAvailable = true;
+    if (typeof req.body === 'boolean') {
+      isAvailable = req.body;
+    } else if (req.body && typeof req.body.is_available === 'boolean') {
+      isAvailable = req.body.is_available;
+    } else if (req.body && typeof req.body.availability === 'boolean') {
+      isAvailable = req.body.availability;
+    } else if (req.body && typeof req.body.availability === 'string') {
+      isAvailable = req.body.availability.toLowerCase() === 'available';
+    } else if (req.body && req.body.is_available !== undefined) {
+      isAvailable = Boolean(req.body.is_available);
+    }
+
+    await db.collection('profiles').doc(req.user.id).set({
+      is_available: isAvailable,
+      availability: isAvailable ? 'available' : 'unavailable',
+      availability_updated_at: admin.firestore.FieldValue.serverTimestamp(),
       updated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    res.json({ 
+      message: 'Availability updated', 
+      is_available: isAvailable, 
+      availability: isAvailable ? 'available' : 'unavailable' 
     });
-    res.json({ message: 'Availability updated' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update availability' });
+    console.error('Update availability error:', err);
+    res.status(500).json({ error: 'Failed to update availability: ' + err.message });
   }
 };
 

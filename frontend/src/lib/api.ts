@@ -196,7 +196,7 @@ export const profileAPI = {
 // AVAILABILITY
 // ════════════════════════════════════════════
 export const availabilityAPI = {
-  update: (data: any) => api.put('profile/availability', data).then(unwrap),
+  update: (data: any) => api.put('profile/availability', typeof data === 'boolean' ? { is_available: data } : data).then(unwrap),
 };
 
 // ════════════════════════════════════════════
