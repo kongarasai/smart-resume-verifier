@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Send, MessageSquare, Lock, ChevronLeft, Calendar } from 'lucide-react-native';
 import DashboardLayout from '../../components/shared/DashboardLayout';
-import apiClient from '../../api/apiClient';
+import apiClient, { getActiveSocketUrl } from '../../api/apiClient';
 import { useAuthStore } from '../../store/authStore';
 import { io, Socket } from 'socket.io-client';
 
@@ -16,7 +16,7 @@ export default function MessagesScreen() {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const SOCKET_URL = 'http://192.168.1.10:5000';
+    const SOCKET_URL = getActiveSocketUrl();
     socketRef.current = io(SOCKET_URL, { auth: { token } });
     socketRef.current.on('new_message', (msg: any) => {
       if (activeUser && (msg.sender_id === activeUser.id || msg.receiver_id === activeUser.id)) {

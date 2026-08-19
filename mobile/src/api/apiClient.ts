@@ -41,8 +41,12 @@ export const getCandidateUrls = (): string[] => {
     }
   } catch {}
 
-  // 3. Known Wi-Fi development machine IP
+  // 3. Known Local / Wi-Fi development machine IPs
+  addCandidate('10.138.166.201');
   addCandidate('192.168.1.10');
+  addCandidate('192.168.114.1');
+  addCandidate('192.168.240.1');
+  addCandidate('192.168.56.1');
 
   // 4. Android Emulator loopback
   if (Platform.OS === 'android') {
@@ -53,11 +57,14 @@ export const getCandidateUrls = (): string[] => {
   addCandidate('127.0.0.1');
   addCandidate('localhost');
 
-  return urls.length > 0 ? urls : ['http://192.168.1.10:5000/api', 'http://127.0.0.1:5000/api'];
+  return urls.length > 0 ? urls : ['http://10.138.166.201:5000/api', 'http://127.0.0.1:5000/api'];
 };
 
 const candidateList = getCandidateUrls();
-let activeBaseUrl = candidateList[0] || 'http://192.168.1.10:5000/api';
+let activeBaseUrl = candidateList[0] || 'http://10.138.166.201:5000/api';
+
+export const getActiveBaseUrl = () => activeBaseUrl;
+export const getActiveSocketUrl = () => activeBaseUrl.replace(/\/api$/, '');
 
 // Background probe to test and lock onto the fastest responding backend URL
 export const probeAndSetWorkingBaseUrl = async (): Promise<string> => {
