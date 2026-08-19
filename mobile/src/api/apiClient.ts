@@ -9,6 +9,11 @@ export const getCandidateUrls = (): string[] => {
 
   const addCandidate = (host?: string | null) => {
     if (!host) return;
+    if (host.startsWith('http://') || host.startsWith('https://')) {
+      const formatted = host.endsWith('/api') ? host : `${host.replace(/\/$/, '')}/api`;
+      if (!urls.includes(formatted)) urls.push(formatted);
+      return;
+    }
     const cleanHost = host.split(':')[0].trim();
     if (cleanHost && !urls.some((u) => u.includes(`://${cleanHost}:`))) {
       urls.push(`http://${cleanHost}:5000/api`);
@@ -57,7 +62,10 @@ export const getCandidateUrls = (): string[] => {
   addCandidate('127.0.0.1');
   addCandidate('localhost');
 
-  return urls.length > 0 ? urls : ['http://10.138.166.201:5000/api', 'http://127.0.0.1:5000/api'];
+  // 6. Production Render Cloud Backend Fallback
+  addCandidate('https://smart-resume-backend-7jeu.onrender.com/api');
+
+  return urls.length > 0 ? urls : ['http://10.138.166.201:5000/api', 'https://smart-resume-backend-7jeu.onrender.com/api'];
 };
 
 const candidateList = getCandidateUrls();

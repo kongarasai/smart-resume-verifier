@@ -31,6 +31,7 @@ app.use(metricsMiddleware);
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
+  'https://smart-resume-verifier.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
   'capacitor://localhost',
@@ -195,7 +196,13 @@ app.use((err, req, res, next) => {
 // ── 5. SOCKET.IO ──────────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (process.env.NODE_ENV === 'development' || origin.includes('vercel.app') || ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   }
 });
